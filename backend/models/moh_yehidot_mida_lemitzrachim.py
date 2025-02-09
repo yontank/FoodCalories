@@ -1,8 +1,9 @@
 from sqlalchemy import Column, SmallInteger, DOUBLE_PRECISION
-from main import Base
-
+from .based import Base
 
 class yehidot_mida_lemitzrachim(Base):
-    mmitzrach = SmallInteger()
-    mida = SmallInteger()
-    mishkal = DOUBLE_PRECISION()
+    __tablename__ = 'moh_yehidot_mida'
+    
+    mmitzrach = Column(SmallInteger())
+    mida = Column(SmallInteger())
+    mishkal = Column(DOUBLE_PRECISION(), primary_key=True)
