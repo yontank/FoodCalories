@@ -1,24 +1,28 @@
 # Logs
-logs
+Food-Calories/logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+Food-Calories/npm-debug.log*
+Food-Calories/yarn-debug.log*
+Food-Calories/yarn-error.log*
+Food-Calories/pnpm-debug.log*
+Food-Calories/lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+Food-Calories/node_modules
+Food-Calories/dist
+Food-Calories/dist-ssr
+Food-Calories/*.local
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Food-Calories/.vscode/*
+Food-Calories/!.vscode/extensions.json
+Food-Calories/.idea
+Food-Calories/.DS_Store
+Food-Calories/*.suo
+Food-Calories/*.ntvs*
+Food-Calories/*.njsproj
+Food-Calories/*.sln
+Food-Calories/*.sw?
+
+backend/.venv
+backend/__pycache__
+
