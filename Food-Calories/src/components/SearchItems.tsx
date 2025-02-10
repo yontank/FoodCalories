@@ -13,15 +13,16 @@ import {
   Dialog,
   DialogTrigger,
   DialogHeader,
-  DialogDescription,
+  // DialogDescription,
   DialogContent,
   DialogTitle,
   DialogFooter,
 } from "./ui/dialog";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+// import { Input } from "./ui/input";
+// import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-import { FaPlus } from "react-icons/fa";
+
+import SearchBar from "./SearchBar";
 function SearchItems() {
   return (
     <>
@@ -47,7 +48,8 @@ function SearchItems() {
               <div>
                 <DialogTrigger asChild>
                   <Button className="rounded-full w-14 h-14" onClick={() => {}}>
-                    <FaPlus />
+                    ADD
+                    {/* <FaPlus /> */}
                   </Button>
                 </DialogTrigger>
                 <h2 className="inline">ארוחת בוקר</h2>
@@ -56,7 +58,8 @@ function SearchItems() {
               <div>
                 <DialogTrigger asChild>
                   <Button className="rounded-full w-14 h-14">
-                    <FaPlus />
+                    ADD
+                    {/* <FaPlus /> */}
                   </Button>
                 </DialogTrigger>
                 <h2 className="inline">ארוחת צהריים</h2>
@@ -65,7 +68,8 @@ function SearchItems() {
               <div>
                 <DialogTrigger asChild>
                   <Button className="rounded-full w-14 h-14">
-                    <FaPlus />
+                    ADD
+                    {/* <FaPlus /> */}
                   </Button>
                 </DialogTrigger>
                 <h2 className="inline">ארוחת ערב</h2>
@@ -78,21 +82,17 @@ function SearchItems() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>מה אכלת היום?</DialogTitle>
-            {/* <DialogDescription>
-              Make changes to your profile here. Click save when you're done.
-            </DialogDescription> */}
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          {/* <div className="grid gap-4 py-4">
             <div>
               {" "}
-              {/*className="grid grid-cols-4 items-center gap-4"*/}
+              className="grid grid-cols-4 items-center gap-4"
               <Label htmlFor="food" className="text-right">
                 בחר מוצר
               </Label>
-              <Input id="food" className="" />
             </div>
-          </div>
-
+          </div> */}
+          <SearchBar />
           <DialogFooter>
             <Button type="submit">Save changes</Button>
           </DialogFooter>
