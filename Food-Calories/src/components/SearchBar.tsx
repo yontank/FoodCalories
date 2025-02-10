@@ -1,12 +1,89 @@
-import React from "react";
-import { Input } from "@/components/ui/input";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { ListFood } from "@/type";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+
+const listFoods = async (): Promise<ListFood> => {
+  const foods = await fetch("/v1/foods");
+  return await foods.json();
+};
 
 function SearchBar() {
+  const [open, setOpen] = useState<boolean>(false);
+  const [value, setValue] = useState<string>("");
+
+  const { data, status } = useQuery({
+    queryKey: ["listFoods"],
+    queryFn: listFoods,
+  });
+
+  if (status === "error") return <h3>Error</h3>;
+  else if (status === "pending") return <h3>Loading...</h3>;
+
+  console.log(data);
+
   return (
-    <div className="flex flex-col items-center justify-center h-1/4 w-3/5 m-auto mt-5 max-w-screen-lg">
-      <h2 className="text-red-300 text-center text-2xl">חפש שם מוצר</h2>
-      <Input type="text" placeholder="מזון" className="w-10/12" />
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[200px] justify-between"
+        >
+          {value
+            ? data?.data.find((framework) => framework.shmmitzrach === value)
+                ?.shmmitzrach
+            : "Select framework..."}
+          <ChevronsUpDown className="opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command>
+          <CommandInput placeholder="Search framework..." className="h-9" />
+          <CommandList>
+            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandGroup>
+              {data?.data.map((framework) => (
+                <CommandItem
+                  key={framework.code}
+                  value={framework.shmmitzrach}
+                  onSelect={(currentValue) => {
+                    setValue(currentValue === value ? "" : currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  {framework.shmmitzrach}
+                  <Check
+                    className={cn(
+                      "ml-auto",
+                      value === framework.shmmitzrach
+                        ? "opacity-100"
+                        : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 
