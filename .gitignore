@@ -25,4 +25,6 @@ Food-Calories/*.sw?
 
 backend/.venv
 backend/__pycache__
+backend/models/__pycache__
+backend/schemas/__pycache__
 

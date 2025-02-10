@@ -36,4 +36,9 @@ class moh_mitzrachim(Base):
     english_name = Column(String(255))
 
     tarich_ptiha = Column(DateTime(True))
-    updatedAt = Column(DateTime(True))
+    updatedat = Column(DateTime(True))
+    
+    def __repr__(self):
+        return f'<Mitzrahim | code(id): {self.code} sml: {self.smlmitzrach} shmm:{self.shmmitzrach}>'
+    
+    
