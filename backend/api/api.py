@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.get('/foods',response_model=List[ListFood])
 def list_food():
-    if foods := session.query(moh_mitzrachim).limit(5).all():
+    if foods := session.query(moh_mitzrachim).limit(50).all():
         try:  
             return map(lambda food: ListFood.model_validate(food) , foods)
         except Exception as e:
