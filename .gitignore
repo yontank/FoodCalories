@@ -30,3 +30,5 @@ backend/schemas/__pycache__/
 
 backend/api/__pycache__/*
 backend/api/__pycache__/
+backend/api/__pycache__/api.cpython-312.pyc
+
