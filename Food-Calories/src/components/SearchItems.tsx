@@ -77,21 +77,10 @@ function SearchItems() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Dialog FOR Food Pickup WHENEVER you've already eaten.  */}
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[950px]">
           <DialogHeader>
             <DialogTitle>מה אכלת היום?</DialogTitle>
           </DialogHeader>
-          {/* <div className="grid gap-4 py-4">
-            <div>
-              {" "}
-              className="grid grid-cols-4 items-center gap-4"
-              <Label htmlFor="food" className="text-right">
-                בחר מוצר
-              </Label>
-            </div>
-          </div> */}
           <SearchBar />
           <DialogFooter>
             <Button type="submit">Save changes</Button>
