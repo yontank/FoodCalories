@@ -38,41 +38,44 @@ function SearchBar() {
   console.log(data);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} >
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[800px] justify-between"
         >
           {value
-            ? data?.data.find((framework) => framework.shmmitzrach === value)
+            ? data?.data.find((food) => food.shmmitzrach === value)
                 ?.shmmitzrach
-            : "Select framework..."}
+            : "Select food..."}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-[800px] p-0">
         <Command>
-          <CommandInput placeholder="Search framework..." className="h-9" />
+          <CommandInput placeholder="Search food..." className="h-9" />
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandEmpty>No food found.</CommandEmpty>
             <CommandGroup>
-              {data?.data.map((framework) => (
+              {data?.data.map((food) => (
                 <CommandItem
-                  key={framework.code}
-                  value={framework.shmmitzrach}
+                  key={food.code}
+                  value={food.shmmitzrach}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? "" : currentValue);
                     setOpen(false);
                   }}
                 >
-                  {framework.shmmitzrach}
+                  {food.shmmitzrach
+                    .split("\\")
+                    .filter((_, i) => i !== 3)
+                    .join(" ")}
                   <Check
                     className={cn(
                       "ml-auto",
-                      value === framework.shmmitzrach
+                      value === food.shmmitzrach
                         ? "opacity-100"
                         : "opacity-0"
                     )}
