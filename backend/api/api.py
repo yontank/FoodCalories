@@ -20,8 +20,15 @@ def list_food():
             print(e.errors())
             
 
-@router.get('/foods/{food_query}')
+@router.get('/foods/{food_query}', response_model=Dict[str, List[ListFood]])
 def query_foods(food_query : str):
     if foods := session.query(moh_mitzrachim).filter(moh_mitzrachim.shmmitzrach.contains(food_query)).limit(5).all():
         return {'data': foods}
-    return HTTPException(404, "food type wasnt found")
+    raise HTTPException(404, "food type wasnt found")
+
+
+@router.get('/food/{food_query}')
+def query_food(food_query: int):
+    if food := session.query(moh_mitzrachim).filter(moh_mitzrachim.code == food_query).first():
+        return food
+    raise HTTPException(404, detail='item not found')
