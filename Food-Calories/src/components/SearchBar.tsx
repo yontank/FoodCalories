@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Popover,
@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { ListFood } from "@/type";
+import { ListFoodAPI } from "@/type";
 import {
   Command,
   CommandEmpty,
@@ -17,28 +17,35 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "use-debounce";
 
-const listFoods = async (): Promise<ListFood> => {
-  const foods = await fetch("/v1/foods");
-  return await foods.json();
+const listFoods = async (foodQuery: string): Promise<ListFoodAPI> => {
+  const isFoodQuery = foodQuery?.length == 0;
+  const foods = await fetch("/v1/foods" + (isFoodQuery ? "" : "/" + foodQuery));
+
+  if (foods.ok) return await foods.json();
+
+  return { data: [] };
 };
 
 function SearchBar() {
   const [open, setOpen] = useState<boolean>(false);
   const [value, setValue] = useState<string>("");
+  const [debounceValue] = useDebounce(value, 1000);
 
   const { data, status } = useQuery({
-    queryKey: ["listFoods"],
-    queryFn: listFoods,
+    staleTime: 1000,
+    queryKey: ["listFoods", debounceValue],
+    queryFn: () => listFoods(debounceValue),
   });
 
   if (status === "error") return <h3>Error</h3>;
   else if (status === "pending") return <h3>Loading...</h3>;
 
-  console.log(data);
+  console.log("VALUE: " + JSON.stringify(data));
 
   return (
-    <Popover open={open} onOpenChange={setOpen} >
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -47,15 +54,19 @@ function SearchBar() {
           className="w-[800px] justify-between"
         >
           {value
-            ? data?.data.find((food) => food.shmmitzrach === value)
-                ?.shmmitzrach
+            ? data?.data.find((food) => food.shmmitzrach === value)?.shmmitzrach
             : "Select food..."}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[800px] p-0">
         <Command>
-          <CommandInput placeholder="Search food..." className="h-9" />
+          <CommandInput
+            placeholder="Search food..."
+            className="h-9"
+            value={value}
+            onValueChange={setValue}
+          />
           <CommandList>
             <CommandEmpty>No food found.</CommandEmpty>
             <CommandGroup>
@@ -68,16 +79,11 @@ function SearchBar() {
                     setOpen(false);
                   }}
                 >
-                  {food.shmmitzrach
-                    .split("\\")
-                    .filter((_, i) => i !== 3)
-                    .join(" ")}
+                  {food.shmmitzrach}
                   <Check
                     className={cn(
                       "ml-auto",
-                      value === food.shmmitzrach
-                        ? "opacity-100"
-                        : "opacity-0"
+                      value === food.shmmitzrach ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>
