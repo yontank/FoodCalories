@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, SmallInteger, Column, Integer, String, DateTime, Table, DOUBLE_PRECISION
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from .based import Base
+from .moh_yehidot_mida_lemitzrachim import yehidot_mida_lemitzrachim
 
 class moh_mitzrachim(Base):
     __tablename__ = "moh_mitzrachim"
@@ -13,7 +14,7 @@ class moh_mitzrachim(Base):
     protein = Column(DOUBLE_PRECISION)
     total_fat = Column(DOUBLE_PRECISION)
     carbohydrates = Column(DOUBLE_PRECISION)
-    food_energy = SmallInteger
+    food_energy = Column(SmallInteger)
     alcohol = Column(DOUBLE_PRECISION)
 
     total_dietary_fiber = Column(DOUBLE_PRECISION)
@@ -37,8 +38,10 @@ class moh_mitzrachim(Base):
 
     tarich_ptiha = Column(DateTime(True))
     updatedat = Column(DateTime(True))
+    midot = relationship(yehidot_mida_lemitzrachim)
+    
     
     def __repr__(self):
-        return f'<Mitzrahim | code(id): {self.code} sml: {self.smlmitzrach} shmm:{self.shmmitzrach}>'
+        return f'<Mitzrahim | code(id): {self.code} sml: {self.smlmitzrach} shmm:{self.shmmitzrach}, codes:{self.midot}>'
     
     
