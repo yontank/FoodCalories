@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { ListFoodAPI } from "@/type";
+import { ListFoodAPI, TIME } from "@/type";
 import {
   Command,
   CommandEmpty,
@@ -17,7 +17,13 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { useDebounce } from "use-debounce";
+
+interface SearchBarProps {
+  mealTime?: TIME;
+  value: string;
+  setValue: React.Dispatch<React.SetStateAction<string>>;
+  debounceValue: string;
+}
 
 const listFoods = async (foodQuery: string): Promise<ListFoodAPI> => {
   const isFoodQuery = foodQuery?.length == 0;
@@ -28,10 +34,8 @@ const listFoods = async (foodQuery: string): Promise<ListFoodAPI> => {
   return { data: [] };
 };
 
-function SearchBar() {
+function SearchBar({ value, setValue, debounceValue }: SearchBarProps) {
   const [open, setOpen] = useState<boolean>(false);
-  const [value, setValue] = useState<string>("");
-  const [debounceValue] = useDebounce(value, 1000);
 
   const { data, status } = useQuery({
     staleTime: 1000,
@@ -41,8 +45,6 @@ function SearchBar() {
 
   if (status === "error") return <h3>Error</h3>;
   else if (status === "pending") return <h3>Loading...</h3>;
-
-  console.log("VALUE: " + JSON.stringify(data));
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

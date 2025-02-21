@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Card,
   CardContent,
@@ -13,17 +12,26 @@ import {
   Dialog,
   DialogTrigger,
   DialogHeader,
-  // DialogDescription,
   DialogContent,
   DialogTitle,
   DialogFooter,
 } from "./ui/dialog";
-// import { Input } from "./ui/input";
-// import { Label } from "./ui/label";
-import { Button } from "./ui/button";
+import { useState } from "react";
 
+import { Button } from "./ui/button";
 import SearchBar from "./SearchBar";
+import { TIME } from "@/type";
+
+import { createSearchParams, useNavigate } from "react-router";
+import { useDebounce } from "use-debounce";
+
 function SearchItems() {
+  const navigate = useNavigate();
+
+  const [mealType, setMealType] = useState<TIME | undefined>(undefined);
+  const [value, setValue] = useState<string>("");
+  const [debounceValue] = useDebounce(value, 1000);
+
   return (
     <>
       <Dialog>
@@ -47,7 +55,12 @@ function SearchItems() {
             <div id="food-container">
               <div>
                 <DialogTrigger asChild>
-                  <Button className="rounded-full w-14 h-14" onClick={() => {}}>
+                  <Button
+                    className="rounded-full w-14 h-14"
+                    onClick={() => {
+                      setMealType(TIME.BREAKFAST);
+                    }}
+                  >
                     ADD
                     {/* <FaPlus /> */}
                   </Button>
@@ -57,7 +70,12 @@ function SearchItems() {
 
               <div>
                 <DialogTrigger asChild>
-                  <Button className="rounded-full w-14 h-14">
+                  <Button
+                    className="rounded-full w-14 h-14"
+                    onClick={() => {
+                      setMealType(TIME.AFTERNOON);
+                    }}
+                  >
                     ADD
                     {/* <FaPlus /> */}
                   </Button>
@@ -67,7 +85,12 @@ function SearchItems() {
 
               <div>
                 <DialogTrigger asChild>
-                  <Button className="rounded-full w-14 h-14">
+                  <Button
+                    className="rounded-full w-14 h-14"
+                    onClick={() => {
+                      setMealType(TIME.EVENING);
+                    }}
+                  >
                     ADD
                     {/* <FaPlus /> */}
                   </Button>
@@ -81,9 +104,28 @@ function SearchItems() {
           <DialogHeader>
             <DialogTitle>מה אכלת היום?</DialogTitle>
           </DialogHeader>
-          <SearchBar />
+          <SearchBar
+            mealTime={mealType}
+            value={value}
+            setValue={setValue}
+            debounceValue={debounceValue}
+          />
+
           <DialogFooter>
-            <Button type="submit">Save changes</Button>
+            <Button
+              type="submit"
+              onClick={() => {
+                navigate({
+                  pathname: "calc",
+                  search: createSearchParams({
+                    shm: value,
+                    meal: mealType?.toString() ?? "",
+                  }).toString(),
+                });
+              }}
+            >
+              Save changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
