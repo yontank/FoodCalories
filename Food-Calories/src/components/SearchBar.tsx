@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { UseQueryResult } from "@tanstack/react-query";
 import {
   Popover,
   PopoverContent,
@@ -23,29 +23,16 @@ interface SearchBarProps {
   value: string;
   setValue: React.Dispatch<React.SetStateAction<string>>;
   debounceValue: string;
+  query: UseQueryResult<ListFoodAPI, Error>;
 }
 
-const listFoods = async (foodQuery: string): Promise<ListFoodAPI> => {
-  const isFoodQuery = foodQuery?.length == 0;
-  const foods = await fetch("/v1/foods" + (isFoodQuery ? "" : "/" + foodQuery));
-
-  if (foods.ok) return await foods.json();
-
-  return { data: [] };
-};
-
-function SearchBar({ value, setValue, debounceValue }: SearchBarProps) {
+function SearchBar({ value, setValue, query }: SearchBarProps) {
   const [open, setOpen] = useState<boolean>(false);
 
-  const { data, status } = useQuery({
-    staleTime: 1000,
-    queryKey: ["listFoods", debounceValue],
-    queryFn: () => listFoods(debounceValue),
-  });
+  const { data, status } = query;
 
   if (status === "error") return <h3>Error</h3>;
-  else if (status === "pending") return <h3>Loading...</h3>;
-
+ 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

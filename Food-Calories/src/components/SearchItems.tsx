@@ -20,17 +20,42 @@ import { useState } from "react";
 
 import { Button } from "./ui/button";
 import SearchBar from "./SearchBar";
-import { TIME } from "@/type";
+import { ListFoodAPI, TIME } from "@/type";
 
-import { createSearchParams, useNavigate } from "react-router";
 import { useDebounce } from "use-debounce";
+import { useQuery } from "@tanstack/react-query";
+import { createSearchParams, useNavigate } from "react-router";
+
+const listFoods = async (foodQuery: string): Promise<ListFoodAPI> => {
+  const isFoodQuery = foodQuery?.length == 0;
+  const foods = await fetch("/v1/foods" + (isFoodQuery ? "" : "/" + foodQuery));
+
+  if (foods.ok) return await foods.json();
+
+  return { data: [] };
+};
 
 function SearchItems() {
-  const navigate = useNavigate();
-
   const [mealType, setMealType] = useState<TIME | undefined>(undefined);
   const [value, setValue] = useState<string>("");
   const [debounceValue] = useDebounce(value, 1000);
+
+  const query = useQuery({
+    queryKey: ["listFoods", debounceValue],
+    queryFn: () => listFoods(debounceValue),
+  });
+  const navigate = useNavigate();
+
+  const handleSubmit = (shm: string, mealType: string) => {
+    const foodInfo = query.data?.data.find((e) => e.shmmitzrach === shm);
+    navigate({
+      pathname: "calc",
+      search: createSearchParams({
+        shm: foodInfo?.code.toString() ?? "",
+        meal: mealType
+      }).toString(),
+    });
+  };
 
   return (
     <>
@@ -109,19 +134,14 @@ function SearchItems() {
             value={value}
             setValue={setValue}
             debounceValue={debounceValue}
+            query={query}
           />
 
           <DialogFooter>
             <Button
               type="submit"
               onClick={() => {
-                navigate({
-                  pathname: "calc",
-                  search: createSearchParams({
-                    shm: value,
-                    meal: mealType?.toString() ?? "",
-                  }).toString(),
-                });
+                handleSubmit(value, mealType?.toString() ?? "");
               }}
             >
               Save changes
