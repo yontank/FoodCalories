@@ -41,3 +41,11 @@ export enum TIME {
   AFTERNOON,
   EVENING,
 }
+
+export interface CalInfoProps {
+  protein: number;
+  total_fat: number;
+  carbohydrates: number;
+  food_energy: number;
+  size: number;
+}
