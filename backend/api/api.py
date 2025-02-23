@@ -29,8 +29,7 @@ def query_foods(food_query : str):
 
 @router.get('/foodInfo/{food_query}', response_model=Dict[str, QueryFood])
 def query_food(food_query: str):
-    
-    if food := session.query(moh_mitzrachim).filter(moh_mitzrachim.shmmitzrach.__eq__(food_query)).first():
+    if food := session.query(moh_mitzrachim).filter(moh_mitzrachim.code.__eq__(food_query)).first():
         return {'data': food}
     raise HTTPException(404, detail='item not found')
 
