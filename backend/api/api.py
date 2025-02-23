@@ -13,11 +13,9 @@ router = APIRouter()
 def list_food():
     
     if foods := session.query(moh_mitzrachim).limit(20).all():
-        try:  
-            return {'data': map(lambda food: ListFood.model_validate(food) , foods)}
-        except Exception as e:
-            print(e.errors())
-        raise HTTPException(403, 'Forbidden')
+        return {'data': map(lambda food: ListFood.model_validate(food) , foods)}
+
+    raise HTTPException(403, 'Forbidden')
             
 
 @router.get('/foods/{food_query}', response_model=Dict[str, List[QueryFood]])
