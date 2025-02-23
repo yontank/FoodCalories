@@ -18,7 +18,7 @@ class YehidaBase(BaseModel):
 class YehidotMidaMitzrachim(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     mida: int
-    mishkal: int
+    mishkal: float
     name: YehidaBase
 
 
