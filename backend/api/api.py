@@ -27,7 +27,7 @@ def query_foods(food_query : str):
     raise HTTPException(404, "food type wasnt found")
 
 
-@router.get('/food/{food_query}', response_model=Dict[str, QueryFood])
+@router.get('/foodInfo/{food_query}', response_model=Dict[str, QueryFood])
 def query_food(food_query: str):
     
     if food := session.query(moh_mitzrachim).filter(moh_mitzrachim.shmmitzrach.__eq__(food_query)).first():
