@@ -98,7 +98,7 @@ function SearchItems() {
                   <Button
                     className="rounded-full w-14 h-14"
                     onClick={() => {
-                      setMealType(TIME.AFTERNOON);
+                      setMealType(TIME.LUNCH);
                     }}
                   >
                     ADD
@@ -113,7 +113,7 @@ function SearchItems() {
                   <Button
                     className="rounded-full w-14 h-14"
                     onClick={() => {
-                      setMealType(TIME.EVENING);
+                      setMealType(TIME.DINNER);
                     }}
                   >
                     ADD

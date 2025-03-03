@@ -38,8 +38,8 @@ export interface ListFoodAPI {
 
 export enum TIME {
   BREAKFAST,
-  AFTERNOON,
-  EVENING,
+  LUNCH,
+  DINNER,
 }
 
 export interface CalInfoProps {

@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import CalorieInformation from "@/components/CalorieInformation";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 /**
  * Calcualte Calories of a speicifc food
  *
@@ -45,6 +46,7 @@ function Calc() {
   if (mealType == null || mealName === "") return <>Error</>;
   if (status == "pending") return <>Loading</>;
   if (status == "error") return <>Error</>;
+  console.log(data?.data);
 
   const midot = data?.data.midot.map((mida) => (
     <div className="flex item-center space-x-2">
@@ -66,6 +68,32 @@ function Calc() {
   const mida = data?.data.midot.find(
     (currUnit) => currUnit.name.shmmida === units
   );
+
+  const handleSubmit = async () => {
+    const amount = parseFloat(size);
+    const midaType = data?.data.midot.find((e) => e.name.shmmida == units);
+    console.log("MIDA_TYPE : ", midaType);
+
+    const response = await fetch("/v1/foodEaten", {
+      method: "POST",
+
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+        amount,
+        codeId: data?.data.code,
+        unitType: midaType?.name.smlmida,
+        mealType: parseInt(mealType),
+      }),
+    });
+
+    if (response.ok) {
+      console.log("SUCCESSESESESA");
+    }
+  };
 
   const calc = ((mida?.mishkal ?? 1) / 100) * parseFloat(size);
   console.log("CALC", calc);
@@ -101,6 +129,7 @@ function Calc() {
         </div>
       </CardContent>
       <CardFooter>
+        <Button onClick={handleSubmit}>נראה טוב!</Button>
         <p>Card Footer</p>
       </CardFooter>
     </Card>
