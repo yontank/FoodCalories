@@ -1,6 +1,7 @@
 from typing import Optional, List
 from pydantic import BaseModel, Field, ConfigDict
 from pydantic import (PositiveInt)
+from datetime import datetime
 
 
 class FoodBase(BaseModel):
@@ -37,6 +38,12 @@ class QueryFood(FoodBase):
     food_energy :Optional[PositiveInt]
     
     midot: List[YehidotMidaMitzrachim]
+    
+class FoodEaten(BaseModel):
+    code_id: int = Field(alias='codeId')
+    mida_id: int  = Field(alias='unitType')
+    amount: float
+    meal_type: int = Field(alias='mealType')
     
     
     

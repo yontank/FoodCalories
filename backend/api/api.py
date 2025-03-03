@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from db import session
 from models import *
 from schemas import *
-from sqlalchemy import func, orm
+
 
 
 router = APIRouter()
@@ -11,7 +11,6 @@ router = APIRouter()
 
 @router.get('/foods',response_model=Dict[str, List[ListFood]])
 def list_food():
-    
     if foods := session.query(moh_mitzrachim).limit(20).all():
         return {'data': map(lambda food: ListFood.model_validate(food) , foods)}
 
@@ -31,3 +30,20 @@ def query_food(food_query: str):
         return {'data': food}
     raise HTTPException(404, detail='item not found')
 
+
+
+
+
+
+@router.post('/foodEaten')
+async def add_meal_to_day(meal: FoodEaten):
+    updatedMeal = meals_eaten( code_id = meal.code_id,
+                              mida_id = meal.mida_id,
+                              amount = meal.amount,
+                              meal_type = meal_type(meal.meal_type)
+                              )
+    session.add(updatedMeal)
+    session.commit()
+    
+
+    
