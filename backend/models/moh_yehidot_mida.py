@@ -13,7 +13,8 @@ class Yehidot_Mida(Base):
     smlmida = Column(SmallInteger, primary_key=True, nullable=False)
     shmmida = Column(String(30))
     
+    mida = relationship('meals_eaten', back_populates='mida')
     
-    
+
     def __repr__(self):
         return f'<Yehidot_Mida | smlmida(id): {self.smlmida} shmmida: {self.shmmida}'

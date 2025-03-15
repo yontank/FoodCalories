@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from db import session
 from models import *
 from schemas import *
-
+from sqlalchemy import func
 
 
 router = APIRouter()
@@ -46,4 +46,10 @@ async def add_meal_to_day(meal: FoodEaten):
     session.commit()
     
 
+@router.get('/todayMeals')
+def today_meals():
+    todays_datetime = datetime(datetime.today().year, datetime.today().month, datetime.today().day)
+    get_eaten_today = session.query(meals_eaten).filter(meals_eaten.date >= todays_datetime).all()
     
+  
+    return None

@@ -25,10 +25,19 @@ import { ListFoodAPI, TIME } from "@/type";
 import { useDebounce } from "use-debounce";
 import { useQuery } from "@tanstack/react-query";
 import { createSearchParams, useNavigate } from "react-router";
+import { Plus } from "lucide-react";
+
+const eatenToday = async (): Promise<any> => {
+  const todayMeals = await fetch("/v1/todayMeals");
+  console.log("MEALS ", await todayMeals.json());
+};
 
 const listFoods = async (foodQuery: string): Promise<ListFoodAPI> => {
   const isFoodQuery = foodQuery?.length == 0;
-  const foods = await fetch("/v1/foods" + (isFoodQuery ? "" : "/" + foodQuery));
+
+  const foods = await fetch(
+    "/v1/foods" + (isFoodQuery ? "" : "/" + encodeURI(foodQuery))
+  );
 
   if (foods.ok) return await foods.json();
 
@@ -52,7 +61,7 @@ function SearchItems() {
       pathname: "calc",
       search: createSearchParams({
         shm: foodInfo?.code.toString() ?? "",
-        meal: mealType
+        meal: mealType,
       }).toString(),
     });
   };
@@ -66,7 +75,7 @@ function SearchItems() {
             <CardDescription>Counts Calories Of A Given Day</CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="h-full">
             <TotalCalorieProgress
               segments={[{ value: 10 }, { value: 50, color: "bg-red-500" }]}
             />
@@ -76,9 +85,9 @@ function SearchItems() {
               <Progress label="פחמימה" />
             </div>
             <Separator className="mt-3" />
-
-            <div id="food-container">
-              <div>
+  
+            <div id="food-container" className="gap-6 h-screen ">
+              <div className="-full h-1/5 border-dotted border-4 border-b-gray-600 mb-3">
                 <DialogTrigger asChild>
                   <Button
                     className="rounded-full w-14 h-14"
@@ -86,14 +95,13 @@ function SearchItems() {
                       setMealType(TIME.BREAKFAST);
                     }}
                   >
-                    ADD
-                    {/* <FaPlus /> */}
+                    <Plus />
                   </Button>
                 </DialogTrigger>
                 <h2 className="inline">ארוחת בוקר</h2>
               </div>
 
-              <div>
+              <div className="w-full h-1/5 border-dotted border-4 border-b-gray-600 mb-3">
                 <DialogTrigger asChild>
                   <Button
                     className="rounded-full w-14 h-14"
@@ -101,14 +109,13 @@ function SearchItems() {
                       setMealType(TIME.LUNCH);
                     }}
                   >
-                    ADD
-                    {/* <FaPlus /> */}
+                    <Plus />
                   </Button>
                 </DialogTrigger>
                 <h2 className="inline">ארוחת צהריים</h2>
               </div>
 
-              <div>
+              <div className="w-full h-1/5 border-dotted border-4 border-b-gray-600 mb-3">
                 <DialogTrigger asChild>
                   <Button
                     className="rounded-full w-14 h-14"
@@ -116,8 +123,7 @@ function SearchItems() {
                       setMealType(TIME.DINNER);
                     }}
                   >
-                    ADD
-                    {/* <FaPlus /> */}
+                    <Plus />
                   </Button>
                 </DialogTrigger>
                 <h2 className="inline">ארוחת ערב</h2>
