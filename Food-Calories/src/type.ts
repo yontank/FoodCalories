@@ -31,6 +31,14 @@ export interface ListFoodFull extends ListFoodBase {
   // sodium: number;
   // vitamin_a_iu: number;
 }
+export interface EatenTodayQuery {
+  date: Date;
+  meal_type: TIME;
+  mida: { smlmida: number; shmmida: string };
+  amount: number;
+  code: ListFoodFull;
+  mishkal : mishkal
+}
 
 export interface ListFoodAPI {
   data: ListFoodBase[];
@@ -48,4 +56,11 @@ export interface CalInfoProps {
   carbohydrates: number;
   food_energy: number;
   size: number;
+}
+
+export interface mishkal {
+  mida: number;
+  mishkal: number;
+
+  name: { smlmida: string; shmmida: string };
 }

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { UseQueryResult } from "@tanstack/react-query";
 import {
   Popover,
@@ -24,15 +23,34 @@ interface SearchBarProps {
   setValue: React.Dispatch<React.SetStateAction<string>>;
   debounceValue: string;
   query: UseQueryResult<ListFoodAPI, Error>;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function SearchBar({ value, setValue, query }: SearchBarProps) {
-  const [open, setOpen] = useState<boolean>(false);
-
+function SearchBar({ value, setValue, query, open, setOpen }: SearchBarProps) {
   const { data, status } = query;
 
   if (status === "error") return <h3>Error</h3>;
- 
+
+  const item = data?.data.map((food) => (
+    <CommandItem
+      key={food.code}
+      value={food.shmmitzrach}
+      onSelect={(currentValue) => {
+        setValue(currentValue === value ? "" : currentValue);
+        // setOpen(false);
+      }}
+    >
+      {food.shmmitzrach}
+      <Check
+        className={cn(
+          "ml-auto",
+          value === food.shmmitzrach ? "opacity-100" : "opacity-0"
+        )}
+      />
+    </CommandItem>
+  ));
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -48,7 +66,7 @@ function SearchBar({ value, setValue, query }: SearchBarProps) {
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[800px] p-0">
+      <PopoverContent className="w-[800px] p-0 z-50">
         <Command>
           <CommandInput
             placeholder="Search food..."
@@ -56,28 +74,9 @@ function SearchBar({ value, setValue, query }: SearchBarProps) {
             value={value}
             onValueChange={setValue}
           />
-          <CommandList>
-            <CommandEmpty>No food found.</CommandEmpty>
-            <CommandGroup>
-              {data?.data.map((food) => (
-                <CommandItem
-                  key={food.code}
-                  value={food.shmmitzrach}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
-                    setOpen(false);
-                  }}
-                >
-                  {food.shmmitzrach}
-                  <Check
-                    className={cn(
-                      "ml-auto",
-                      value === food.shmmitzrach ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
+          <CommandList className="">
+            <CommandEmpty>בחר מוצר</CommandEmpty>
+            <CommandGroup className="">{item}</CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>

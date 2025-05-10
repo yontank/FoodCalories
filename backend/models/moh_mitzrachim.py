@@ -40,9 +40,9 @@ class moh_mitzrachim(Base):
     updatedat = Column(DateTime(True))
     midot = relationship(yehidot_mida_lemitzrachim)
     
-    meals_eaten = relationship('meals_eaten',back_populates='code')
+    meals_eaten = relationship('meals_eaten', back_populates='code')
     
     def __repr__(self):
-        return f'<Mitzrahim | code(id): {self.code} sml: {self.smlmitzrach} shmm:{self.shmmitzrach}, codes:{self.midot}>'
+        return f'\n<Mitzrahim | code(id): {self.code} sml: {self.smlmitzrach} shmm:{self.shmmitzrach}, codes:{self.midot}>\n'
     
     
