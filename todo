@@ -1,0 +1,27 @@
+# Backend
+
+- Authentication Endpoint, JWT? 
+- API Endpoints for charts, food, weight tracking, food tracking, user management etc,
+- tests dbs 
+
+
+
+# FrontEnd
+- UI for tracking food intake, weight, viewing charts, user profile management etc.
+- Tests for UI components
+
+
+# Other
+- [ ]  CI \ CD
+
+testing, 
+deployment
+
+
+
+- adding users to databases
+- Register User Flow 
+- 
+
+Tech Stack : 
+    
