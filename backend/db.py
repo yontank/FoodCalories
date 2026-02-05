@@ -6,7 +6,7 @@ import json
 from datetime import date
 
 engine = create_engine(
-    "postgresql://postgres:postgres@127.0.0.1:5432/FoodCaloriesDev")
+    "postgresql://postgres:postgres@127.0.0.1:5432/foodcaloriesdev")
 print(engine)
 
 
