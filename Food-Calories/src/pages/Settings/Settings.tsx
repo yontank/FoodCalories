@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import CALORIES from "@/data/settings.json";
 
-function Settings() {
+export function Settings() {
   const {
     register,
     handleSubmit,
@@ -62,5 +62,3 @@ function Settings() {
     </form>
   );
 }
-
-export default Settings;
