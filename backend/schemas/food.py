@@ -45,5 +45,9 @@ class FoodEaten(BaseModel):
     amount: float
     meal_type: int = Field(alias='mealType')
     
+
+class GetFoodEatenToday(BaseModel):
+    pass
+    
     
     

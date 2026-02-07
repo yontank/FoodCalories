@@ -51,5 +51,4 @@ def today_meals():
     todays_datetime = datetime(datetime.today().year, datetime.today().month, datetime.today().day)
     get_eaten_today = session.query(meals_eaten).filter(meals_eaten.date >= todays_datetime).all()
     
-  
-    return None
+    return get_eaten_today
