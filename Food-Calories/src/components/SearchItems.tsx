@@ -66,6 +66,8 @@ function SearchItems() {
     });
   };
 
+  eatenToday();
+
   return (
     <>
       <Dialog>

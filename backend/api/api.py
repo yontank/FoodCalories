@@ -1,8 +1,8 @@
 from typing import Dict, List
 from fastapi import APIRouter, HTTPException
 from db import session
-from models import *
 from schemas import *
+from models import *
 from sqlalchemy import func
 
 
