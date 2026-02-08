@@ -37,7 +37,7 @@ const listFoods = async (foodQuery: string): Promise<ListFoodAPI> => {
   const isFoodQuery = foodQuery?.length == 0;
 
   const foods = await fetch(
-    "/v1/foods" + (isFoodQuery ? "" : "/" + encodeURI(foodQuery))
+    "/v1/foods" + (isFoodQuery ? "" : "/" + encodeURI(foodQuery)),
   );
 
   if (foods.ok) return await foods.json();
@@ -93,10 +93,9 @@ function SearchItems() {
   return (
     <>
       <Dialog>
-        <Card className="w-screen">
+        <Card className="w-full">
           <CardHeader>
-            <CardTitle>Count calories</CardTitle>
-            <CardDescription>Counts Calories Of A Given Day</CardDescription>
+            <CardTitle>קלוריות מהיום</CardTitle>
           </CardHeader>
 
           <CardContent className="h-full">
@@ -127,7 +126,7 @@ function SearchItems() {
             <div id="food-container" className="gap-6 h-screen">
               <MealsEatenContainer
                 eatenFood={query[1].data?.data.filter(
-                  (e) => e.meal_type === TIME.BREAKFAST
+                  (e) => e.meal_type === TIME.BREAKFAST,
                 )}
                 time={TIME.BREAKFAST}
                 setMealType={setMealType}
@@ -135,7 +134,7 @@ function SearchItems() {
               />
               <MealsEatenContainer
                 eatenFood={query[1].data?.data.filter(
-                  (e) => e.meal_type === TIME.LUNCH
+                  (e) => e.meal_type === TIME.LUNCH,
                 )}
                 time={TIME.LUNCH}
                 setMealType={setMealType}
@@ -144,7 +143,7 @@ function SearchItems() {
 
               <MealsEatenContainer
                 eatenFood={query[1].data?.data.filter(
-                  (e) => e.meal_type === TIME.DINNER
+                  (e) => e.meal_type === TIME.DINNER,
                 )}
                 time={TIME.DINNER}
                 setMealType={setMealType}
