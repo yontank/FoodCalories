@@ -26,35 +26,39 @@ function MealsEatenContainer({
 
       <p>
         קלוריות{" "}
-        {((e.mishkal.mishkal / 100) * e.amount * e.code.food_energy).toFixed(2)}{" "}
+        {((e.mishkal.mishkal / 100) * e.amount * e.code.food_energy).toFixed(
+          2,
+        )}{" "}
       </p>
 
       <p>
         פחמימות{" "}
         {((e.mishkal.mishkal / 100) * e.amount * e.code.carbohydrates).toFixed(
-          2
+          2,
         )}{" "}
       </p>
 
       <p>
         חלבון{" "}
-        {((e.mishkal.mishkal / 100) * e.amount * e.code.protein).toFixed(2)}{" "}
+        {((e.mishkal.mishkal / 100) * e.amount * e.code.protein).toFixed(
+          2,
+        )}{" "}
       </p>
 
       <p>
         שומן
         {((e.mishkal.mishkal / 100) * e.amount * e.code.total_fat).toFixed(
-          2
+          2,
         )}{" "}
       </p>
     </div>
   ));
 
   return (
-    <div className="w-full h-1/4 border-dotted border-4 border-b-gray-600 mb-3">
+    <div className="rounded-xl border-4 p-2">
       <DialogTrigger asChild>
         <Button
-          className="rounded-full w-14 h-14"
+          className="rounded-full w-14 h-14 me-3"
           onClick={() => {
             setMealType(time);
           }}

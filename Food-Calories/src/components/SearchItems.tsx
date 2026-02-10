@@ -122,8 +122,7 @@ function SearchItems() {
                 value={(carbSum! / CALORIES.total_grams_carbs) * 100}
               />
             </div>
-            <Separator className="mt-3" />
-            <div id="food-container" className="gap-6 h-screen">
+            <div id="food-container" className="gap-6 mt-3">
               <MealsEatenContainer
                 eatenFood={query[1].data?.data.filter(
                   (e) => e.meal_type === TIME.BREAKFAST,
@@ -153,7 +152,7 @@ function SearchItems() {
           </CardContent>
         </Card>
 
-        <DialogContent className="sm:max-w-[950px] z-50">
+        <DialogContent className="z-50">
           <DialogHeader>
             <DialogTitle>מה אכלת היום?</DialogTitle>
           </DialogHeader>
@@ -175,7 +174,7 @@ function SearchItems() {
                 handleSubmit(value, mealType?.toString() ?? "");
               }}
             >
-              Save changes
+              הוספה
             </Button>
           </DialogFooter>
         </DialogContent>

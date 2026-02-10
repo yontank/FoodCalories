@@ -45,7 +45,7 @@ function SearchBar({ value, setValue, query, open, setOpen }: SearchBarProps) {
       <Check
         className={cn(
           "ml-auto",
-          value === food.shmmitzrach ? "opacity-100" : "opacity-0"
+          value === food.shmmitzrach ? "opacity-100" : "opacity-0",
         )}
       />
     </CommandItem>
@@ -58,7 +58,7 @@ function SearchBar({ value, setValue, query, open, setOpen }: SearchBarProps) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[800px] justify-between"
+          className="justify-between"
         >
           {value
             ? data?.data.find((food) => food.shmmitzrach === value)?.shmmitzrach
@@ -66,7 +66,7 @@ function SearchBar({ value, setValue, query, open, setOpen }: SearchBarProps) {
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[800px] p-0 z-50">
+      <PopoverContent className="p-0 z-50">
         <Command>
           <CommandInput
             placeholder="Search food..."
