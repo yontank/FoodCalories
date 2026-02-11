@@ -2,20 +2,20 @@ import React from "react";
 import { Button } from "./ui/button";
 import { DialogTrigger } from "./ui/dialog";
 import { Plus } from "lucide-react";
-import { EatenTodayQuery, TIME } from "../type";
+import { EatenTodayQuery, MealTime } from "../type";
 
 interface MealsEatenContainerProps {
-  setMealType: React.Dispatch<React.SetStateAction<TIME | undefined>>;
-  time: TIME;
+  setDialogMealTime: React.Dispatch<React.SetStateAction<MealTime | undefined>>;
+  mealTime: MealTime;
   title: string;
   eatenFood: EatenTodayQuery[];
 }
 
-function MealsEatenContainer({
+export function MealsEatenContainer({
   title,
   eatenFood,
-  setMealType,
-  time,
+  setDialogMealTime,
+  mealTime,
 }: MealsEatenContainerProps) {
   const eatenToday = eatenFood.map((e) => (
     <div className="border-solid border-2 border-red-50 h-auto w-fit text-center">
@@ -60,7 +60,7 @@ function MealsEatenContainer({
         <Button
           className="rounded-full w-14 h-14 me-3"
           onClick={() => {
-            setMealType(time);
+            setDialogMealTime(mealTime);
           }}
         >
           <Plus />
@@ -71,5 +71,3 @@ function MealsEatenContainer({
     </div>
   );
 }
-
-export default MealsEatenContainer;

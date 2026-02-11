@@ -1,7 +1,7 @@
-import SearchItems from "@/components/SearchItems";
+import { FoodDayViewer } from "@/components/FoodDayViewer";
 
 function Dashboard() {
-  return <SearchItems />;
+  return <FoodDayViewer />;
 }
 
 export default Dashboard;

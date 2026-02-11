@@ -33,18 +33,18 @@ export interface ListFoodFull extends ListFoodBase {
 }
 export interface EatenTodayQuery {
   date: Date;
-  meal_type: TIME;
+  meal_type: MealTime;
   mida: { smlmida: number; shmmida: string };
   amount: number;
   code: ListFoodFull;
-  mishkal : mishkal
+  mishkal: mishkal;
 }
 
 export interface ListFoodAPI {
   data: ListFoodBase[];
 }
 
-export enum TIME {
+export enum MealTime {
   BREAKFAST,
   LUNCH,
   DINNER,
@@ -63,4 +63,15 @@ export interface mishkal {
   mishkal: number;
 
   name: { smlmida: string; shmmida: string };
+}
+
+export function mealTimeToString(mealTime: MealTime) {
+  switch (mealTime) {
+    case MealTime.BREAKFAST:
+      return "בוקר";
+    case MealTime.LUNCH:
+      return "צהריים";
+    case MealTime.DINNER:
+      return "ערב";
+  }
 }
