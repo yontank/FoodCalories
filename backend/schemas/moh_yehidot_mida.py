@@ -1,20 +1,25 @@
-from datetime import datetime
-from sqlalchemy import Column, String,SmallInteger, Integer, ForeignKey, Enum, DateTime, Boolean
-from sqlalchemy.orm import relationship
+from typing import override
+from sqlalchemy import String, SmallInteger
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .based import Base
-from .moh_yehidot_mida_lemitzrachim import yehidot_mida_lemitzrachim
-from .moh_mitzrachim import moh_mitzrachim
 
 
-class Yehidot_Mida(Base):
-    __tablename__ = "moh_yehidot_mida"
-    __table_args__ = {'extend_existing': True}
-    
-    smlmida = Column(SmallInteger, primary_key=True, nullable=False)
-    shmmida = Column(String(30))
-    
-    mida = relationship('meals_eaten', back_populates='mida')
-    
+class YehidotMida(Base):
+    """
+    A Scema which contains many different meal sizes, and its id.
+    where smlmida is the id of the meal size, and shmmida is the name of the meal size.
+    This table is used to get the calories of the meal,
+    by connecting between the food and the size of the meal
+    """
+    __tablename__: str = "moh_yehidot_mida"
+    __table_args__: dict[str, bool] = {'extend_existing': True}
 
-    def __repr__(self):
-        return f'<Yehidot_Mida | smlmida(id): {self.smlmida} shmmida: {self.shmmida}'
+    smlmida: Mapped[int] = mapped_column(
+        SmallInteger, primary_key=True, nullable=False)
+    shmmida: Mapped[str] = mapped_column(String(30))
+
+    mida = relationship('MealsEaten', back_populates='mida')
+
+    @override
+    def __repr__(self) -> str:
+        return f'<Yehidot_Mida | smlmida(id): {self.smlmida} shmmida: {self.shmmida}>'

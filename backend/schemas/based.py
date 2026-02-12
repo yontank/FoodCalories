@@ -1,3 +1,6 @@
-from sqlalchemy.orm import declarative_base
+"""Initialize the Base class for SQLAlchemy models."""
+from sqlalchemy.orm import DeclarativeBase
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    """default Base class using SQLALchemy 2.0"""

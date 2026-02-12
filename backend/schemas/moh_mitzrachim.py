@@ -1,48 +1,62 @@
-from sqlalchemy import create_engine, SmallInteger, Column, Integer, String, DateTime, Table, DOUBLE_PRECISION
-from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-from .based import Base
-from .moh_yehidot_mida_lemitzrachim import yehidot_mida_lemitzrachim
+"""Schema table for the food information in the database and application"""
+from typing import override
+from sqlalchemy import SmallInteger, Integer, String, DateTime, DOUBLE_PRECISION
+from sqlalchemy.orm import mapped_column, relationship, Mapped
+from ..schemas.based import Base
+from .moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
 
-class moh_mitzrachim(Base):
-    __tablename__ = "moh_mitzrachim"
 
-    code = Column(SmallInteger, primary_key=True)
-    smlmitzrach = Column(Integer())
-    shmmitzrach = Column(String(255))
-    makor = Column(SmallInteger())
+class MohMitzrachim(Base):
+    """_summary_
+    A Valid Schema for table in the databse using SQLAlchemy,
+    This table should contain the food information, with its id, name, and calories.
+    Also, this table contains all the different nutrients of the food (as a single gram).
 
-    protein = Column(DOUBLE_PRECISION)
-    total_fat = Column(DOUBLE_PRECISION)
-    carbohydrates = Column(DOUBLE_PRECISION)
-    food_energy = Column(SmallInteger)
-    alcohol = Column(DOUBLE_PRECISION)
+    for now, most variable names make sense,
 
-    total_dietary_fiber = Column(DOUBLE_PRECISION)
-    calcium = Column(DOUBLE_PRECISION)
-    iron = Column(DOUBLE_PRECISION)
-    magnesium = Column(DOUBLE_PRECISION)
-    sodium = Column(DOUBLE_PRECISION)
-    cholesterol = Column(DOUBLE_PRECISION)
-    saturated_fat = Column(DOUBLE_PRECISION)
-    fructose = Column(DOUBLE_PRECISION)
+    smlmitrach : i dont know what this is, im thinking its the QR bar, will check later.
+    shmmitzrach: the name of the food.
 
-    vitamin_a_iu = Column(DOUBLE_PRECISION)
-    vitamin_e = Column(DOUBLE_PRECISION)
-    vitamin_c = Column(DOUBLE_PRECISION)
-    vitamin_b6 = Column(DOUBLE_PRECISION)
-    
-    vitamin_b12 = Column(DOUBLE_PRECISION)
-    vitamin_k = Column(DOUBLE_PRECISION)
 
-    english_name = Column(String(255))
+    """
+    __tablename__: str = "moh_mitzrachim"
 
-    tarich_ptiha = Column(DateTime(True))
-    updatedat = Column(DateTime(True))
-    midot = relationship(yehidot_mida_lemitzrachim)
-    
-    meals_eaten = relationship('meals_eaten',back_populates='code')
-    
-    def __repr__(self):
+    code: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    smlmitzrach: Mapped[int] = mapped_column(Integer())
+    shmmitzrach: Mapped[str] = mapped_column(String(255))
+    makor: Mapped[int] = mapped_column(SmallInteger())
+
+    protein: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    total_fat: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    carbohydrates: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    food_energy: Mapped[float] = mapped_column(SmallInteger)
+    alcohol: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+
+    total_dietary_fiber: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    calcium: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    iron: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    magnesium: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    sodium: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    cholesterol: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    saturated_fat: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    fructose: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+
+    vitamin_a_iu: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    vitamin_e: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    vitamin_c: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    vitamin_b6: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+
+    vitamin_b12: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+    vitamin_k: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+
+    english_name: Mapped[str] = mapped_column(String(255))
+
+    tarich_ptiha = mapped_column(DateTime(True))
+    updatedat = mapped_column(DateTime(True))
+    midot = relationship(YehidotMidaLemitzrachim)
+
+    meals_eaten = relationship('MealsEaten', back_populates='code')
+
+    @override
+    def __repr__(self) -> str:
         return f'<Mitzrahim | code(id): {self.code} sml: {self.smlmitzrach} shmm:{self.shmmitzrach}, codes:{self.midot}>'
-    
-    
