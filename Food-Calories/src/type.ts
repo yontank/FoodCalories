@@ -5,6 +5,12 @@ export interface ListFoodBase {
   english_name: string;
 }
 
+export interface Mida {
+  mishkal: number;
+  mida: number;
+  name: { smlmida: number; shmmida: string };
+}
+
 export interface ListFoodFull extends ListFoodBase {
   // makor: number;
   // edible: number;
@@ -16,11 +22,7 @@ export interface ListFoodFull extends ListFoodBase {
   carbohydrates: number;
   food_energy: number;
 
-  midot: {
-    mishkal: number;
-    mida: number;
-    name: { smlmida: number; shmmida: string };
-  }[];
+  midot: Mida[];
 
   // alcohol: number;
   // moisture: number;

@@ -6,75 +6,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ListFoodFull } from "@/type";
+import { ListFoodFull, Mida } from "@/type";
 import { useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import CalorieInformation from "@/components/CalorieInformation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
 /**
  * Calcualte Calories of a speicifc food
- *
- * @var food the type of food in question, containing all its nutritions.
- * @var units The type of units times 1 gram.
- * @returns
  */
-const findFoodNutritions = async (
-  foodQuery: string
-): Promise<{ data: ListFoodFull } | undefined> => {
+const getFoodInfo = async (
+  foodQuery: string,
+): Promise<ListFoodFull | undefined> => {
   const food = await fetch("/v1/foodInfo/" + foodQuery);
 
-  if (food.ok) return food.json();
+  if (food.ok) return ((await food.json()) as { data: ListFoodFull }).data;
 
   return undefined;
 };
 
 function Calc() {
-  const [units, setUnits] = useState<string>("");
-  const [size, setSize] = useState<string>("1");
+  const [selectedUnit, setSelectedUnit] = useState<Mida | undefined>();
+  const [amountInput, setAmountInput] = useState<string>("1");
   const [searchParams] = useSearchParams();
   const mealType = searchParams.get("meal");
   const mealName = searchParams.get("shm");
 
   const { data, status } = useQuery({
     queryKey: ["getFood"],
-    queryFn: () => findFoodNutritions(mealName ?? ""),
+    queryFn: () => getFoodInfo(mealName ?? ""),
   });
 
   if (mealType == null || mealName === "") return <>Error</>;
   if (status == "pending") return <>Loading</>;
-  if (status == "error") return <>Error</>;
-  console.log(data?.data);
-
-  const midot = data?.data.midot.map((mida) => (
-    <div className="flex item-center space-x-2">
-      <RadioGroupItem
-        key={mida.name.smlmida}
-        value={mida.name.shmmida}
-        id={mida.name.smlmida.toString()}
-        onClick={() => setUnits(mida.name.shmmida)}
-      />
-      <Label htmlFor={mida.name.smlmida.toString()}>
-        {mida.name.shmmida + " (" + mida.mishkal + "גרם" + ") "}
-      </Label>
-    </div>
-  ));
-  const setSizeChange = (value: string) => {
-    if (value.length === 0) setSize("1");
-    else setSize(value);
-  };
-  const mida = data?.data.midot.find(
-    (currUnit) => currUnit.name.shmmida === units
-  );
+  if (status == "error" || data === undefined) return <>Error</>;
 
   const handleSubmit = async () => {
-    const amount = parseFloat(size);
-    const midaType = data?.data.midot.find((e) => e.name.shmmida == units);
-    console.log("MIDA_TYPE : ", midaType);
+    if (!selectedUnit) {
+      return;
+    }
 
-    const response = await fetch("/v1/foodEaten", {
+    const amount = parseFloat(amountInput);
+
+    await fetch("/v1/foodEaten", {
       method: "POST",
 
       headers: {
@@ -84,53 +60,67 @@ function Calc() {
 
       body: JSON.stringify({
         amount,
-        codeId: data?.data.code,
-        unitType: midaType?.name.smlmida,
+        codeId: data.code,
+        unitType: selectedUnit.name.smlmida,
         mealType: parseInt(mealType),
       }),
     });
-
-    if (response.ok) {
-      console.log("SUCCESSESESESA");
-    }
   };
 
-  const calc = ((mida?.mishkal ?? 1) / 100) * parseFloat(size);
-  console.log("CALC", calc);
+  const amount = ((selectedUnit?.mishkal ?? 1) / 100) * parseFloat(amountInput);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{data?.data.shmmitzrach}</CardTitle>
+        <CardTitle>{data.shmmitzrach}</CardTitle>
       </CardHeader>
       <CardContent>
-        <CalorieInformation
-          carbohydrates={data?.data.carbohydrates ?? 0}
-          total_fat={data?.data.total_fat ?? 0}
-          food_energy={data?.data.food_energy ?? 0}
-          protein={data?.data.protein ?? 0}
-          size={calc}
-        />
+        <div className="flex justify-around flex-row-reverse">
+          <div>קלוריות: {(data.food_energy * amount).toFixed(2)} </div>
 
-        <div className="flex  pt-8 justify-around">
-          <RadioGroup value={units}>{midot}</RadioGroup>
+          <div className="flex flex-col align-evenly">
+            <Label>פחמימה: {(data.carbohydrates * amount).toFixed(2)}</Label>
 
-          <div className="flex items-center gap-x-2 ">
+            <Label>חלבון: {(data.protein * amount).toFixed(2)} </Label>
+
+            <Label>שומן: {(data.total_fat * amount).toFixed(2)}</Label>
+          </div>
+        </div>
+
+        <div className="flex pt-8 justify-around">
+          <RadioGroup value={selectedUnit?.name.shmmida}>
+            {data.midot.map((mida) => (
+              <div key={mida.mida} className="flex item-center space-x-2">
+                <RadioGroupItem
+                  key={mida.name.smlmida}
+                  value={mida.name.shmmida}
+                  id={mida.name.smlmida.toString()}
+                  onClick={() => setSelectedUnit(mida)}
+                />
+                <Label htmlFor={mida.name.smlmida.toString()}>
+                  {mida.name.shmmida + " (" + mida.mishkal + "גרם" + ") "}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+
+          <div className="flex items-center gap-x-2">
             <Input
               placeholder="Units"
               type="number"
               min={0}
               step={0.1}
-              defaultValue={1}
-              value={size}
-              onChange={(e) => setSizeChange(e.target.value)}
+              value={amountInput}
+              onChange={(e) => setAmountInput(e.target.value)}
             />
-            <Label>{units}</Label>
+            <Label>{selectedUnit?.name.shmmida}</Label>
           </div>
         </div>
       </CardContent>
       <CardFooter>
-        <Button onClick={handleSubmit}>נראה טוב!</Button>
-        <p>Card Footer</p>
+        <Button disabled={!selectedUnit} onClick={handleSubmit}>
+          נראה טוב!
+        </Button>
       </CardFooter>
     </Card>
   );
