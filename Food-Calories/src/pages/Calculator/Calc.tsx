@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ListFoodFull, Mida } from "@/type";
-import { useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,8 @@ function Calc() {
   const mealType = searchParams.get("meal");
   const mealName = searchParams.get("shm");
 
+  const navigate = useNavigate();
+
   const { data, status } = useQuery({
     queryKey: ["getFood", mealName],
     queryFn: () => getFoodInfo(mealName ?? ""),
@@ -57,7 +59,7 @@ function Calc() {
 
     const amount = parseFloat(amountInput);
 
-    await fetch("/v1/foodEaten", {
+    const res = await fetch("/v1/foodEaten", {
       method: "POST",
 
       headers: {
@@ -72,6 +74,10 @@ function Calc() {
         mealType: parseInt(mealType),
       }),
     });
+
+    if (res.ok) {
+      navigate("/");
+    }
   };
 
   const amount =
