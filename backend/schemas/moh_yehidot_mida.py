@@ -2,6 +2,7 @@ from typing import override
 from sqlalchemy import String, SmallInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .based import Base
+from .meals_eaten import MealsEaten
 
 
 class YehidotMida(Base):
@@ -18,7 +19,7 @@ class YehidotMida(Base):
         SmallInteger, primary_key=True, nullable=False)
     shmmida: Mapped[str] = mapped_column(String(30))
 
-    mida = relationship('MealsEaten', back_populates='mida')
+    mida: Mapped['MealsEaten'] = relationship(back_populates='mida')
 
     @override
     def __repr__(self) -> str:

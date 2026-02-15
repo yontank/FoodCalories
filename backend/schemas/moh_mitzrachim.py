@@ -1,9 +1,11 @@
 """Schema table for the food information in the database and application"""
+from datetime import datetime
 from typing import override
 from sqlalchemy import SmallInteger, Integer, String, DateTime, DOUBLE_PRECISION
 from sqlalchemy.orm import mapped_column, relationship, Mapped
 from ..schemas.based import Base
 from .moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
+from .meals_eaten import MealsEaten
 
 
 class MohMitzrachim(Base):
@@ -51,11 +53,11 @@ class MohMitzrachim(Base):
 
     english_name: Mapped[str] = mapped_column(String(255))
 
-    tarich_ptiha = mapped_column(DateTime(True))
-    updatedat = mapped_column(DateTime(True))
-    midot = relationship(YehidotMidaLemitzrachim)
+    tarich_ptiha: Mapped[datetime] = mapped_column(DateTime(True))
+    midot: Mapped[list["YehidotMidaLemitzrachim"]] = relationship()
 
-    meals_eaten = relationship('MealsEaten', back_populates='code')
+    meals_eaten: Mapped["MealsEaten"] = relationship(
+        'MealsEaten', back_populates='code')
 
     @override
     def __repr__(self) -> str:

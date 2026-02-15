@@ -1,4 +1,4 @@
-"""
+"""  
 This file contains the meals_eaten table, which tells which type of meal the user has eaten,
 to write to the database
 """
@@ -9,7 +9,7 @@ from sqlalchemy import SmallInteger, DOUBLE_PRECISION, Enum, ForeignKey, TIMESTA
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .moh_mitzrachim import MohMitzrachim
 from .moh_yehidot_mida import YehidotMida
-from .based import Base
+from .based import Base, CommonColumnsMixin
 
 
 class MealType(enum.Enum):
@@ -23,7 +23,7 @@ class MealType(enum.Enum):
     DINNER = 2
 
 
-class MealsEaten(Base):
+class MealsEaten(CommonColumnsMixin, Base):
     """_summary_
     A Valid Schema for table in the databse using SQLAlchemy,
     This table should contain the meals eaten by the user,
@@ -35,6 +35,7 @@ class MealsEaten(Base):
 
     id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
 
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     code_id: Mapped[int] = mapped_column(
         SmallInteger, ForeignKey(MohMitzrachim.code))
     mida_id: Mapped[int] = mapped_column(
@@ -43,7 +44,7 @@ class MealsEaten(Base):
     amount: Mapped[float] = mapped_column(DOUBLE_PRECISION)
     meal_type: Mapped[int] = mapped_column(Enum(MealType))
 
-    date = mapped_column(TIMESTAMP(
+    date: Mapped[datetime.datetime] = mapped_column(TIMESTAMP(
         timezone=True), default=datetime.datetime.now())
 
     code: Mapped[str] = relationship(

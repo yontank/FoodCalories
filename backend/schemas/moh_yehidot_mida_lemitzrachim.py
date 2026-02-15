@@ -13,10 +13,11 @@ class YehidotMidaLemitzrachim(Base):
     by connecting between the food and the size of the meal,
     to get the calories of the meal.   
 
-    
+
     mmitzrach: the id of the food, which is a foreign key to moh_mitzrachim.code.
     mida: the id of the meal size, which is a foreign key to moh_yehidot_mida.smlmida.
-    mishkal: the weight of the meal size in grams, which is used to calculate the calories of the meal.
+    mishkal: the weight of the meal size in grams,
+    which is used to calculate the calories of the meal.
     """
     __tablename__: str = 'moh_yehidot_mida_lemitzrachim'
 
