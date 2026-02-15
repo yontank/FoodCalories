@@ -9,10 +9,17 @@ import {
 import { ListFoodFull, Mida } from "@/type";
 import { useSearchParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 /**
  * Calcualte Calories of a speicifc food
@@ -35,7 +42,7 @@ function Calc() {
   const mealName = searchParams.get("shm");
 
   const { data, status } = useQuery({
-    queryKey: ["getFood"],
+    queryKey: ["getFood", mealName],
     queryFn: () => getFoodInfo(mealName ?? ""),
   });
 
@@ -67,7 +74,9 @@ function Calc() {
     });
   };
 
-  const amount = ((selectedUnit?.mishkal ?? 1) / 100) * parseFloat(amountInput);
+  const amount =
+    selectedUnit &&
+    ((selectedUnit.mishkal ?? 1) / 100) * parseFloat(amountInput);
 
   return (
     <Card>
@@ -75,47 +84,55 @@ function Calc() {
         <CardTitle>{data.shmmitzrach}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-around flex-row-reverse">
-          <div>קלוריות: {(data.food_energy * amount).toFixed(2)} </div>
-
-          <div className="flex flex-col align-evenly">
-            <Label>פחמימה: {(data.carbohydrates * amount).toFixed(2)}</Label>
-
-            <Label>חלבון: {(data.protein * amount).toFixed(2)} </Label>
-
-            <Label>שומן: {(data.total_fat * amount).toFixed(2)}</Label>
-          </div>
-        </div>
-
-        <div className="flex pt-8 justify-around">
-          <RadioGroup value={selectedUnit?.name.shmmida}>
-            {data.midot.map((mida) => (
-              <div key={mida.mida} className="flex item-center space-x-2">
-                <RadioGroupItem
-                  key={mida.name.smlmida}
-                  value={mida.name.shmmida}
-                  id={mida.name.smlmida.toString()}
-                  onClick={() => setSelectedUnit(mida)}
-                />
-                <Label htmlFor={mida.name.smlmida.toString()}>
-                  {mida.name.shmmida + " (" + mida.mishkal + "גרם" + ") "}
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
-
+        כמה אכלת?
+        <div className="flex mb-8">
           <div className="flex items-center gap-x-2">
             <Input
-              placeholder="Units"
               type="number"
               min={0}
-              step={0.1}
+              step={1}
               value={amountInput}
               onChange={(e) => setAmountInput(e.target.value)}
+              className="w-[6em]"
             />
-            <Label>{selectedUnit?.name.shmmida}</Label>
           </div>
+          <Select
+            value={selectedUnit?.name.shmmida}
+            onValueChange={(v) =>
+              setSelectedUnit(data.midot.find((u) => u.name.shmmida == v))
+            }
+          >
+            <SelectTrigger className="w-full max-w-48">
+              <SelectValue placeholder="בחר מידה" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>מידות</SelectLabel>
+                {data.midot.map((item) => (
+                  <SelectItem key={item.mida} value={item.name.shmmida}>
+                    {item.name.shmmida}{" "}
+                    <span className="text-neutral-500 text-xs">
+                      ({item.mishkal}) גרם
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
+        {amount && (
+          <div className="flex justify-between flex-row-reverse">
+            <div>קלוריות: {(data.food_energy * amount).toFixed(2)} </div>
+
+            <div className="flex flex-col">
+              <div>פחמימה: {(data.carbohydrates * amount).toFixed(2)}</div>
+
+              <div>חלבון: {(data.protein * amount).toFixed(2)} </div>
+
+              <div>שומן: {(data.total_fat * amount).toFixed(2)}</div>
+            </div>
+          </div>
+        )}
       </CardContent>
       <CardFooter>
         <Button disabled={!selectedUnit} onClick={handleSubmit}>
