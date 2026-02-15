@@ -5,7 +5,7 @@ from sqlalchemy import SmallInteger, Integer, String, DateTime, DOUBLE_PRECISION
 from sqlalchemy.orm import mapped_column, relationship, Mapped
 from ..schemas.based import Base
 from .moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
-from .meals_eaten import MealsEaten
+# from .meals_eaten import MealsEaten
 
 
 class MohMitzrachim(Base):
@@ -56,7 +56,7 @@ class MohMitzrachim(Base):
     tarich_ptiha: Mapped[datetime] = mapped_column(DateTime(True))
     midot: Mapped[list["YehidotMidaLemitzrachim"]] = relationship()
 
-    meals_eaten: Mapped["MealsEaten"] = relationship(
+    meals_eaten: Mapped["MealsEaten"] = relationship(  # pyright: ignore[reportUndefinedVariable]
         'MealsEaten', back_populates='code')
 
     @override

@@ -267,7 +267,7 @@ async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]):
 
 
 @router.post(path="/refresh", status_code=HTTP_200_OK)
-async def refresh(refresh_token: str = Cookie(...)):
+async def refresh(response: Response, refresh_token: str = Cookie(...)):
     # NOTE: All of this should happen without the user having to do anything.
 
     # 1) Check Inside the databse that we made this refresh token
@@ -286,24 +286,32 @@ async def refresh(refresh_token: str = Cookie(...)):
         if not username:
             raise HTTPException(403, "not a valid refresh token")
 
-        stmt = (
-            select(RefreshTokens)
-            .join(User)
-            .where(User.username == username)
-            .where(RefreshTokens.revoked == false())
-            .where(RefreshTokens.user_id == User.id)
-        )
+        # stmt = (
+        #     select(RefreshTokens)
+        #     .join(User)
+        #     .where(User.username == username)
+        #     .where(RefreshTokens.revoked == false())
+        #     .where(RefreshTokens.user_id == User.id)
+        # )
 
-        result = session.execute(stmt).scalar_one_or_none()
+        # result = session.execute(stmt).scalar_one_or_none()
 
-        if not result:
-            raise HTTPException(403, "not a valid refresh token")
+        # if not result:
+        #     raise HTTPException(403, "not a valid refresh token")
 
-        # Security Check, check that the not revoked refresh token inside our DB is the same one we're getting right now!
+        # if not (verify_password(refresh_token, result.token_hash)):
+        #     # Security Check, check that the not revoked refresh token inside our DB is the same one we're getting right now!
+        #     # FIXME: Change all refresh tokens to revoked, if we're here it means someone tried to use an older refresh token on the user.
+        #     raise HTTPException(403, "not a valid refresh token")
 
-        if not (verify_password(refresh_token, result.token_hash)):
-            # FIXME: Change all refresh tokens to revoked, if we're here it means someone tried to use an older refresh token on the user.
-            raise HTTPException(403, "not a valid refresh token")
+        # result.revoked = True
+
+        new_refresh_token = create_refresh_token(username)
+        response.set_cookie("refresh_token", new_refresh_token)
+        access_token: str = create_access_token(
+            username=username, role=RolesEnum.USER)
+
+        return {"access_token": access_token, "token_type": "bearer"}
 
     except jwt.exceptions.PyJWTError:
         raise HTTPException(403, "not a valid refresh token")

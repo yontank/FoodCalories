@@ -22,11 +22,11 @@ class YehidotMidaLemitzrachim(Base):
     __tablename__: str = 'moh_yehidot_mida_lemitzrachim'
 
     mmitzrach: Mapped[int] = mapped_column(
-        ForeignKey('moh_mitzrachim.code'))
+        ForeignKey('moh_mitzrachim.code'), primary_key=True)
     mida: Mapped[int] = mapped_column(
-        SmallInteger, ForeignKey('moh_yehidot_mida.smlmida'))
+        SmallInteger, ForeignKey('moh_yehidot_mida.smlmida'), primary_key=True)
     mishkal: Mapped[float] = mapped_column(
-        DOUBLE_PRECISION(), primary_key=True)
+        DOUBLE_PRECISION(),)
     name: Mapped[str] = relationship('YehidotMida')
 
     @override
