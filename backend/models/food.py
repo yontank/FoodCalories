@@ -4,6 +4,7 @@ query model, and models for food eaten and food eaten today.
 Currently integrated with FastAPI
 """
 
+from typing import final
 from pydantic import BaseModel, Field, ConfigDict, PositiveInt
 
 
@@ -18,22 +19,23 @@ class FoodBase(BaseModel):
         """
     model_config = ConfigDict(from_attributes=True)
 
-    code: int
-    smlmitzrach: int
-    shmmitzrach: str
+    # The ID of the food item in the database
+    food_id: int = Field(alias='code')
+    # smlmitzrach: int # I dont know what this is, im thinking its the QR bar, will check later.
+    food_name: str = Field(alias='shmmitzrach')
 
 
 class YehidaBase(BaseModel):
     """
     The base model for a Yehida (unit of measurement) in the food system.
 
-    - smlmida: the ID of the unit of measurement
-    - shmmida: the name of the unit of measurement
+    - smlmida: the ID of the unit of measurement inside DB
+    - shmmida: the name of the unit of measurement inside DB
     """
 
     model_config = ConfigDict(from_attributes=True)
-    smlmida: int
-    shmmida: str | None
+    id: int = Field(alias='smlmida')
+    name: str | None = Field(alias='shmmida')
 
 
 class YehidotMidaMitzrachim(BaseModel):
@@ -45,9 +47,11 @@ class YehidotMidaMitzrachim(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     mida: int
     mishkal: float
-    name: YehidaBase
+    size: YehidaBase = Field(alias='name')
 
 # Depracted, I dont remember using this? ever?
+
+
 class ListFood(FoodBase):
     model_config = ConfigDict(from_attributes=True)
     english_name: str | None = None
