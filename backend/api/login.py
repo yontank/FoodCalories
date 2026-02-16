@@ -1,16 +1,14 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
-from pydantic import BaseModel, Field
 from pwdlib import PasswordHash
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from uuid import UUID, uuid4
 import jwt
-from sqlalchemy import false, select, update, values
-from starlette.status import HTTP_200_OK
+from sqlalchemy import false, select, update
 
-from backend.models.tokens import FullAccessJWT, JWTAccessBase, JWTRefreshBase
+from backend.models.tokens import JWTAccessBase
 from backend.schemas.refresh_tokens import RefreshTokens
 from backend.schemas.roles import RolesEnum, RolesSchema
 from backend.schemas.user import User
@@ -21,27 +19,16 @@ from ..models.user import UserRegister
 from ..db import session
 
 router = APIRouter()
+# FIXME: Move secrets into an .env file!
 SECRET_KEY = "8e161dcfe4ebe2d055212edfb12bdfec2a0be9baca7cec5e6e21ca63787b0f8d"
 ALGORITHM = "HS256"
 DEFAULT_ACCESS_TOKEN_LIFESPAN = timedelta(minutes=30)
 DEFAULT_REFRESH_TOKEN_LIFESPAN = timedelta(days=7)
 
 
-# NOTE: MOVE THIS TO MODELS LATER!
-
-
-class AccessTokenData(BaseModel):
-    username: str = Field(alias="sub")
-    role: RolesEnum
-    exp: datetime
-
-
-class RefreshTokenData(BaseModel):
-    username: str
-
-
 ph = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/token")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="v1/token", refreshUrl="v1/refresh")
 
 # HELPER FUNCTIONS
 
@@ -61,13 +48,6 @@ def authenticate_user(user: UserRegister) -> UserDB | None:
         a function to check if we can authenticate the user
         checks the database for the credentials we got,
         and checks if we got a hit.
-
-
-    Args:
-        user (UserRegister): _description_
-
-    Returns:
-        UserDB | None: _description_
     """
     db_user = session.query(UserDB).filter(
         UserDB.username == user.username).first()
@@ -78,7 +58,7 @@ def authenticate_user(user: UserRegister) -> UserDB | None:
     return db_user
 
 
-def create_access_token(username: str, role: RolesEnum,
+def create_access_token(user_id: int, role: RolesEnum,
                         expires_delta: timedelta | None = None) -> str:
     to_encode: dict[str, str | datetime] = {}
 
@@ -88,7 +68,7 @@ def create_access_token(username: str, role: RolesEnum,
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
 
     to_encode.update({"exp": expire})
-    to_encode.update({"sub": username})
+    to_encode.update({"sub": str(user_id)})
     to_encode.update({"role": role})
 
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -96,7 +76,7 @@ def create_access_token(username: str, role: RolesEnum,
     return encoded_jwt
 
 
-def create_refresh_token(username: str, expires_delta: timedelta | None = None):
+def create_refresh_token(user_id: int, expires_delta: timedelta | None = None):
     """creates a refresh token for the user"""
 
     to_encode: dict[str, str | datetime | UUID] = {}
@@ -105,7 +85,7 @@ def create_refresh_token(username: str, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(tz=timezone.utc) + DEFAULT_REFRESH_TOKEN_LIFESPAN
 
-    to_encode.update({"sub": username})
+    to_encode.update({"sub": str(user_id)})
     to_encode.update({"exp": expire})
     to_encode.update({"iat": datetime.now(tz=timezone.utc)})
     to_encode.update({"jti": str(uuid4())})
@@ -119,7 +99,7 @@ def create_refresh_token(username: str, expires_delta: timedelta | None = None):
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(user: UserRegister):
     """
-    Via the register endpoint,
+    given a username and password, creates a new user inside the database
     if the user doesn't already exist inside our databse, we'd like to create one for the client
     so he can access the service
     """
@@ -143,30 +123,27 @@ async def register(user: UserRegister):
 @router.get("/currentUser")
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     """
-    TODO: Yes!
+    returns the current user after being logged with an JWT access token.
+    should return the a user id, and its role.
 
-    Args:
-        token (Annotated[str, Depends): _description_
-
-    Raises:
-        HTTPException: _description_
-        HTTPException: _description_
-
-    Returns:
-        _type_: _description_
+    if the user isn't authenticated, it'll return 401 
     """
     http_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Not authenticated",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
     try:
-        username: str | None = jwt.decode(
+        user_id: str | None = jwt.decode(
             token, SECRET_KEY, algorithms=[ALGORITHM]).get("sub")
+
+        if not user_id:
+            raise http_exception
 
         # FIXME: Do we really need to check the DB if we got a valid JWT?
         user: UserDB | None = session.query(UserDB).filter(
-            UserDB.username == username).first()
+            UserDB.id == int(user_id)).first()
 
     except jwt.exceptions.PyJWTError as exc:
         raise http_exception from exc
@@ -176,7 +153,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     if user.disabled:
         raise HTTPException(status_code=400, detail="Disabled User")
 
-    return JWTAccessBase(sub=user.username, role=user.role.role_type)
+    return JWTAccessBase(sub=user.id, role=user.role.role_type)
 
 
 # LOGIN ENDPOINTS WITH JWT
@@ -188,13 +165,7 @@ async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestFo
     Login Endpoint for users to the service,
     to be able to get both the refresh token and access token.
 
-
-    Raises:
-        HTTPException: _description_
-        HTTPException: _description_
-
-    Returns:
-        _type_: _description_
+    returns forbidden HTTP if the credentials doesn't exist.
     """
 
     db_user = session.query(UserDB).filter(
@@ -209,9 +180,8 @@ async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestFo
                             "Invalid username or password")
 
     access_token = create_access_token(
-        username=db_user.username,
+        user_id=db_user.id,
         role=db_user.role.role_type,
-        expires_delta=DEFAULT_ACCESS_TOKEN_LIFESPAN
     )
 
     db_old_rtoken = session.execute(select(RefreshTokens).where(
@@ -220,7 +190,7 @@ async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestFo
     if db_old_rtoken:
         db_old_rtoken.revoked = True
 
-    r_token = create_refresh_token(username=db_user.username)
+    r_token = create_refresh_token(user_id=db_user.id)
 
     # NOTE: WE STILL HAE THINGS TO DO!
     # 1) Make all older Refresh tokens of the user revoked.
@@ -260,16 +230,21 @@ async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]):
     # revoke ALL refresh tokens created by the user.
 
     user_id = session.execute(select(User.id).where(
-        User.username == model.sub)).scalar_one()
+        User.id == model.sub)).scalar_one()
     _ = session.execute(
         update(RefreshTokens).where(RefreshTokens.user_id == user_id, RefreshTokens.revoked == False).values(revoked=True))
 
     session.commit()
 
 
-@router.post(path="/refresh", status_code=HTTP_200_OK)
+@router.post(path="/refresh", status_code=status.HTTP_200_OK)
 async def refresh(response: Response, refresh_token: str = Cookie(...)):
+    """
+        returns a new access token to the user after it's expired using the refresh_token.
+        the access token will be received in the response.
+    """
     # NOTE: All of this should happen without the user having to do anything.
+    # NOTE 2: the refrsh_token rotation should happen in a different function, since both login AND refresh use it.
 
     # 1) Check Inside the databse that we made this refresh token
     #   1.1)  if its not validated, revoke all refresh tokens of the user,
@@ -281,15 +256,15 @@ async def refresh(response: Response, refresh_token: str = Cookie(...)):
     try:
         token_payload = jwt.decode(refresh_token, SECRET_KEY, ALGORITHM)
 
-        username: str | None = token_payload.get("sub")
+        user_id: str | None = token_payload.get("sub")
 
-        if not username:
+        if not user_id:
             raise HTTPException(403, "not a valid refresh token")
 
         stmt = (
             select(RefreshTokens)
             .join(User)
-            .where(User.username == username)
+            .where(User.id == user_id)
             .where(RefreshTokens.revoked == false())
             .where(RefreshTokens.user_id == User.id)
         )
@@ -310,7 +285,7 @@ async def refresh(response: Response, refresh_token: str = Cookie(...)):
 
         result.revoked = True
 
-        new_refresh_token = create_refresh_token(username)
+        new_refresh_token = create_refresh_token(result.user_id)
 
         db_new_refresh_token = RefreshTokens(user_id=result.user_id,
                                              token_hash=hash_password(new_refresh_token))
@@ -323,7 +298,7 @@ async def refresh(response: Response, refresh_token: str = Cookie(...)):
 
         response.set_cookie("refresh_token", new_refresh_token)
         access_token: str = create_access_token(
-            username=username, role=RolesEnum.USER)
+            user_id=result.user_id, role=RolesEnum.USER)
 
         return {"access_token": access_token, "token_type": "bearer"}
 

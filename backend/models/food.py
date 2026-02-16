@@ -45,19 +45,17 @@ class PortionSize(BaseModel):
     A model representing the relationship between a food item (MohMitzrach) and its unit of measurement (Yehida).
     This model is used to calculate the calories of a meal by connecting the food item with its
     unit of measurement and the weight of that unit in grams.
-    Currently the values are 
+    Currently the values are
 
     id: The id of the current mida from the Yehidot Table.
     name: The current name from the Yehidot table
-    mishkal: Given the mishkan and the food item, how many grams does this mida count as?
+    mishkal: Given the mishkal and the food item, how many grams does this mida count as?
 
     """
 
     id: int = Field(validation_alias=AliasPath("name", "smlmida"))
     name: str = Field(validation_alias=AliasPath("name", "shmmida"))
     mishkal: float
-
-# Depracted, I dont remember using this? ever?
 
 
 class FoodListItem(FoodItem):
@@ -66,6 +64,16 @@ class FoodListItem(FoodItem):
 
 
 class FoodDetail(FoodItem):
+    """
+    A Pydantic model that shows what information to expect from a query on food from food items
+
+    curently,
+    the model receives not only information about basic nutrients of a specific food,
+    but also the name of it, the id of the food
+
+    and different ways to "size it up"
+    """
+
     model_config = ConfigDict(from_attributes=True)
 
     protein: float | None = None
@@ -77,11 +85,12 @@ class FoodDetail(FoodItem):
 
 
 class MealEntry(BaseModel):
-    """An API Model For Returning What the person ate in a specific day.
+    """
+    An API Model For Returning What the person ate in a specific day.
     code_id: the ID of the food item eaten, which is a foreign key to MohMitzrachim.code.
-    mida_id: the ID of the unit of measurement, which is a foreign key to Yeh
+    mida_id: the ID of the unit of measurement, which is a foreign key to YehidotMida
     amount: the amount of the food eaten, which is used to calculate the calories of the meal.
-    meal_type: the type of meal eaten (breakfast, lunch, dinner), which is used to categorize the meals eaten by the user.
+    meal_type: the type of meal eaten(breakfast, lunch, dinner), which is used to categorize the meals eaten by the user.
     """
     model_config = ConfigDict(from_attributes=True)
 

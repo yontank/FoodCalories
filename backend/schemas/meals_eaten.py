@@ -12,15 +12,15 @@ from .moh_yehidot_mida import YehidotMida
 from .based import Base, CommonColumnsMixin
 
 
-class MealType(int, enum.Enum):
+class MealType(str, enum.Enum):
     """
     An Enum Class which is saved inside meals_eaten,
     to determine which type of meal the user has eaten while writing to the database
     """
 
-    BREAKFAST = 0
-    LUNCH = 1
-    DINNER = 2
+    BREAKFAST = "breakfast"
+    LUNCH = "lunch"
+    DINNER = "dinner"
 
 
 class MealsEaten(CommonColumnsMixin, Base):

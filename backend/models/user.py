@@ -24,6 +24,10 @@ def is_good_password(password: str):
 class UserRegister(BaseModel):
     """
     A Model to create valid user in our database  with a valid username and password.
+    Used wants to register (regularly via the /register endpoint)
+
+    Expected to receieve a username that is not already in the database,
+    and a valid username (minimum 8 characters, 1 special character, 1 digit)
     """
     username: str = Field(min_length=2, max_length=16)
     password: Annotated[str, AfterValidator(is_good_password)]
