@@ -216,6 +216,7 @@ async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestFo
 
     db_old_rtoken = session.execute(select(RefreshTokens).where(
         RefreshTokens.user_id == db_user.id, RefreshTokens.revoked == false())).scalar_one_or_none()
+
     if db_old_rtoken:
         db_old_rtoken.revoked = True
 
@@ -271,7 +272,8 @@ async def refresh(response: Response, refresh_token: str = Cookie(...)):
     # NOTE: All of this should happen without the user having to do anything.
 
     # 1) Check Inside the databse that we made this refresh token
-    #   1.1)  if its not validated, revoke all refresh tokens of the user, and let them know someone is tryingg to access their token?
+    #   1.1)  if its not validated, revoke all refresh tokens of the user,
+    #         and let them know someone is tryingg to access their token?
     # 2) after it's validated, create a new refresh token, mnaking this one revoked (token rotation)
     # 3) create a new access_token for the user, to log in to the services.
     # 4) return both tokens to the user.
@@ -279,39 +281,51 @@ async def refresh(response: Response, refresh_token: str = Cookie(...)):
     try:
         token_payload = jwt.decode(refresh_token, SECRET_KEY, ALGORITHM)
 
-        # FIXME: Check with pydantic here that the token is a valid token.
-
         username: str | None = token_payload.get("sub")
 
         if not username:
             raise HTTPException(403, "not a valid refresh token")
 
-        # stmt = (
-        #     select(RefreshTokens)
-        #     .join(User)
-        #     .where(User.username == username)
-        #     .where(RefreshTokens.revoked == false())
-        #     .where(RefreshTokens.user_id == User.id)
-        # )
+        stmt = (
+            select(RefreshTokens)
+            .join(User)
+            .where(User.username == username)
+            .where(RefreshTokens.revoked == false())
+            .where(RefreshTokens.user_id == User.id)
+        )
 
-        # result = session.execute(stmt).scalar_one_or_none()
+        result = session.execute(stmt).scalar_one_or_none()
 
-        # if not result:
-        #     raise HTTPException(403, "not a valid refresh token")
+        if not result:
+            raise HTTPException(403, "not a valid refresh token")
 
-        # if not (verify_password(refresh_token, result.token_hash)):
-        #     # Security Check, check that the not revoked refresh token inside our DB is the same one we're getting right now!
-        #     # FIXME: Change all refresh tokens to revoked, if we're here it means someone tried to use an older refresh token on the user.
-        #     raise HTTPException(403, "not a valid refresh token")
+        # Check if the hash is the same between the current hash and our given refresh_token
+        if not verify_password(refresh_token, result.token_hash):
+            # Security Check, compare between given refresh_token,
+            # and the one we sent for this user through our DB.
 
-        # result.revoked = True
+            # FIXME: Change all refresh tokens to revoked, if we're here it means someone tried to use an older refresh token on the user.
+
+            raise HTTPException(403, "not a valid refresh token")
+
+        result.revoked = True
 
         new_refresh_token = create_refresh_token(username)
+
+        db_new_refresh_token = RefreshTokens(user_id=result.user_id,
+                                             token_hash=hash_password(new_refresh_token))
+        session.add(db_new_refresh_token)
+        session.flush()
+
+        result.replaced_by_id = db_new_refresh_token.id
+
+        session.commit()
+
         response.set_cookie("refresh_token", new_refresh_token)
         access_token: str = create_access_token(
             username=username, role=RolesEnum.USER)
 
         return {"access_token": access_token, "token_type": "bearer"}
 
-    except jwt.exceptions.PyJWTError:
-        raise HTTPException(403, "not a valid refresh token")
+    except jwt.exceptions.PyJWTError as exc:
+        raise HTTPException(403, "not a valid refresh token") from exc

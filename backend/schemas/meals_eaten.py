@@ -12,7 +12,7 @@ from .moh_yehidot_mida import YehidotMida
 from .based import Base, CommonColumnsMixin
 
 
-class MealType(enum.Enum):
+class MealType(int, enum.Enum):
     """
     An Enum Class which is saved inside meals_eaten,
     to determine which type of meal the user has eaten while writing to the database
@@ -24,7 +24,7 @@ class MealType(enum.Enum):
 
 
 class MealsEaten(CommonColumnsMixin, Base):
-    """_summary_
+    """
     A Valid Schema for table in the databse using SQLAlchemy,
     This table should contain the meals eaten by the user,
     using foreign keys to moh_mitrachim, to get the food information
@@ -42,10 +42,10 @@ class MealsEaten(CommonColumnsMixin, Base):
         SmallInteger, ForeignKey(YehidotMida.smlmida))
 
     amount: Mapped[float] = mapped_column(DOUBLE_PRECISION)
-    meal_type: Mapped[int] = mapped_column(Enum(MealType))
+    meal_type: Mapped[MealType] = mapped_column(Enum(MealType))
 
     date: Mapped[datetime.datetime] = mapped_column(TIMESTAMP(
-        timezone=True), default=datetime.datetime.now())
+        timezone=True), default=lambda: datetime.datetime.now())
 
     code: Mapped[str] = relationship(
         'MohMitzrachim', back_populates='meals_eaten')
