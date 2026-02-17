@@ -3,7 +3,6 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import Layout from "./pages/Layout";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import { Settings } from "./pages/Settings/Settings";
-import Calc from "./pages/Calculator/Calc";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Login } from "./pages/Login";
 
@@ -24,7 +23,6 @@ export function App() {
           >
             <Route index element={<Dashboard />} />
             <Route path="settings" element={<Settings />} />
-            <Route path="calc" element={<Calc />} />
           </Route>
         </Routes>
       </BrowserRouter>

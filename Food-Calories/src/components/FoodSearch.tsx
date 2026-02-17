@@ -1,23 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Check, Search } from "lucide-react";
-import { ListFoodAPI, ListFoodBase, MealTime, mealTimeToString } from "@/type";
+import { ListFoodAPI, ListFoodBase } from "@/type";
 import { cn } from "@/lib/utils";
-import {
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
 import { useDebounce } from "use-debounce";
-import { createSearchParams, useNavigate } from "react-router";
 import { useState } from "react";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { Separator } from "./ui/separator";
 
-interface SearchBarProps {
-  dialogMealTime: MealTime;
-  setDialogMealTime: React.Dispatch<React.SetStateAction<MealTime | undefined>>;
+interface Props {
+  selectedFood?: ListFoodBase;
+  setSelectedFood: React.Dispatch<
+    React.SetStateAction<ListFoodBase | undefined>
+  >;
+  show: boolean;
 }
 
 const listFoods = async (foodQuery: string): Promise<ListFoodAPI> => {
@@ -32,37 +28,30 @@ const listFoods = async (foodQuery: string): Promise<ListFoodAPI> => {
   return { data: [] };
 };
 
-export function FoodSearchDialog({ dialogMealTime }: SearchBarProps) {
+/**
+ * Lets the user search for a specific food item by its name and select it.
+ */
+export function FoodSearch({ show, selectedFood, setSelectedFood }: Props) {
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 500);
 
-  const [selectedFood, setSelectedFood] = useState<ListFoodBase | undefined>();
+  const [selectedFoodPre, setSelectedFoodPre] = useState<
+    ListFoodBase | undefined
+  >(selectedFood);
 
   const { status, data } = useQuery({
     queryKey: ["listFoods", debouncedSearch],
     queryFn: ({ queryKey }) => listFoods(queryKey[1]),
   });
 
-  const navigate = useNavigate();
-
-  const handleSubmit = () => {
-    navigate({
-      pathname: "calc",
-      search: createSearchParams({
-        shm: selectedFood!.code.toString() ?? "",
-        meal: dialogMealTime.toString(),
-      }).toString(),
-    });
-  };
-
   const searchItems = data?.data.map((food) => {
-    const selected = selectedFood?.code == food.code;
+    const selected = selectedFoodPre?.code == food.code;
     return (
       <>
         <div
           key={food.code}
           onClick={() => {
-            setSelectedFood(food);
+            setSelectedFoodPre(food);
           }}
           className={cn(
             "flex gap-2 py-2 hover:bg-muted",
@@ -80,13 +69,7 @@ export function FoodSearchDialog({ dialogMealTime }: SearchBarProps) {
   if (status === "error") return <h3>Error</h3>;
 
   return (
-    <DialogContent className="z-50">
-      <DialogHeader>
-        <DialogTitle>
-          מה אכלת היום בארוחת {mealTimeToString(dialogMealTime)}?
-        </DialogTitle>
-      </DialogHeader>
-
+    <div className={show ? "" : "hidden"}>
       <InputGroup>
         <InputGroupInput
           value={search}
@@ -98,17 +81,16 @@ export function FoodSearchDialog({ dialogMealTime }: SearchBarProps) {
       </InputGroup>
       <div className="h-[12em] overflow-scroll">{searchItems}</div>
 
-      <DialogFooter>
-        <Button
-          type="submit"
-          disabled={selectedFood == undefined}
-          onClick={() => {
-            handleSubmit();
-          }}
-        >
-          הוספה
-        </Button>
-      </DialogFooter>
-    </DialogContent>
+      <Button
+        type="submit"
+        disabled={selectedFoodPre == undefined}
+        className="mt-4 w-full"
+        onClick={() => {
+          setSelectedFood(selectedFoodPre);
+        }}
+      >
+        בחירה
+      </Button>
+    </div>
   );
 }
