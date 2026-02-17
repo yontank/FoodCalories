@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TotalCalorieProgress } from "./TotalCalorieProgress";
 import { Progress } from "./ui/progress";
-import { Dialog } from "./ui/dialog";
 
 import { useState } from "react";
 
@@ -22,8 +21,10 @@ export function FoodDayViewer() {
     undefined,
   );
   const [mealEntryOpen, setMealEntryOpen] = useState(false);
+  const [mealEntryKey, setMealEntryKey] = useState(0);
 
   const openMealEntry = (mealTime: MealTime) => {
+    setMealEntryKey(Math.random()); // Reset the dialog's contents when adding a new meal entry.
     setMealEntryOpen(true);
     setMealEntryTime(mealTime);
   };
@@ -109,6 +110,7 @@ export function FoodDayViewer() {
       </Card>
 
       <MealEntryDialog
+        key={mealEntryKey}
         open={mealEntryOpen}
         setOpen={setMealEntryOpen}
         mealTime={mealEntryTime ?? 0}
