@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 import jwt
 from sqlalchemy import false, select, update
 
-from backend.models.tokens import JWTAccessBase
+from backend.models.tokens import JWTAccessBase, LoginTokenResponse
 from backend.schemas.refresh_tokens import RefreshTokens
 from backend.schemas.roles import RolesEnum, RolesSchema
 from backend.schemas.user import User
@@ -76,7 +76,7 @@ def create_access_token(user_id: int, role: RolesEnum,
     return encoded_jwt
 
 
-def create_refresh_token(user_id: int, expires_delta: timedelta | None = None):
+def create_refresh_token(user_id: int, expires_delta: timedelta | None = None) -> str:
     """creates a refresh token for the user"""
 
     to_encode: dict[str, str | datetime | UUID] = {}
@@ -97,7 +97,7 @@ def create_refresh_token(user_id: int, expires_delta: timedelta | None = None):
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register(user: UserRegister):
+async def register(user: UserRegister) -> None:
     """
     given a username and password, creates a new user inside the database
     if the user doesn't already exist inside our databse, we'd like to create one for the client
@@ -121,7 +121,7 @@ async def register(user: UserRegister):
 
 
 @router.get("/currentUser")
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> JWTAccessBase:
     """
     returns the current user after being logged with an JWT access token.
     should return the a user id, and its role.
@@ -160,7 +160,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 
 @router.post("/token")
-async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> LoginTokenResponse:
     """
     Login Endpoint for users to the service,
     to be able to get both the refresh token and access token.
@@ -220,11 +220,11 @@ async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestFo
 
     session.commit()
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return LoginTokenResponse(access_token=access_token)
 
 
 @router.post(path="/logout", status_code=204)
-async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]):
+async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> None:
     # Check that the user is logged on (Should happen with Depends)
     # If the user is logged on, simply remoe his access token
     # revoke ALL refresh tokens created by the user.
@@ -238,7 +238,8 @@ async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]):
 
 
 @router.post(path="/refresh", status_code=status.HTTP_200_OK)
-async def refresh(response: Response, refresh_token: str = Cookie(...)):
+# pyright: ignore[reportCallInDefaultInitializer] FastAPI doc recommends this
+async def refresh(response: Response, refresh_token: str = Cookie(...)) -> LoginTokenResponse:
     """
         returns a new access token to the user after it's expired using the refresh_token.
         the access token will be received in the response.
@@ -300,7 +301,7 @@ async def refresh(response: Response, refresh_token: str = Cookie(...)):
         access_token: str = create_access_token(
             user_id=result.user_id, role=RolesEnum.USER)
 
-        return {"access_token": access_token, "token_type": "bearer"}
+        return LoginTokenResponse(access_token=access_token)
 
     except jwt.exceptions.PyJWTError as exc:
         raise HTTPException(403, "not a valid refresh token") from exc

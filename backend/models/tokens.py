@@ -38,3 +38,14 @@ class JWTRefreshBase(BaseModel):
     exp: datetime
     iat: datetime
     jti: UUID4 = Field(default=uuid4())
+
+
+class LoginTokenResponse(BaseModel):
+    """
+    Login Response of /login endpoint,
+    returns the JWT Access token and the token type.
+    """
+
+    access_token : str = Field()
+    token_type : str = Field(default="bearer")
+
