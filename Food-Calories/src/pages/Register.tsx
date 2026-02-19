@@ -15,37 +15,32 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAtom } from "jotai";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import * as z from "zod";
 import { useState } from "react";
-import { loginSchema } from "@/schemas/user";
+import { loginSchema, registerSchema } from "@/schemas/user";
 import { client } from "@/api/client";
 
-function LoginForm() {
-  const [, setAccessToken] = useAtom(accessTokenAtom);
+function RegisterForm() {
   const navigate = useNavigate();
 
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   async function onSubmit(formData: z.infer<typeof loginSchema>) {
-    const { data, error } = await client.POST("/v1/token", {
+    const { error } = await client.POST("/v1/register", {
       body: {
         username: formData.username,
         password: formData.password,
-        scope: "",
-      },
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
       },
     });
 
@@ -55,14 +50,20 @@ function LoginForm() {
       return;
     }
 
-    setAccessToken(data.access_token);
+    await client.POST("/v1/token", {
+      body: {
+        username: formData.username,
+        password: formData.password,
+        scope: "",
+      },
+    });
     navigate("/");
   }
 
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>כניסה</CardTitle>
+        <CardTitle>הרשמה</CardTitle>
       </CardHeader>
       <CardContent>
         <form id="form-login" onSubmit={form.handleSubmit(onSubmit)}>
@@ -106,17 +107,35 @@ function LoginForm() {
                 </Field>
               )}
             />
+            <Controller
+              name="confirmPassword"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="form-login-confirmPassword">
+                    אשר סיסמה
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="form-login-confirmPassword"
+                    type="password"
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
           </FieldGroup>
         </form>
         {errorMessage && <div>{errorMessage}</div>}
       </CardContent>
       <CardFooter>
-        <Field orientation="horizontal" className="justify-between">
+        <Field orientation="horizontal">
           <Button type="submit" form="form-login">
             כניסה
-          </Button>
-          <Button variant={"secondary"} onClick={() => navigate("/register")}>
-            הרשמה
           </Button>
         </Field>
       </CardFooter>
@@ -124,10 +143,10 @@ function LoginForm() {
   );
 }
 
-export function Login() {
+export function Register() {
   return (
     <div className="w-full flex justify-center mt-12">
-      <LoginForm />
+      <RegisterForm />
     </div>
   );
 }

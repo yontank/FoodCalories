@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import { Settings } from "./pages/Settings/Settings";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Login } from "./pages/Login";
+import { Register } from "./pages/Register";
 
 const queryClient = new QueryClient();
 
@@ -13,6 +14,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+          <Route path="register" element={<Register />} />
           <Route path="login" element={<Login />} />
           <Route
             element={

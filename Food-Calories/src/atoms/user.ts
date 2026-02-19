@@ -1,8 +1,7 @@
 import { atomWithStorage } from "jotai/utils";
 
-// TODO store more data later
-export const userAtom = atomWithStorage<string | undefined>(
-  "user",
+export const accessTokenAtom = atomWithStorage<string | undefined>(
+  "accessToken",
   undefined,
   undefined,
   { getOnInit: true },

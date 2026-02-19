@@ -626,9 +626,7 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie: {
-                refresh_token: string;
-            };
+            cookie?: never;
         };
         requestBody?: never;
         responses: {
