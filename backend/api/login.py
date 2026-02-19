@@ -6,6 +6,7 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from uuid import UUID, uuid4
 import jwt
+from pydantic import BaseModel
 from sqlalchemy import false, select, update
 
 from backend.models.tokens import JWTAccessBase, LoginTokenResponse
@@ -31,6 +32,10 @@ oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="v1/token", refreshUrl="v1/refresh")
 
 # HELPER FUNCTIONS
+
+
+class Message(BaseModel):
+    message: str
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -96,7 +101,7 @@ def create_refresh_token(user_id: int, expires_delta: timedelta | None = None) -
     return encoded_jwt
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_201_CREATED, responses={409: {"model": Message}})
 async def register(user: UserRegister) -> None:
     """
     given a username and password, creates a new user inside the database
@@ -120,7 +125,7 @@ async def register(user: UserRegister) -> None:
     session.commit()
 
 
-@router.get("/currentUser")
+@router.get("/currentUser",responses={400: {"model": Message}, 401: {"model": Message}})
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> JWTAccessBase:
     """
     returns the current user after being logged with an JWT access token.
@@ -135,9 +140,15 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> JWT
     )
 
     try:
-        user_id: str | None = jwt.decode(
-            token, SECRET_KEY, algorithms=[ALGORITHM]).get("sub")
+        jwt_token = jwt.decode(
+            token, SECRET_KEY, algorithms=[ALGORITHM])
 
+        exp_date: datetime | None = jwt_token.get("exp")
+
+        if not exp_date or exp_date >= datetime.now(timezone.utc):
+            raise http_exception
+
+        user_id: str | None = jwt_token.get("sub")
         if not user_id:
             raise http_exception
 
@@ -159,7 +170,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> JWT
 # LOGIN ENDPOINTS WITH JWT
 
 
-@router.post("/token")
+@router.post("/token", responses={401: {"model": Message}})
 async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> LoginTokenResponse:
     """
     Login Endpoint for users to the service,
@@ -223,7 +234,7 @@ async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestFo
     return LoginTokenResponse(access_token=access_token)
 
 
-@router.post(path="/logout", status_code=204)
+@router.post(path="/logout", status_code=204, responses={})
 async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> None:
     # Check that the user is logged on (Should happen with Depends)
     # If the user is logged on, simply remoe his access token
@@ -237,8 +248,8 @@ async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> 
     session.commit()
 
 
-@router.post(path="/refresh", status_code=status.HTTP_200_OK)
-async def refresh(response: Response, refresh_token: str = Cookie(..., include_in_schema=False)) -> LoginTokenResponse: 
+@router.post(path="/refresh", status_code=status.HTTP_200_OK, response_model=LoginTokenResponse, responses={403: {"model": Message}})
+async def refresh(response: Response, refresh_token: str = Cookie(..., include_in_schema=False)) -> LoginTokenResponse:
     """
         returns a new access token to the user after it's expired using the refresh_token.
         the access token will be received in the response.
