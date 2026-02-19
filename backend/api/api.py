@@ -1,5 +1,8 @@
+from backend.schemas.moh_mitzrachim import MohMitzrachim
+
+
 from datetime import datetime, timedelta
-from typing import Annotated
+from typing import Annotated, Sequence
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from fastapi import status
@@ -9,7 +12,6 @@ from backend.api.login import get_current_user
 from backend.models.tokens import JWTAccessBase
 from backend.schemas.meals_eaten import MealsEaten
 
-from ..schemas import MohMitzrachim
 from ..models.food import FoodDetail, MealEntry
 from ..db import session
 
@@ -17,10 +19,13 @@ from ..db import session
 router = APIRouter()
 
 
-@router.get('/foods', response_model_by_alias=False, response_model=dict[str, list[FoodDetail]])
-def query_foods(food_query: str, _: Annotated[JWTAccessBase, Depends(get_current_user)]):
+@router.get('/foods', response_model_by_alias=False, response_model=list[FoodDetail])
+def query_foods(food_query: str, _: Annotated[JWTAccessBase, Depends(get_current_user)]) -> list[FoodDetail]:
+    res: list[FoodDetail] = []
     if foods := session.query(MohMitzrachim).filter(MohMitzrachim.shmmitzrach.contains(food_query)).limit(20).all():
-        return {'data': foods}
+        for food in foods:
+            res.append(FoodDetail.model_validate(food, from_attributes=True))
+        return res
     raise HTTPException(404, "food type wasnt found")
 
 
@@ -28,7 +33,7 @@ def query_foods(food_query: str, _: Annotated[JWTAccessBase, Depends(get_current
 def add_meal(
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     meal: MealEntry
-):
+) -> None:
     """Creates a new meal data and sends it into the database"""
 
     db_meal: MealsEaten = MealsEaten(user_id=current_user.sub,
@@ -47,7 +52,7 @@ def add_meal(
 def delete_meal(
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     meal_id: int
-):
+) -> None:
     """given a meal id, deletes a user meal"""
     # Check That it is indeed the corect user asking to delete.
     stmt = (
@@ -70,7 +75,7 @@ def update_meal(
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     meal: MealEntry,
     meal_id: int
-):
+) -> None:
     """Update a meal value from a specific user"""
     # 1. Check that mida_id Meals Eaten value is the correct user_id
 
@@ -92,7 +97,7 @@ def update_meal(
 def get_meals_by_date_start_end_date(
         current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
         date: datetime,
-        end_date: datetime | None = None):
+        end_date: datetime | None = None) -> list[FoodDetail]:
     """
     Returns all the meals the user has consumed in a specific date, or between a range of dates.
     """
@@ -116,6 +121,10 @@ def get_meals_by_date_start_end_date(
                                  MealsEaten.date < end_of_end_date)
     )
 
-    meals = session.execute(stmt).scalars().all()
+    meals: Sequence[MealsEaten] = session.execute(stmt).scalars().all()
 
-    return {"data": meals}
+    res: list[FoodDetail] = []
+
+    for meal in meals:
+        res.append(FoodDetail.model_validate(meal, from_attributes=True))
+    return res
