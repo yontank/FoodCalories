@@ -238,8 +238,7 @@ async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> 
 
 
 @router.post(path="/refresh", status_code=status.HTTP_200_OK)
-# pyright: ignore[reportCallInDefaultInitializer] FastAPI doc recommends this
-async def refresh(response: Response, refresh_token: str = Cookie(...)) -> LoginTokenResponse:
+async def refresh(response: Response, refresh_token: str = Cookie(..., include_in_schema=False)) -> LoginTokenResponse: 
     """
         returns a new access token to the user after it's expired using the refresh_token.
         the access token will be received in the response.
