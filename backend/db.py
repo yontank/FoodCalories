@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 
 
 engine = create_engine(
-    "postgresql://postgres:postgres@localhost:5432/FoodCaloriesDev")
+    "postgresql://postgres:postgres@localhost:5432/foodcaloriesdev")
 
 
 Session = sessionmaker(bind=engine)

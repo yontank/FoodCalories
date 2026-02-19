@@ -18,7 +18,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
+import createClient from "openapi-fetch";
+import type { paths } from "@/api/v1";
 import * as z from "zod";
+import { useState } from "react";
 
 const formSchema = z.object({
   username: z
@@ -30,6 +33,8 @@ const formSchema = z.object({
     .min(10, "Password must be at least 10 characters.")
     .max(100, "Password must be at most 100 characters."),
 });
+
+const client = createClient<paths>({ baseUrl: "/" });
 
 function LoginForm() {
   const [, setUser] = useAtom(userAtom);
@@ -43,9 +48,27 @@ function LoginForm() {
     },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    setUser(data.username);
-    navigate("/");
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+
+  async function onSubmit(formData: z.infer<typeof formSchema>) {
+    const { data, error } = await client.POST("/v1/token", {
+      body: {
+        username: formData.username,
+        password: formData.password,
+        scope: "",
+      },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    if (error) {
+      console.log(error);
+      setErrorMessage(error.detail?.map((d) => d.msg).join("\n"));
+    } else {
+      setUser(formData.username);
+      navigate("/");
+    }
   }
 
   return (
@@ -97,6 +120,7 @@ function LoginForm() {
             />
           </FieldGroup>
         </form>
+        {errorMessage && <div>{errorMessage}</div>}
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
