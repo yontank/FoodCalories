@@ -140,10 +140,6 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         jwt_token = jwt.decode(
             token, SECRET_KEY, algorithms=[ALGORITHM])
 
-        exp_date: datetime | None = jwt_token.get("exp")
-
-        if not exp_date or exp_date >= datetime.now(timezone.utc):
-            return http_exception
 
         user_id: str | None = jwt_token.get("sub")
         if not user_id:
