@@ -74,10 +74,10 @@ class FoodDetail(FoodItem):
 
     model_config = ConfigDict(from_attributes=True)
 
-    protein: float | None = None
-    total_fat: float | None = None
+    protein: float 
+    total_fat: float 
     carbohydrates: float | None = None
-    food_energy: PositiveInt | None = None
+    food_energy: PositiveInt 
 
     midot: list[PortionSize]
 
