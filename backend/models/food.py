@@ -4,9 +4,7 @@ query model, and models for food eaten and food eaten today.
 Currently integrated with FastAPI
 """
 
-from typing import final
 from pydantic import AliasPath, BaseModel, Field, ConfigDict, PositiveInt
-
 from backend.schemas.meals_eaten import MealType
 
 
