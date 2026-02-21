@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
+from fastapi.responses import JSONResponse
 from pwdlib import PasswordHash
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
@@ -12,6 +13,7 @@ from backend.models.tokens import JWTAccessBase, LoginTokenResponse
 from backend.schemas.refresh_tokens import RefreshTokens
 from backend.schemas.roles import RolesEnum, RolesSchema
 from backend.schemas.user import User
+from backend.models.api import Message
 
 
 from ..schemas import User as UserDB
@@ -96,8 +98,8 @@ def create_refresh_token(user_id: int, expires_delta: timedelta | None = None) -
     return encoded_jwt
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register(user: UserRegister) -> None:
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=None, responses={409: {"model": Message}})
+async def register(user: UserRegister):
     """
     given a username and password, creates a new user inside the database
     if the user doesn't already exist inside our databse, we'd like to create one for the client
@@ -108,8 +110,8 @@ async def register(user: UserRegister) -> None:
         User.username == user.username)).scalar()
 
     if username_exists:
-        raise HTTPException(status.HTTP_409_CONFLICT,
-                            "username is already taken")
+        return JSONResponse(status_code=status.HTTP_409_CONFLICT,
+                            content="username is already taken")
 
     hashed_password = hash_password(user.password)
 
@@ -120,38 +122,40 @@ async def register(user: UserRegister) -> None:
     session.commit()
 
 
-@router.get("/currentUser")
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> JWTAccessBase:
+@router.get("/currentUser", responses={401: {"model": Message}}, response_model=JWTAccessBase)
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     """
     returns the current user after being logged with an JWT access token.
     should return the a user id, and its role.
 
     if the user isn't authenticated, it'll return 401 
     """
-    http_exception = HTTPException(
+    http_exception = JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Not authenticated",
+        content="Not authenticated",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
     try:
-        user_id: str | None = jwt.decode(
-            token, SECRET_KEY, algorithms=[ALGORITHM]).get("sub")
+        jwt_token = jwt.decode(
+            token, SECRET_KEY, algorithms=[ALGORITHM])
 
+
+        user_id: str | None = jwt_token.get("sub")
         if not user_id:
-            raise http_exception
+            return http_exception
 
         # FIXME: Do we really need to check the DB if we got a valid JWT?
         user: UserDB | None = session.query(UserDB).filter(
             UserDB.id == int(user_id)).first()
 
-    except jwt.exceptions.PyJWTError as exc:
-        raise http_exception from exc
+    except jwt.exceptions.PyJWTError:
+        return http_exception
 
     if not user:
-        raise http_exception
+        return http_exception
     if user.disabled:
-        raise HTTPException(status_code=400, detail="Disabled User")
+        return JSONResponse(status_code=401, content="Disabled User")
 
     return JWTAccessBase(sub=user.id, role=user.role.role_type)
 
@@ -159,25 +163,25 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> JWT
 # LOGIN ENDPOINTS WITH JWT
 
 
-@router.post("/token")
-async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> LoginTokenResponse:
+@router.post("/token", responses={401: {"model": Message}}, response_model=LoginTokenResponse)
+async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     """
     Login Endpoint for users to the service,
     to be able to get both the refresh token and access token.
 
     returns forbidden HTTP if the credentials doesn't exist.
     """
+    http_exception = JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED,
+                                  content="Invalid username or password")
 
     db_user = session.query(UserDB).filter(
         UserDB.username == form_data.username).first()
 
     if not db_user:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
-                            "Invalid username or password")
+        return http_exception
 
     if not verify_password(form_data.password, str(db_user.hashed_password)):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
-                            "Invalid username or password")
+        return http_exception
 
     access_token = create_access_token(
         user_id=db_user.id,
@@ -223,7 +227,7 @@ async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestFo
     return LoginTokenResponse(access_token=access_token)
 
 
-@router.post(path="/logout", status_code=204)
+@router.post(path="/logout", status_code=204, responses={})
 async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> None:
     # Check that the user is logged on (Should happen with Depends)
     # If the user is logged on, simply remoe his access token
@@ -237,8 +241,8 @@ async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> 
     session.commit()
 
 
-@router.post(path="/refresh", status_code=status.HTTP_200_OK)
-async def refresh(response: Response, refresh_token: str = Cookie(..., include_in_schema=False)) -> LoginTokenResponse: 
+@router.post(path="/refresh", status_code=status.HTTP_200_OK, response_model=LoginTokenResponse, responses={403: {"model": Message}})
+async def refresh(response: Response, refresh_token: str = Cookie(..., include_in_schema=False)):
     """
         returns a new access token to the user after it's expired using the refresh_token.
         the access token will be received in the response.
@@ -259,7 +263,7 @@ async def refresh(response: Response, refresh_token: str = Cookie(..., include_i
         user_id: str | None = token_payload.get("sub")
 
         if not user_id:
-            raise HTTPException(403, "not a valid refresh token")
+            return JSONResponse(status_code=403, content="not a valid refresh token")
 
         stmt = (
             select(RefreshTokens)
@@ -272,7 +276,7 @@ async def refresh(response: Response, refresh_token: str = Cookie(..., include_i
         result = session.execute(stmt).scalar_one_or_none()
 
         if not result:
-            raise HTTPException(403, "not a valid refresh token")
+            return JSONResponse(status_code=403, content="not a valid refresh token")
 
         # Check if the hash is the same between the current hash and our given refresh_token
         if not verify_password(refresh_token, result.token_hash):
@@ -281,7 +285,7 @@ async def refresh(response: Response, refresh_token: str = Cookie(..., include_i
 
             # FIXME: Change all refresh tokens to revoked, if we're here it means someone tried to use an older refresh token on the user.
 
-            raise HTTPException(403, "not a valid refresh token")
+            return JSONResponse(status_code=403, content="not a valid refresh token")
 
         result.revoked = True
 
@@ -302,5 +306,5 @@ async def refresh(response: Response, refresh_token: str = Cookie(..., include_i
 
         return LoginTokenResponse(access_token=access_token)
 
-    except jwt.exceptions.PyJWTError as exc:
-        raise HTTPException(403, "not a valid refresh token") from exc
+    except jwt.exceptions.PyJWTError:
+        return JSONResponse(status_code=403, content="not a valid refresh token")
