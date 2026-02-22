@@ -42,11 +42,9 @@ export function FoodSearch({ show, selectedFood, setSelectedFood }: Props) {
           <Search className="ms-3" />
         </InputGroupAddon>
       </InputGroup>
-      {!data ? (
-        "Loading..."
-      ) : (
-        <div className="h-[12em] overflow-scroll">
-          {data.map((food) => {
+      <div className="h-[12em] overflow-scroll">
+        {data &&
+          data.map((food) => {
             const selected = selectedFoodPre?.food_id == food.food_id;
             return (
               <Fragment key={food.food_id}>
@@ -67,8 +65,7 @@ export function FoodSearch({ show, selectedFood, setSelectedFood }: Props) {
               </Fragment>
             );
           })}
-        </div>
-      )}
+      </div>
 
       <Button
         type="submit"
