@@ -1,50 +1,4 @@
-export interface ListFoodBase {
-  code: number;
-  shmmitzrach: string;
-  smlmitzrach: number;
-  english_name: string;
-}
-
-export interface Mida {
-  mishkal: number;
-  mida: number;
-  name: { smlmida: number; shmmida: string };
-}
-
-export interface ListFoodFull extends ListFoodBase {
-  // makor: number;
-  // edible: number;
-  // psolet: number;
-  // ahuz_ibud_nozlim: number;
-
-  protein: number;
-  total_fat: number;
-  carbohydrates: number;
-  food_energy: number;
-
-  midot: Mida[];
-
-  // alcohol: number;
-  // moisture: number;
-  // total_dietary_fiber: number;
-  // calcium: number;
-  // iron: number;
-  // magnesium: number;
-  // sodium: number;
-  // vitamin_a_iu: number;
-}
-export interface EatenTodayQuery {
-  date: Date;
-  meal_type: MealTime;
-  mida: { smlmida: number; shmmida: string };
-  amount: number;
-  code: ListFoodFull;
-  mishkal: mishkal;
-}
-
-export interface ListFoodAPI {
-  data: ListFoodBase[];
-}
+import { components } from "./api/v1";
 
 export type MealTime = "breakfast" | "lunch" | "dinner";
 
@@ -73,3 +27,7 @@ export function mealTimeToString(mealTime: MealTime) {
       return "ערב";
   }
 }
+
+export type FoodDetail = components["schemas"]["FoodDetail"];
+export type MealEntryResponse = components["schemas"]["MealEntryResponse"];
+export type PortionSize = components["schemas"]["PortionSize"];

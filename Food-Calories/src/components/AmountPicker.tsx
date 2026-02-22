@@ -1,5 +1,4 @@
-import { ListFoodFull, Mida } from "@/type";
-import { useQuery } from "@tanstack/react-query";
+import { FoodDetail, PortionSize } from "@/type";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -12,22 +11,14 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 
-const getFoodInfo = async (
-  foodQuery: number,
-): Promise<ListFoodFull | undefined> => {
-  const food = await fetch("/v1/foodInfo/" + foodQuery);
-
-  if (food.ok) return ((await food.json()) as { data: ListFoodFull }).data;
-
-  return undefined;
-};
-
 interface Props {
-  foodCode: number;
+  food: FoodDetail;
   amount: number;
   setAmount: React.Dispatch<React.SetStateAction<number>>;
-  selectedUnit: Mida | undefined;
-  setSelectedUnit: React.Dispatch<React.SetStateAction<Mida | undefined>>;
+  selectedUnit: PortionSize | undefined;
+  setSelectedUnit: React.Dispatch<
+    React.SetStateAction<PortionSize | undefined>
+  >;
 }
 
 /**
@@ -35,21 +26,13 @@ interface Props {
  * the user input how much they ate, and shows the calculated calorie amount based on that.
  */
 export function AmountPicker({
-  foodCode,
+  food,
   amount,
   setAmount,
   selectedUnit,
   setSelectedUnit,
 }: Props) {
   const [amountInput, setAmountInput] = useState<string>(amount.toString());
-
-  const { data, status } = useQuery({
-    queryKey: ["getFood", foodCode],
-    queryFn: () => getFoodInfo(foodCode),
-  });
-
-  if (status == "pending") return <>Loading</>;
-  if (status == "error" || data === undefined) return <>Error</>;
 
   const calculatedAmount =
     selectedUnit &&
@@ -73,9 +56,9 @@ export function AmountPicker({
           />
         </div>
         <Select
-          value={selectedUnit?.name.shmmida}
+          value={selectedUnit?.name}
           onValueChange={(v) =>
-            setSelectedUnit(data.midot.find((u) => u.name.shmmida == v))
+            setSelectedUnit(food.midot.find((u) => u.name == v))
           }
         >
           <SelectTrigger className="w-full max-w-48">
@@ -84,9 +67,9 @@ export function AmountPicker({
           <SelectContent>
             <SelectGroup>
               <SelectLabel>מידות</SelectLabel>
-              {data.midot.map((item) => (
-                <SelectItem key={item.mida} value={item.name.shmmida}>
-                  {item.name.shmmida}{" "}
+              {food.midot.map((item) => (
+                <SelectItem key={item.id} value={item.name}>
+                  {item.name}{" "}
                   <span className="text-neutral-500 text-xs">
                     ({item.mishkal} גרם)
                   </span>
@@ -99,17 +82,18 @@ export function AmountPicker({
       {calculatedAmount && (
         <div className="flex justify-between flex-row-reverse">
           <div>
-            קלוריות: {(data.food_energy * calculatedAmount).toFixed(2)}{" "}
+            קלוריות: {(food.food_energy * calculatedAmount).toFixed(2)}{" "}
           </div>
 
           <div className="flex flex-col">
             <div>
-              פחמימה: {(data.carbohydrates * calculatedAmount).toFixed(2)}
+              פחמימה:{" "}
+              {((food.carbohydrates ?? 0) * calculatedAmount).toFixed(2)}
             </div>
 
-            <div>חלבון: {(data.protein * calculatedAmount).toFixed(2)} </div>
+            <div>חלבון: {(food.protein * calculatedAmount).toFixed(2)} </div>
 
-            <div>שומן: {(data.total_fat * calculatedAmount).toFixed(2)}</div>
+            <div>שומן: {(food.total_fat * calculatedAmount).toFixed(2)}</div>
           </div>
         </div>
       )}

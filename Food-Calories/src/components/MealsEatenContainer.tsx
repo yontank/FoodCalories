@@ -1,9 +1,6 @@
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
-import { MealTime } from "../type";
-import { components } from "@/api/v1";
-
-type MealEntryResponse = components["schemas"]["MealEntryResponse"];
+import { MealEntryResponse, MealTime } from "../type";
 
 interface MealsEatenContainerProps {
   openMealEntry: (mealTime: MealTime) => void;

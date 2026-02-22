@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { ListFoodBase, MealTime, mealTimeToString, Mida } from "@/type";
+import { FoodDetail, MealTime, mealTimeToString, PortionSize } from "@/type";
 import { Button } from "./ui/button";
 import { FoodSearch } from "./FoodSearch";
 import { Edit2 } from "lucide-react";
@@ -19,9 +19,9 @@ interface Props {
 }
 
 export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
-  const [selectedFood, setSelectedFood] = useState<ListFoodBase | undefined>();
+  const [selectedFood, setSelectedFood] = useState<FoodDetail | undefined>();
   const [searchingFood, setSearchingFood] = useState(selectedFood == undefined);
-  const [selectedUnit, setSelectedUnit] = useState<Mida | undefined>();
+  const [selectedUnit, setSelectedUnit] = useState<PortionSize | undefined>();
   const [amount, setAmount] = useState(1);
 
   const handleSubmit = async () => {
@@ -39,7 +39,7 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
 
       body: JSON.stringify({
         amount,
-        codeId: selectedFood.code,
+        codeId: selectedFood.food_id,
         unitType: selectedUnit.name.smlmida,
         mealType: mealTime,
       }),
@@ -75,7 +75,7 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
             onClick={() => setSearchingFood(true)}
           >
             <Edit2 />
-            {selectedFood?.shmmitzrach}
+            {selectedFood?.food_name}
           </Button>
         )}
 
@@ -83,7 +83,7 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
           <div className={searchingFood ? "hidden" : ""}>
             <div className="min-h-[6rem]">
               <AmountPicker
-                foodCode={selectedFood.code}
+                food={selectedFood}
                 amount={amount}
                 setAmount={setAmount}
                 selectedUnit={selectedUnit}
