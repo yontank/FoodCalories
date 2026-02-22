@@ -130,16 +130,15 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
     if the user isn't authenticated, it'll return 401 
     """
-    http_exception = JSONResponse(
+    http_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        content="Not authenticated",
+        detail = "Not authenticated",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
     try:
         jwt_token = jwt.decode(
             token, SECRET_KEY, algorithms=[ALGORITHM])
-
 
         user_id: str | None = jwt_token.get("sub")
         if not user_id:
@@ -150,12 +149,12 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
             UserDB.id == int(user_id)).first()
 
     except jwt.exceptions.PyJWTError:
-        return http_exception
+        raise http_exception
 
     if not user:
-        return http_exception
+        raise http_exception
     if user.disabled:
-        return JSONResponse(status_code=401, content="Disabled User")
+        raise HTTPException(status_code=401, detail="Disabled User")
 
     return JWTAccessBase(sub=user.id, role=user.role.role_type)
 
