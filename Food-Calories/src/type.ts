@@ -46,11 +46,7 @@ export interface ListFoodAPI {
   data: ListFoodBase[];
 }
 
-export enum MealTime {
-  BREAKFAST,
-  LUNCH,
-  DINNER,
-}
+export type MealTime = "breakfast" | "lunch" | "dinner";
 
 export interface CalInfoProps {
   protein: number;
@@ -69,11 +65,11 @@ export interface mishkal {
 
 export function mealTimeToString(mealTime: MealTime) {
   switch (mealTime) {
-    case MealTime.BREAKFAST:
+    case "breakfast":
       return "בוקר";
-    case MealTime.LUNCH:
+    case "lunch":
       return "צהריים";
-    case MealTime.DINNER:
+    case "dinner":
       return "ערב";
   }
 }

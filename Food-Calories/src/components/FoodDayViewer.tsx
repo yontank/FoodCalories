@@ -4,24 +4,19 @@ import { Progress } from "./ui/progress";
 
 import { useState } from "react";
 
-import { EatenTodayQuery, MealTime } from "@/type";
+import { MealTime } from "@/type";
 
-import { useQuery } from "@tanstack/react-query";
 import { MealsEatenContainer } from "./MealsEatenContainer";
 import CALORIES from "../data/settings.json";
 import { MealEntryDialog } from "./MealEntryDialog";
-
-const eatenToday = async (): Promise<{ data: EatenTodayQuery[] }> => {
-  const todayMeals = await fetch("/v1/todayMeals");
-  return (await todayMeals.json()) ?? { data: [] };
-};
+import { NotLoggedInError, reactClient } from "@/api/client";
+import { useNavigate } from "react-router";
 
 export function FoodDayViewer() {
-  const [mealEntryTime, setMealEntryTime] = useState<MealTime | undefined>(
-    undefined,
-  );
+  const [mealEntryTime, setMealEntryTime] = useState<MealTime>("breakfast");
   const [mealEntryOpen, setMealEntryOpen] = useState(false);
   const [mealEntryKey, setMealEntryKey] = useState(0);
+  const navigate = useNavigate();
 
   const openMealEntry = (mealTime: MealTime) => {
     setMealEntryKey(Math.random()); // Reset the dialog's contents when adding a new meal entry.
@@ -29,23 +24,31 @@ export function FoodDayViewer() {
     setMealEntryTime(mealTime);
   };
 
-  const query = useQuery({
-    queryKey: ["getEatenToday"],
-    queryFn: () => eatenToday(),
-  });
+  const { data, isLoading, error } = reactClient.useQuery(
+    "get",
+    "/v1/meals",
+    {
+      params: { query: { date: "0" } },
+    },
+    { retry: 0 },
+  );
 
-  if (query.isLoading) return "Loading...";
+  if (error instanceof NotLoggedInError) {
+    navigate("/login");
+    return <></>;
+  }
+  if (isLoading || !data) return "Loading...";
 
-  const proteinSum = query.data?.data
-    .map((e) => (e.code.protein * e.amount * e.mishkal.mishkal) / 100)
+  const proteinSum = data
+    .map((e) => (e.protein * e.amount * e.mishkal) / 100)
     .reduce((p, a) => p + a, 0);
-  const fatSum = query.data?.data
-    .map((e) => (e.code.total_fat * e.amount * e.mishkal.mishkal) / 100)
+  const fatSum = data
+    .map((e) => (e.total_fat * e.amount * e.mishkal) / 100)
     .reduce((p, a) => p + a, 0);
-  const carbSum = query.data?.data
-    .map((e) => (e.code.carbohydrates * e.amount * e.mishkal.mishkal) / 100)
+  const carbSum = data
+    .map((e) => ((e.carbohydrates ?? 0) * e.amount * e.mishkal) / 100)
     .reduce((p, a) => p + a, 0);
-  const totalSum = (fatSum ?? 0) + (proteinSum ?? 0) + (carbSum ?? 0);
+  const totalSum = fatSum + proteinSum + carbSum;
 
   return (
     <>
@@ -57,9 +60,9 @@ export function FoodDayViewer() {
         <CardContent className="h-full">
           <TotalCalorieProgress
             segments={[
-              { value: (carbSum! / totalSum) * 100 },
-              { value: (fatSum! / totalSum) * 100, color: "bg-green-300" },
-              { value: (proteinSum! / totalSum) * 100, color: "bg-red-500" },
+              { value: (carbSum / totalSum) * 100 },
+              { value: (fatSum / totalSum) * 100, color: "bg-green-300" },
+              { value: (proteinSum / totalSum) * 100, color: "bg-red-500" },
             ]}
           />
           <div className="flex w-full justify-around mt-3">
@@ -80,28 +83,22 @@ export function FoodDayViewer() {
           </div>
           <div id="food-container" className="flex flex-col gap-3 mt-3">
             <MealsEatenContainer
-              eatenFood={query.data?.data.filter(
-                (e) => e.meal_type === MealTime.BREAKFAST,
-              )}
-              mealTime={MealTime.BREAKFAST}
+              eatenFood={data.filter((e) => e.meal_type == "breakfast")}
+              mealTime={"breakfast"}
               openMealEntry={openMealEntry}
               title="ארוחת בוקר"
             />
 
             <MealsEatenContainer
-              eatenFood={query.data?.data.filter(
-                (e) => e.meal_type === MealTime.LUNCH,
-              )}
-              mealTime={MealTime.LUNCH}
+              eatenFood={data.filter((e) => e.meal_type == "lunch")}
+              mealTime={"lunch"}
               openMealEntry={openMealEntry}
               title="ארוחת צהריים"
             />
 
             <MealsEatenContainer
-              eatenFood={query.data?.data.filter(
-                (e) => e.meal_type === MealTime.DINNER,
-              )}
-              mealTime={MealTime.DINNER}
+              eatenFood={data.filter((e) => e.meal_type == "dinner")}
+              mealTime={"dinner"}
               openMealEntry={openMealEntry}
               title="ארוחת ערב"
             />
@@ -113,7 +110,7 @@ export function FoodDayViewer() {
         key={mealEntryKey}
         open={mealEntryOpen}
         setOpen={setMealEntryOpen}
-        mealTime={mealEntryTime ?? 0}
+        mealTime={mealEntryTime}
       />
     </>
   );

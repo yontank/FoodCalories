@@ -1,12 +1,15 @@
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
-import { EatenTodayQuery, MealTime } from "../type";
+import { MealTime } from "../type";
+import { components } from "@/api/v1";
+
+type MealEntryResponse = components["schemas"]["MealEntryResponse"];
 
 interface MealsEatenContainerProps {
   openMealEntry: (mealTime: MealTime) => void;
   mealTime: MealTime;
   title: string;
-  eatenFood?: EatenTodayQuery[];
+  eatenFood?: MealEntryResponse[];
 }
 
 export function MealsEatenContainer({
@@ -17,37 +20,27 @@ export function MealsEatenContainer({
 }: MealsEatenContainerProps) {
   const eatenToday = eatenFood?.map((e) => (
     <div className="border-solid border-2 border-red-50 h-auto w-fit text-center">
-      <h1>{e.code.shmmitzrach}</h1>
+      <h1>{e.food_name}</h1>
       <p>
         {e.amount} {e.mida.shmmida}
       </p>
 
       <p>
-        קלוריות{" "}
-        {((e.mishkal.mishkal / 100) * e.amount * e.code.food_energy).toFixed(
-          2,
-        )}{" "}
+        קלוריות {((e.mishkal / 100) * e.amount * e.food_energy).toFixed(2)}{" "}
       </p>
 
       <p>
         פחמימות{" "}
-        {((e.mishkal.mishkal / 100) * e.amount * e.code.carbohydrates).toFixed(
+        {((e.mishkal / 100) * e.amount * (e.carbohydrates ?? 0)).toFixed(
           2,
         )}{" "}
       </p>
 
-      <p>
-        חלבון{" "}
-        {((e.mishkal.mishkal / 100) * e.amount * e.code.protein).toFixed(
-          2,
-        )}{" "}
-      </p>
+      <p>חלבון {((e.mishkal / 100) * e.amount * e.protein).toFixed(2)} </p>
 
       <p>
         שומן
-        {((e.mishkal.mishkal / 100) * e.amount * e.code.total_fat).toFixed(
-          2,
-        )}{" "}
+        {((e.mishkal / 100) * e.amount * e.total_fat).toFixed(2)}{" "}
       </p>
     </div>
   ));

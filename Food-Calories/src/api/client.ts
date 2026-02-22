@@ -1,27 +1,14 @@
 import createClient from "openapi-fetch";
+import createReactClient from "openapi-react-query";
 import { type paths } from "./v1";
 import { getDefaultStore } from "jotai";
 import { accessTokenAtom } from "@/atoms/user";
+import { jwtDecode } from "jwt-decode";
 
-class NotLoggedInError extends Error {}
-
-interface AccessToken {
-  sub: number;
-  role: string;
-  exp: Date;
-}
-
-function getJWTPayload<T>(jwt: string) {
-  const parts = jwt.split(".");
-  return JSON.parse(parts[1], (key, value) => {
-    if (key == "exp") {
-      return new Date(value);
-    }
-    return value;
-  }) as T;
-}
+export class NotLoggedInError extends Error {}
 
 export const client = createClient<paths>({ baseUrl: "/" });
+export const reactClient = createReactClient(client);
 
 const unprotectedRoutes: (keyof paths)[] = [
   "/v1/register",
@@ -40,17 +27,21 @@ client.use({
     let accessToken = store.get(accessTokenAtom);
     if (!accessToken) {
       // User never logged in.
+      console.warn("User is not logged in.");
       throw new NotLoggedInError();
     }
 
-    const info = getJWTPayload<AccessToken>(accessToken);
-    if (info.exp.getTime() > Date.now()) {
+    const info = jwtDecode(accessToken);
+    if (!info.exp || info.exp < Date.now() / 1000) {
       // Access token is expired, ask for a new one via /refresh.
+      console.log("Access token is expired.");
       const { data, error } = await client.POST("/v1/refresh");
       if (error) {
         // If refreshing failed, we need the user to log in again.
+        console.warn("Access token could not be refreshed.");
         throw new NotLoggedInError();
       }
+      console.log("Access token refreshed.");
       accessToken = data.access_token;
       store.set(accessTokenAtom, accessToken);
     }

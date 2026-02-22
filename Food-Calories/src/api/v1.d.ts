@@ -236,13 +236,13 @@ export interface components {
             /** Shmmitzrach */
             shmmitzrach: string;
             /** Protein */
-            protein?: number | null;
+            protein: number;
             /** Total Fat */
-            total_fat?: number | null;
+            total_fat: number;
             /** Carbohydrates */
             carbohydrates?: number | null;
             /** Food Energy */
-            food_energy?: number | null;
+            food_energy: number;
             /** Midot */
             midot: components["schemas"]["PortionSize"][];
         };
@@ -297,6 +297,32 @@ export interface components {
             amount: number;
             meal_type: components["schemas"]["MealType"];
         };
+        /** MealEntryResponse */
+        MealEntryResponse: {
+            /** Food Name */
+            food_name: string;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+            /** Protein */
+            protein: number;
+            /** Total Fat */
+            total_fat: number;
+            /** Carbohydrates */
+            carbohydrates?: number | null;
+            /** Food Energy */
+            food_energy: number;
+            mida: components["schemas"]["MeasurementUnit"];
+            /** Meal Id */
+            meal_id: number;
+            /** Amount */
+            amount: number;
+            /** Mishkal */
+            mishkal: number;
+            meal_type: components["schemas"]["MealType"];
+        };
         /**
          * MealType
          * @description An Enum Class which is saved inside meals_eaten,
@@ -304,6 +330,30 @@ export interface components {
          * @enum {string}
          */
         MealType: "breakfast" | "lunch" | "dinner";
+        /**
+         * MeasurementUnit
+         * @description The base model for a Yehida (unit of measurement) in the food system.
+         *
+         *     - smlmida: the ID of the unit of measurement inside DB
+         *     - shmmida: the name of the unit of measurement inside DB
+         */
+        MeasurementUnit: {
+            /** Smlmida */
+            smlmida: number;
+            /** Shmmida */
+            shmmida: string | null;
+        };
+        /**
+         * Message
+         * @description The current class contains a base of how our HTTP errors would look like.
+         *     since fastAPI doesn't know which HTTP errors a function throws, this is currently the only way.
+         *
+         *     https://fastapi.tiangolo.com/advanced/additional-responses/#additional-response-with-model
+         */
+        Message: {
+            /** Message */
+            message: string;
+        };
         /**
          * PortionSize
          * @description A model representing the relationship between a food item (MohMitzrach) and its unit of measurement (Yehida).
@@ -375,6 +425,24 @@ export interface operations {
                     "application/json": components["schemas"]["FoodDetail"][];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -408,6 +476,15 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -437,6 +514,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
                 };
             };
             /** @description Validation Error */
@@ -474,6 +569,24 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -503,7 +616,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FoodDetail"][];
+                    "application/json": components["schemas"]["MealEntryResponse"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
                 };
             };
             /** @description Validation Error */
@@ -539,6 +670,15 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -568,6 +708,15 @@ export interface operations {
                     "application/json": components["schemas"]["JWTAccessBase"];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
         };
     };
     login_v1_token_post: {
@@ -590,6 +739,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LoginTokenResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
                 };
             };
             /** @description Validation Error */
@@ -637,6 +795,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LoginTokenResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
                 };
             };
             /** @description Validation Error */
