@@ -19,8 +19,11 @@ class YehidotMida(Base):
         SmallInteger, primary_key=True, nullable=False)
     shmmida: Mapped[str] = mapped_column(String(30))
 
-    mida: Mapped['MealsEaten'] = relationship(back_populates='mida')  # pyright: ignore[reportUndefinedVariable]
+    meals: Mapped[list['MealsEaten']] = relationship(back_populates='mida')  # pyright: ignore[reportUndefinedVariable]
 
     @override
     def __repr__(self) -> str:
         return f'<Yehidot_Mida | smlmida(id): {self.smlmida} shmmida: {self.shmmida}>'
+
+
+# Parent

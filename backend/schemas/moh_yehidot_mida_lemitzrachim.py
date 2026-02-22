@@ -29,6 +29,11 @@ class YehidotMidaLemitzrachim(Base):
         DOUBLE_PRECISION(),)
     name: Mapped[str] = relationship('YehidotMida')
 
+    meal_mishkal = relationship(
+        "MealsEaten", back_populates='mishkal')
+
     @override
     def __repr__(self):
         return f'<TableJoin(id={self.mmitzrach} mida={self.mida}, mishkal={self.mishkal}, name={self.name})>'
+
+# Parent

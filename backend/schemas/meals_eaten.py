@@ -4,9 +4,12 @@ to write to the database
 """
 import enum
 import datetime
+from operator import and_
 from typing import override
-from sqlalchemy import SmallInteger, DOUBLE_PRECISION, Enum, ForeignKey, TIMESTAMP
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKeyConstraint, SmallInteger, DOUBLE_PRECISION, Enum, ForeignKey, TIMESTAMP
+from sqlalchemy.orm import Mapped, foreign, mapped_column, relationship
+
+from backend.schemas.moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
 from .moh_mitzrachim import MohMitzrachim
 from .moh_yehidot_mida import YehidotMida
 from .based import Base, CommonColumnsMixin
@@ -33,6 +36,16 @@ class MealsEaten(CommonColumnsMixin, Base):
 
     __tablename__: str = 'meals_eaten'
 
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["code_id", "mida_id"],
+            [
+                "moh_yehidot_mida_lemitzrachim.mmitzrach",
+                "moh_yehidot_mida_lemitzrachim.mida",
+            ],
+        ),
+    )
+
     id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
@@ -47,9 +60,15 @@ class MealsEaten(CommonColumnsMixin, Base):
     date: Mapped[datetime.datetime] = mapped_column(TIMESTAMP(
         timezone=True), default=lambda: datetime.datetime.now())
 
-    code: Mapped[str] = relationship(
+    code: Mapped["MohMitzrachim"] = relationship(
         'MohMitzrachim', back_populates='meals_eaten')
-    mida: Mapped[float] = relationship('YehidotMida', back_populates='mida')
+    mida: Mapped["YehidotMida"] = relationship(
+        'YehidotMida', back_populates='meals')
+
+    mishkal: Mapped['YehidotMidaLemitzrachim'] = relationship("YehidotMidaLemitzrachim",
+                                                              uselist=False,
+                                                              back_populates='meal_mishkal',
+                                                              )
 
     @override
     def __repr__(self) -> str:

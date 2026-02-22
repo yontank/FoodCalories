@@ -62,3 +62,5 @@ class MohMitzrachim(Base):
     @override
     def __repr__(self) -> str:
         return f'<Mitzrahim | code(id): {self.code} sml: {self.smlmitzrach} shmm:{self.shmmitzrach}, codes:{self.midot}>'
+
+# Parent
