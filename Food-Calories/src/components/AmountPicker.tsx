@@ -15,28 +15,27 @@ interface Props {
   food: FoodDetail;
   amount: number;
   setAmount: React.Dispatch<React.SetStateAction<number>>;
-  selectedUnit: PortionSize | undefined;
-  setSelectedUnit: React.Dispatch<
+  selectedSize: PortionSize | undefined;
+  setSelectedSize: React.Dispatch<
     React.SetStateAction<PortionSize | undefined>
   >;
 }
 
 /**
- * Based on a food that the user selected prior, fetches the available units for that food and lets
- * the user input how much they ate, and shows the calculated calorie amount based on that.
+ * Lets the user input how much they ate, and shows the calculated calorie amount based on that.
  */
 export function AmountPicker({
   food,
   amount,
   setAmount,
-  selectedUnit,
-  setSelectedUnit,
+  selectedSize,
+  setSelectedSize,
 }: Props) {
   const [amountInput, setAmountInput] = useState<string>(amount.toString());
 
   const calculatedAmount =
-    selectedUnit &&
-    ((selectedUnit.mishkal ?? 1) / 100) * parseFloat(amountInput);
+    selectedSize &&
+    ((selectedSize.mishkal ?? 1) / 100) * parseFloat(amountInput);
 
   return (
     <>
@@ -56,9 +55,9 @@ export function AmountPicker({
           />
         </div>
         <Select
-          value={selectedUnit?.name}
+          value={selectedSize?.name}
           onValueChange={(v) =>
-            setSelectedUnit(food.midot.find((u) => u.name == v))
+            setSelectedSize(food.midot.find((u) => u.name == v))
           }
         >
           <SelectTrigger className="w-full max-w-48">

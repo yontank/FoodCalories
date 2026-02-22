@@ -22,11 +22,11 @@ interface Props {
 export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
   const [selectedFood, setSelectedFood] = useState<FoodDetail | undefined>();
   const [searchingFood, setSearchingFood] = useState(selectedFood == undefined);
-  const [selectedUnit, setSelectedUnit] = useState<PortionSize | undefined>();
+  const [selectedSize, setSelectedSize] = useState<PortionSize | undefined>();
   const [amount, setAmount] = useState(1);
 
   const handleSubmit = async () => {
-    if (!selectedFood || !selectedUnit || amount <= 0) {
+    if (!selectedFood || !selectedSize || amount <= 0) {
       return;
     }
 
@@ -35,7 +35,7 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
         food_id: selectedFood.food_id,
         meal_type: mealTime,
         amount,
-        mida_id: selectedUnit.id,
+        mida_id: selectedSize.id,
       },
     });
 
@@ -82,14 +82,14 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
                 food={selectedFood}
                 amount={amount}
                 setAmount={setAmount}
-                selectedUnit={selectedUnit}
-                setSelectedUnit={setSelectedUnit}
+                selectedSize={selectedSize}
+                setSelectedSize={setSelectedSize}
               />
             </div>
             <DialogFooter>
               <Button
                 type="submit"
-                disabled={!selectedUnit || amount <= 0}
+                disabled={!selectedSize || amount <= 0}
                 onClick={handleSubmit}
               >
                 הוספה
