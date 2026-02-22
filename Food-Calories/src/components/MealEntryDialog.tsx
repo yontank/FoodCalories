@@ -12,6 +12,7 @@ import { FoodSearch } from "./FoodSearch";
 import { Edit2 } from "lucide-react";
 import { AmountPicker } from "./AmountPicker";
 import { client } from "@/api/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   mealTime: MealTime;
@@ -24,6 +25,7 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
   const [searchingFood, setSearchingFood] = useState(selectedFood == undefined);
   const [selectedSize, setSelectedSize] = useState<PortionSize | undefined>();
   const [amount, setAmount] = useState(1);
+  const queryClient = useQueryClient();
 
   const handleSubmit = async () => {
     if (!selectedFood || !selectedSize || amount <= 0) {
@@ -43,6 +45,9 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
       // TODO handle error
     } else {
       setOpen(false);
+      // Invalidate the meals query so that the new meal will appear.
+      // (This might be a bit overkill, `/meals` could simply return the ID of the newly added meal and this could be avoided.)
+      queryClient.invalidateQueries({ queryKey: ["get", "/v1/meals"] });
     }
   };
 
