@@ -22,14 +22,13 @@ from ..db import session
 router = APIRouter()
 
 
-@router.get('/foods', response_model_by_alias=False, response_model=list[FoodDetail], responses={404: {"model": Message}, 401: {"model": Message}})
+@router.get('/foods', response_model_by_alias=False, response_model=list[FoodDetail], responses={401: {"model": Message}})
 def query_foods(food_query: str, _: Annotated[JWTAccessBase, Depends(get_current_user)]):
     res: list[FoodDetail] = []
     if foods := session.query(MohMitzrachim).filter(MohMitzrachim.shmmitzrach.contains(food_query)).limit(20).all():
         for food in foods:
             res.append(FoodDetail.model_validate(food, from_attributes=True))
-        return res
-    return JSONResponse(status_code=404, content="food type wasnt found")
+    return res
 
 
 @router.put('/meal', response_model_by_alias=False,  status_code=status.HTTP_201_CREATED, responses={401: {"model": Message}})
