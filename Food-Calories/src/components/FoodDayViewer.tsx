@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TotalCalorieProgress } from "./TotalCalorieProgress";
 import { Progress } from "./ui/progress";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { MealTime } from "@/type";
 
@@ -33,10 +33,12 @@ export function FoodDayViewer() {
     { retry: 0 },
   );
 
-  if (error instanceof NotLoggedInError) {
-    navigate("/login");
-    return <></>;
-  }
+  useEffect(() => {
+    if (error instanceof NotLoggedInError) {
+      navigate("/login");
+    }
+  }, [error, navigate]);
+
   if (isLoading || !data) return "Loading...";
 
   const proteinSum = data
