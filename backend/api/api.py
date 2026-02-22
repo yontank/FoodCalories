@@ -15,7 +15,7 @@ from backend.models.api import Message
 from backend.models.tokens import JWTAccessBase
 from backend.schemas.meals_eaten import MealsEaten
 
-from ..models.food import FoodDetail, MealEntry
+from ..models.food import FoodDetail, MealEntry, MealEntryResponse, MeasurementUnit, PortionSize
 from ..db import session
 
 
@@ -96,7 +96,7 @@ def update_meal(
     session.commit()
 
 
-@router.get(f'/meals', response_model=list[FoodDetail], response_model_by_alias=False,  status_code=status.HTTP_200_OK, responses={400: {"model": Message}, 401: {"model": Message}})
+@router.get(f'/meals', response_model=list[MealEntryResponse], response_model_by_alias=False,  status_code=status.HTTP_200_OK, responses={400: {"model": Message}, 401: {"model": Message}})
 def get_meals_by_date_start_end_date(
         current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
         date: datetime,
@@ -126,8 +126,22 @@ def get_meals_by_date_start_end_date(
 
     meals: Sequence[MealsEaten] = session.execute(stmt).scalars().all()
 
-    res: list[FoodDetail] = []
+    res: list[MealEntryResponse] = []
 
     for meal in meals:
-        res.append(FoodDetail.model_validate(meal, from_attributes=True))
+        res.append(MealEntryResponse(
+            protein=meal.code.protein,
+            total_fat=meal.code.total_fat,
+            carbohydrates=meal.code.carbohydrates,
+            food_energy=meal.code.food_energy,
+            food_name=meal.code.shmmitzrach,
+            meal_id=meal.id,
+            amount=meal.amount,
+            mida=MeasurementUnit(smlmida=meal.mida_id,
+                                 shmmida=meal.mida.shmmida,
+                                 ),
+            mishkal=meal.mishkal.mishkal
+        )
+        )
+
     return res

@@ -74,10 +74,10 @@ class FoodDetail(FoodItem):
 
     model_config = ConfigDict(from_attributes=True)
 
-    protein: float 
-    total_fat: float 
+    protein: float
+    total_fat: float
     carbohydrates: float | None = None
-    food_energy: PositiveInt 
+    food_energy: PositiveInt
 
     midot: list[PortionSize]
 
@@ -96,3 +96,18 @@ class MealEntry(BaseModel):
     mida_id: int = Field()
     amount: float = Field()
     meal_type: MealType = Field()
+
+
+class MealEntryResponse(BaseModel):
+    food_name: str = Field()
+
+    protein: float
+    total_fat: float
+    carbohydrates: float | None = None
+    food_energy: float
+
+    mida: MeasurementUnit = Field()
+    # mida: PortionSize = Field()
+    meal_id: int = Field()
+    amount: float = Field()
+    mishkal: float
