@@ -130,6 +130,8 @@ def get_meals_by_date_start_end_date(
 
     for meal in meals:
         res.append(MealEntryResponse(
+            date=meal.date,
+            meal_type = meal.meal_type,
             protein=meal.code.protein,
             total_fat=meal.code.total_fat,
             carbohydrates=meal.code.carbohydrates,

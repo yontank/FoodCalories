@@ -4,6 +4,7 @@ query model, and models for food eaten and food eaten today.
 Currently integrated with FastAPI
 """
 
+from datetime import datetime
 from pydantic import AliasPath, BaseModel, Field, ConfigDict, PositiveInt
 from backend.schemas.meals_eaten import MealType
 
@@ -100,6 +101,7 @@ class MealEntry(BaseModel):
 
 class MealEntryResponse(BaseModel):
     food_name: str = Field()
+    date: datetime
 
     protein: float
     total_fat: float
@@ -111,3 +113,4 @@ class MealEntryResponse(BaseModel):
     meal_id: int = Field()
     amount: float = Field()
     mishkal: float
+    meal_type: MealType
