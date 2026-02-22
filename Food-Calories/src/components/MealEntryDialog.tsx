@@ -11,6 +11,7 @@ import { Button } from "./ui/button";
 import { FoodSearch } from "./FoodSearch";
 import { Edit2 } from "lucide-react";
 import { AmountPicker } from "./AmountPicker";
+import { client } from "@/api/client";
 
 interface Props {
   mealTime: MealTime;
@@ -29,23 +30,18 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
       return;
     }
 
-    const res = await fetch("/v1/foodEaten", {
-      method: "POST",
-
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-
-      body: JSON.stringify({
+    const { error } = await client.PUT("/v1/meal", {
+      body: {
+        food_id: selectedFood.food_id,
+        meal_type: mealTime,
         amount,
-        codeId: selectedFood.food_id,
-        unitType: selectedUnit.name.smlmida,
-        mealType: mealTime,
-      }),
+        mida_id: selectedUnit.id,
+      },
     });
 
-    if (res.ok) {
+    if (error) {
+      // TODO handle error
+    } else {
       setOpen(false);
     }
   };

@@ -28,7 +28,7 @@ export function FoodDayViewer() {
     "get",
     "/v1/meals",
     {
-      params: { query: { date: "0" } },
+      params: { query: { date: new Date().toISOString().substring(0, 10) } },
     },
     { retry: 0 },
   );
