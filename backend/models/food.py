@@ -21,9 +21,9 @@ class FoodItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     # The ID of the food item in the database
-    food_id: int = Field(alias='code')
+    food_id: int = Field(validation_alias='code')
     # smlmitzrach: int # I dont know what this is, im thinking its the QR bar, will check later.
-    food_name: str = Field(alias='shmmitzrach')
+    food_name: str = Field(validation_alias='shmmitzrach')
 
 
 class MeasurementUnit(BaseModel):
@@ -35,8 +35,8 @@ class MeasurementUnit(BaseModel):
     """
 
     model_config = ConfigDict(from_attributes=True)
-    id: int = Field(alias='smlmida')
-    name: str | None = Field(alias='shmmida')
+    id: int = Field(validation_alias='smlmida')
+    name: str | None = Field(validation_alias='shmmida')
 
 
 class PortionSize(BaseModel):

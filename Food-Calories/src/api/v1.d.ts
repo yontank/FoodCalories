@@ -231,10 +231,10 @@ export interface components {
          *     and different ways to "size it up"
          */
         FoodDetail: {
-            /** Code */
-            code: number;
-            /** Shmmitzrach */
-            shmmitzrach: string;
+            /** Food Id */
+            food_id: number;
+            /** Food Name */
+            food_name: string;
             /** Protein */
             protein: number;
             /** Total Fat */
@@ -338,10 +338,10 @@ export interface components {
          *     - shmmida: the name of the unit of measurement inside DB
          */
         MeasurementUnit: {
-            /** Smlmida */
-            smlmida: number;
-            /** Shmmida */
-            shmmida: string | null;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string | null;
         };
         /**
          * Message
