@@ -16,7 +16,10 @@ export function MealsEatenContainer({
   openMealEntry,
 }: MealsEatenContainerProps) {
   const eatenToday = eatenFood?.map((e) => (
-    <div className="border-solid border-2 border-red-50 h-auto w-fit text-center">
+    <div
+      key={e.meal_id}
+      className="border-solid border-2 border-red-50 h-auto w-fit text-center"
+    >
       <h1>{e.food_name}</h1>
       <p>
         {e.amount} {e.mida.name}
