@@ -35,8 +35,8 @@ class MeasurementUnit(BaseModel):
     """
 
     model_config = ConfigDict(from_attributes=True)
-    id: int = Field(validation_alias='smlmida')
-    name: str | None = Field(validation_alias='shmmida')
+    id: int = Field()
+    name: str | None = Field()
 
 
 class PortionSize(BaseModel):
@@ -55,11 +55,6 @@ class PortionSize(BaseModel):
     id: int = Field(validation_alias=AliasPath("name", "smlmida"))
     name: str = Field(validation_alias=AliasPath("name", "shmmida"))
     mishkal: float
-
-
-class FoodListItem(FoodItem):
-    model_config = ConfigDict(from_attributes=True)
-    english_name: str | None = None
 
 
 class FoodDetail(FoodItem):

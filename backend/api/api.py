@@ -138,8 +138,8 @@ def get_meals_by_date_start_end_date(
             food_name=meal.code.shmmitzrach,
             meal_id=meal.id,
             amount=meal.amount,
-            mida=MeasurementUnit(smlmida=meal.mida_id,
-                                 shmmida=meal.mida.shmmida,
+            mida=MeasurementUnit(id=meal.mida_id,
+                                 name=meal.mida.shmmida,
                                  ),
             mishkal=meal.mishkal.mishkal
         )
