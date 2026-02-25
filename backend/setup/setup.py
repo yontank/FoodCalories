@@ -1,5 +1,8 @@
+from backend.setup.models import MohYehidotMidaLemitzrachim
+
+
 from pydantic.main import BaseModel
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase
 from pathlib import Path
 # pyright: ignore[reportAttributeAccessIssue]
@@ -34,28 +37,15 @@ def read_csv_file(f_csv: Path, ValidationModel: type[BaseModel]) -> list[type[Ba
 
 
 def insert_to_db(schema: type[DeclarativeBase], models: list[type[BaseModel]], session: Session):
-    existing_codes = {
-        code for code in session.execute(select(MohMitzrachimDB.code)).all()
-    }
-
-    objects = []
-    for model in models:
-        data = model.model_dump()
-
-        if schema.__tablename__ == "moh_yehidot_mida_lemitzrachim":
-            if data["mmitzrach"] not in existing_codes:
-                continue  # skip invalid FK row
-
-        objects.append(schema(**data))
-
-    session.add_all(objects)
+    # session.add_all([schema(*model) for model in models])
+    session.add_all([schema(**model.model_dump()) for model in models])
     session.commit()
 
 
 if __name__ == '__main__':
     # If the Database, exists, raise an error because setup.py should get an non-existing database.
     engine = create_engine(
-        "postgresql://postgres:postgres@localhost:5432/HEY")
+        "postgresql://postgres:postgres@localhost:5432/ARE")
 
     if not database_exists(engine.url):
         create_database(engine.url)
@@ -68,12 +58,21 @@ if __name__ == '__main__':
     moh_yehidot_mida_lemitzrachim_file = Path(
         "CSV/moh_yehidot_mida_lemitzrachim.csv")
 
-    mitz = read_csv_file(moh_mitzrachim_file, MohMitzrachim)
-    yeh = read_csv_file(moh_yehidot_mida_file, MohYehidotMida)
-    yehmle = read_csv_file(moh_yehidot_mida_lemitzrachim_file,
-                           MohYehidotMidaLemitzrachim)
+    mitz: list[MohMitzrachim] = read_csv_file(  # pyright: ignore[reportAssignmentType]
+        moh_mitzrachim_file, MohMitzrachim)
+    yeh: list[MohYehidotMida] = read_csv_file(
+        # pyright: ignore[reportAssignmentType]
+        moh_yehidot_mida_file, MohYehidotMida)
+    yehmle: list[MohYehidotMidaLemitzrachim] = read_csv_file(moh_yehidot_mida_lemitzrachim_file,  # pyright: ignore[reportAssignmentType]
+                                                             MohYehidotMidaLemitzrachim)
 
-    # insert_to_db(MohMitzrachimDB, mitz, session)
-    # insert_to_db(YehidotMidaDB, yeh, session)
+    PK_mitz = {x.code for x in mitz}
+    PK_yeh = {x.smlmida for x in yeh}
 
-    insert_to_db(YehidotMidaLemitzrachimDB, yehmle, session)
+    yml: list[MohYehidotMidaLemitzrachim] = [
+        x for x in yehmle if x.mida in PK_yeh and x.mmitzrach in PK_mitz
+    ]
+
+    insert_to_db(MohMitzrachimDB, mitz, session)
+    insert_to_db(YehidotMidaDB, yeh, session)
+    insert_to_db(YehidotMidaLemitzrachimDB, yml, session)
