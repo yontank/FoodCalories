@@ -1,13 +1,15 @@
 from pydantic.main import BaseModel
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import DeclarativeBase
 from pathlib import Path
-from sqlalchemy_utils import create_database, database_exists  # pyright: ignore[reportAttributeAccessIssue]
+# pyright: ignore[reportAttributeAccessIssue]
+from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy.orm import Session
 
 from ..schemas.moh_mitzrachim import MohMitzrachim as MohMitzrachimDB
 from ..schemas.moh_yehidot_mida import YehidotMida as YehidotMidaDB
 from ..schemas.moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim as YehidotMidaLemitzrachimDB
+from ..schemas.based import Base
 
 
 from .models import MohMitzrachim, MohYehidotMida, MohYehidotMidaLemitzrachim
@@ -32,18 +34,32 @@ def read_csv_file(f_csv: Path, ValidationModel: type[BaseModel]) -> list[type[Ba
 
 
 def insert_to_db(schema: type[DeclarativeBase], models: list[type[BaseModel]], session: Session):
-    session.add_all([schema(*model) for model in models])
+    existing_codes = {
+        code for code in session.execute(select(MohMitzrachimDB.code)).all()
+    }
+
+    objects = []
+    for model in models:
+        data = model.model_dump()
+
+        if schema.__tablename__ == "moh_yehidot_mida_lemitzrachim":
+            if data["mmitzrach"] not in existing_codes:
+                continue  # skip invalid FK row
+
+        objects.append(schema(**data))
+
+    session.add_all(objects)
     session.commit()
 
 
 if __name__ == '__main__':
     # If the Database, exists, raise an error because setup.py should get an non-existing database.
-    engine = create_engine("postgresql://localhost/mydb")
+    engine = create_engine(
+        "postgresql://postgres:postgres@localhost:5432/HEY")
 
     if not database_exists(engine.url):
         create_database(engine.url)
-    else:
-        raise Exception("Database shouldn't exist during setup.")
+    Base.metadata.create_all(engine)
 
     session = Session(engine)
 
@@ -59,4 +75,5 @@ if __name__ == '__main__':
 
     # insert_to_db(MohMitzrachimDB, mitz, session)
     # insert_to_db(YehidotMidaDB, yeh, session)
-    # insert_to_db(YehidotMidaLemitzrachimDB, yehmle, session)
+
+    insert_to_db(YehidotMidaLemitzrachimDB, yehmle, session)

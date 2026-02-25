@@ -1,4 +1,5 @@
 # Pydantic models for CSV Validation, to make sure that what we're entering inside the database, is valid.
+from datetime import datetime
 from pydantic import BaseModel, Field
 
 
@@ -17,6 +18,7 @@ class MohMitzrachim(BaseModel):
 
     total_dietary_fiber: float | None = Field()
     calcium: float | None = Field()
+    iron: float | None = Field()
     magnesium: float | None = Field()
     sodium: float | None = Field()
     cholesterol: float | None = Field()
@@ -30,6 +32,10 @@ class MohMitzrachim(BaseModel):
 
     vitamin_b12: float | None = Field()
     vitamin_k: float | None = Field()
+
+    english_name: str | None = Field()
+
+    tarich_ptiha: datetime | None = Field(default=None)
 
 
 class MohYehidotMida(BaseModel):
