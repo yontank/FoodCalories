@@ -1,4 +1,3 @@
-import { accessTokenAtom } from "@/atoms/user";
 import { Button } from "@/components/ui/button";
 import {
   Card,

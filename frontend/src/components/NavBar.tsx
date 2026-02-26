@@ -1,15 +1,4 @@
-import React from "react";
-
-import {
-  Pagination,
-  PaginationEllipsis,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "./ui/pagination";
-import { SidebarTrigger, useSidebar } from "./ui/sidebar";
+import { useSidebar } from "./ui/sidebar";
 import { Button } from "./ui/button";
 import { Menu } from "lucide-react";
 

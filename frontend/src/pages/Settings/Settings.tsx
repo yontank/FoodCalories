@@ -4,14 +4,20 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import CALORIES from "@/data/settings.json";
 
+type Inputs = {
+  calories: number;
+  maxGramsCarbs: number;
+  maxGramsFat: number;
+  maxGramsProtein: number;
+};
+
 export function Settings() {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<Inputs>();
-  //TODO: Work on OnSubmit to Change Values in JSON File.
-  const onSubmit = (values) => console.log(values);
+  const onSubmit = (values: Inputs) => console.log(values);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
