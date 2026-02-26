@@ -59,6 +59,7 @@ export function AmountPicker({
           onValueChange={(v) =>
             setSelectedSize(food.midot.find((u) => u.name == v))
           }
+          dir={"rtl"}
         >
           <SelectTrigger className="w-full max-w-48">
             <SelectValue placeholder="בחר מידה" />
