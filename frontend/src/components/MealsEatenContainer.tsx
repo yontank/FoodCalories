@@ -48,14 +48,14 @@ export function MealsEatenContainer({
   return (
     <div className="rounded-xl border-4 p-2">
       <Button
-        className="rounded-full w-14 h-14 me-3"
+        className="rounded-full w-12 h-12 me-3"
         onClick={() => {
           openMealEntry(mealTime);
         }}
       >
         <Plus />
       </Button>
-      <h2 className="inline">{title}</h2>
+      <h2 className="inline text-lg font-semibold">{title}</h2>
       <div className="flex gap-2">{eatenToday}</div>
     </div>
   );
