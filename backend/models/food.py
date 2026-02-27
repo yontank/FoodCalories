@@ -5,25 +5,27 @@ Currently integrated with FastAPI
 """
 
 from datetime import datetime
-from pydantic import AliasPath, BaseModel, Field, ConfigDict, PositiveInt
-from backend.schemas.meals_eaten import MealType
+
+from pydantic import AliasPath, BaseModel, ConfigDict, Field, PositiveInt
+
+from ..schemas.meals_eaten import MealType
 
 
 class FoodItem(BaseModel):
-
     """
     The most basic model for a food item, containing only the essential information.
     Returns A FoodType(MohMitzrach), with:
         - code (Its ID Value)
         - SHMValue (The Food Name)
         - SMLValue (The Foood QR Code?)
-        """
+    """
+
     model_config = ConfigDict(from_attributes=True)
 
     # The ID of the food item in the database
-    food_id: int = Field(validation_alias='code')
+    food_id: int = Field(validation_alias="code")
     # smlmitzrach: int # I dont know what this is, im thinking its the QR bar, will check later.
-    food_name: str = Field(validation_alias='shmmitzrach')
+    food_name: str = Field(validation_alias="shmmitzrach")
 
 
 class MeasurementUnit(BaseModel):
@@ -86,6 +88,7 @@ class MealEntry(BaseModel):
     amount: the amount of the food eaten, which is used to calculate the calories of the meal.
     meal_type: the type of meal eaten(breakfast, lunch, dinner), which is used to categorize the meals eaten by the user.
     """
+
     model_config = ConfigDict(from_attributes=True)
 
     food_id: int = Field()

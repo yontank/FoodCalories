@@ -1,18 +1,27 @@
-"""  
+"""
 This file contains the meals_eaten table, which tells which type of meal the user has eaten,
 to write to the database
 """
-import enum
+
 import datetime
+import enum
 from operator import and_
 from typing import override
-from sqlalchemy import ForeignKeyConstraint, SmallInteger, DOUBLE_PRECISION, Enum, ForeignKey, TIMESTAMP
+
+from sqlalchemy import (
+    DOUBLE_PRECISION,
+    TIMESTAMP,
+    Enum,
+    ForeignKey,
+    ForeignKeyConstraint,
+    SmallInteger,
+)
 from sqlalchemy.orm import Mapped, foreign, mapped_column, relationship
 
-from backend.schemas.moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
+from ..schemas.moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
+from .based import Base, CommonColumnsMixin
 from .moh_mitzrachim import MohMitzrachim
 from .moh_yehidot_mida import YehidotMida
-from .based import Base, CommonColumnsMixin
 
 
 class MealType(str, enum.Enum):
@@ -34,7 +43,7 @@ class MealsEaten(CommonColumnsMixin, Base):
     and to Yehidot_Mida to get the type of size of the meal.
     """
 
-    __tablename__: str = 'meals_eaten'
+    __tablename__: str = "meals_eaten"
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -49,27 +58,27 @@ class MealsEaten(CommonColumnsMixin, Base):
     id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    code_id: Mapped[int] = mapped_column(
-        SmallInteger, ForeignKey(MohMitzrachim.code))
-    mida_id: Mapped[int] = mapped_column(
-        SmallInteger, ForeignKey(YehidotMida.smlmida))
+    code_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey(MohMitzrachim.code))
+    mida_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey(YehidotMida.smlmida))
 
     amount: Mapped[float] = mapped_column(DOUBLE_PRECISION)
     meal_type: Mapped[MealType] = mapped_column(Enum(MealType))
 
-    date: Mapped[datetime.datetime] = mapped_column(TIMESTAMP(
-        timezone=True), default=lambda: datetime.datetime.now())
+    date: Mapped[datetime.datetime] = mapped_column(
+        TIMESTAMP(timezone=True), default=lambda: datetime.datetime.now()
+    )
 
     code: Mapped["MohMitzrachim"] = relationship(
-        'MohMitzrachim', back_populates='meals_eaten')
-    mida: Mapped["YehidotMida"] = relationship(
-        'YehidotMida', back_populates='meals')
+        "MohMitzrachim", back_populates="meals_eaten"
+    )
+    mida: Mapped["YehidotMida"] = relationship("YehidotMida", back_populates="meals")
 
-    mishkal: Mapped['YehidotMidaLemitzrachim'] = relationship("YehidotMidaLemitzrachim",
-                                                              uselist=False,
-                                                              back_populates='meal_mishkal',
-                                                              )
+    mishkal: Mapped["YehidotMidaLemitzrachim"] = relationship(
+        "YehidotMidaLemitzrachim",
+        uselist=False,
+        back_populates="meal_mishkal",
+    )
 
     @override
     def __repr__(self) -> str:
-        return f'<EATEN |meal_type:{self.meal_type},mida:{self.mida} amount:{self.amount} date:{self.date} code:{self.code}>'
+        return f"<EATEN |meal_type:{self.meal_type},mida:{self.mida} amount:{self.amount} date:{self.date} code:{self.code}>"
