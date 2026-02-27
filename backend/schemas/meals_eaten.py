@@ -5,7 +5,6 @@ to write to the database
 
 import datetime
 import enum
-from operator import and_
 from typing import override
 
 from sqlalchemy import (
@@ -15,6 +14,7 @@ from sqlalchemy import (
     ForeignKey,
     ForeignKeyConstraint,
     SmallInteger,
+    and_,
 )
 from sqlalchemy.orm import Mapped, foreign, mapped_column, relationship
 
@@ -69,14 +69,21 @@ class MealsEaten(CommonColumnsMixin, Base):
     )
 
     code: Mapped["MohMitzrachim"] = relationship(
-        "MohMitzrachim", back_populates="meals_eaten"
+        "MohMitzrachim", back_populates="meals_eaten", overlaps="meal_mishkal"
     )
-    mida: Mapped["YehidotMida"] = relationship("YehidotMida", back_populates="meals")
+    mida: Mapped["YehidotMida"] = relationship(
+        "YehidotMida", back_populates="meals", overlaps="meal_mishkal"
+    )
 
     mishkal: Mapped["YehidotMidaLemitzrachim"] = relationship(
         "YehidotMidaLemitzrachim",
         uselist=False,
-        back_populates="meal_mishkal",
+        # back_populates="meal_mishkal",
+        viewonly=True,
+        primaryjoin=and_(
+            code_id == foreign(YehidotMidaLemitzrachim.mmitzrach),
+            mida_id == foreign(YehidotMidaLemitzrachim.mida),
+        ),
     )
 
     @override
