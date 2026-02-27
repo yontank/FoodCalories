@@ -1,36 +1,36 @@
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
-
-from fastapi.responses import JSONResponse
-from pwdlib import PasswordHash
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from uuid import UUID, uuid4
+
 import jwt
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from pwdlib import PasswordHash
 from sqlalchemy import false, select, update
 
-from backend.models.tokens import JWTAccessBase, LoginTokenResponse
-from backend.schemas.refresh_tokens import RefreshTokens
-from backend.schemas.roles import RolesEnum, RolesSchema
-from backend.schemas.user import User
-from backend.models.api import Message
-
-
-from ..schemas import User as UserDB
-from ..models.user import UserRegister
 from ..db import session
+from ..models.api import Message
+from ..models.tokens import JWTAccessBase, LoginTokenResponse
+from ..models.user import UserRegister
+from ..schemas import User as UserDB
+from ..schemas.refresh_tokens import RefreshTokens
+from ..schemas.roles import RolesEnum, RolesSchema
+from ..schemas.user import User
 
 router = APIRouter()
-# FIXME: Move secrets into an .env file!
-SECRET_KEY = "8e161dcfe4ebe2d055212edfb12bdfec2a0be9baca7cec5e6e21ca63787b0f8d"
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise Exception("Env doesn't contain SECRET KEY.")
 ALGORITHM = "HS256"
 DEFAULT_ACCESS_TOKEN_LIFESPAN = timedelta(minutes=30)
 DEFAULT_REFRESH_TOKEN_LIFESPAN = timedelta(days=7)
 
 
 ph = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="v1/token", refreshUrl="v1/refresh")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/token", refreshUrl="v1/refresh")
 
 # HELPER FUNCTIONS
 
@@ -47,12 +47,11 @@ def hash_password(password: str) -> str:
 
 def authenticate_user(user: UserRegister) -> UserDB | None:
     """
-        a function to check if we can authenticate the user
-        checks the database for the credentials we got,
-        and checks if we got a hit.
+    a function to check if we can authenticate the user
+    checks the database for the credentials we got,
+    and checks if we got a hit.
     """
-    db_user = session.query(UserDB).filter(
-        UserDB.username == user.username).first()
+    db_user = session.query(UserDB).filter(UserDB.username == user.username).first()
     if not db_user:
         return None
     if not verify_password(user.password, str(db_user.hashed_password)):
@@ -60,8 +59,9 @@ def authenticate_user(user: UserRegister) -> UserDB | None:
     return db_user
 
 
-def create_access_token(user_id: int, role: RolesEnum,
-                        expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    user_id: int, role: RolesEnum, expires_delta: timedelta | None = None
+) -> str:
     to_encode: dict[str, str | datetime] = {}
 
     if expires_delta:
@@ -93,12 +93,18 @@ def create_refresh_token(user_id: int, expires_delta: timedelta | None = None) -
     to_encode.update({"jti": str(uuid4())})
 
     encoded_jwt: str = jwt.encode(
-        payload=to_encode, key=SECRET_KEY, algorithm=ALGORITHM)
+        payload=to_encode, key=SECRET_KEY, algorithm=ALGORITHM
+    )
 
     return encoded_jwt
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=None, responses={409: {"model": Message}})
+@router.post(
+    "/register",
+    status_code=status.HTTP_201_CREATED,
+    response_model=None,
+    responses={409: {"model": Message}},
+)
 async def register(user: UserRegister):
     """
     given a username and password, creates a new user inside the database
@@ -106,47 +112,52 @@ async def register(user: UserRegister):
     so he can access the service
     """
 
-    username_exists: int | None = session.execute(select(User.id).where(
-        User.username == user.username)).scalar()
+    username_exists: int | None = session.execute(
+        select(User.id).where(User.username == user.username)
+    ).scalar()
 
     if username_exists:
-        return JSONResponse(status_code=status.HTTP_409_CONFLICT,
-                            content="username is already taken")
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content="username is already taken"
+        )
 
     hashed_password = hash_password(user.password)
 
     new_role = RolesSchema(role_type=RolesEnum.USER)
 
-    session.add(User(username=user.username,
-                hashed_password=hashed_password, role=new_role))
+    session.add(
+        User(username=user.username, hashed_password=hashed_password, role=new_role)
+    )
     session.commit()
 
 
-@router.get("/currentUser", responses={401: {"model": Message}}, response_model=JWTAccessBase)
+@router.get(
+    "/currentUser", responses={401: {"model": Message}}, response_model=JWTAccessBase
+)
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     """
     returns the current user after being logged with an JWT access token.
     should return the a user id, and its role.
 
-    if the user isn't authenticated, it'll return 401 
+    if the user isn't authenticated, it'll return 401
     """
     http_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail = "Not authenticated",
+        detail="Not authenticated",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
     try:
-        jwt_token = jwt.decode(
-            token, SECRET_KEY, algorithms=[ALGORITHM])
+        jwt_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
         user_id: str | None = jwt_token.get("sub")
         if not user_id:
             return http_exception
 
         # FIXME: Do we really need to check the DB if we got a valid JWT?
-        user: UserDB | None = session.query(UserDB).filter(
-            UserDB.id == int(user_id)).first()
+        user: UserDB | None = (
+            session.query(UserDB).filter(UserDB.id == int(user_id)).first()
+        )
 
     except jwt.exceptions.PyJWTError:
         raise http_exception
@@ -162,19 +173,25 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 # LOGIN ENDPOINTS WITH JWT
 
 
-@router.post("/token", responses={401: {"model": Message}}, response_model=LoginTokenResponse)
-async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+@router.post(
+    "/token", responses={401: {"model": Message}}, response_model=LoginTokenResponse
+)
+async def login(
+    response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+):
     """
     Login Endpoint for users to the service,
     to be able to get both the refresh token and access token.
 
     returns forbidden HTTP if the credentials doesn't exist.
     """
-    http_exception = JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED,
-                                  content="Invalid username or password")
+    http_exception = JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED, content="Invalid username or password"
+    )
 
-    db_user = session.query(UserDB).filter(
-        UserDB.username == form_data.username).first()
+    db_user = (
+        session.query(UserDB).filter(UserDB.username == form_data.username).first()
+    )
 
     if not db_user:
         return http_exception
@@ -187,8 +204,11 @@ async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestFo
         role=db_user.role.role_type,
     )
 
-    db_old_rtoken = session.execute(select(RefreshTokens).where(
-        RefreshTokens.user_id == db_user.id, RefreshTokens.revoked == false())).scalar_one_or_none()
+    db_old_rtoken = session.execute(
+        select(RefreshTokens).where(
+            RefreshTokens.user_id == db_user.id, RefreshTokens.revoked == false()
+        )
+    ).scalar_one_or_none()
 
     if db_old_rtoken:
         db_old_rtoken.revoked = True
@@ -203,17 +223,16 @@ async def login(response: Response, form_data: Annotated[OAuth2PasswordRequestFo
     response.set_cookie(
         key="refresh_token",
         value=r_token,
-        httponly=True,          # prevents JS access (XSS protection)
-        secure=True,            # HTTPS only (set False in local dev if needed)
-        samesite="strict",      # CSRF protection ("lax" if needed)
+        httponly=True,  # prevents JS access (XSS protection)
+        secure=True,  # HTTPS only (set False in local dev if needed)
+        samesite="strict",  # CSRF protection ("lax" if needed)
         # 7 days (adjust to your refresh token lifespan)
         max_age=60 * 60 * 24 * 7,
-        path="/"
+        path="/",
     )
 
     # Put the refresh token inside the database.
-    db_rtoken = RefreshTokens(
-        user_id=db_user.id, token_hash=hash_password(r_token))
+    db_rtoken = RefreshTokens(user_id=db_user.id, token_hash=hash_password(r_token))
     session.add(db_rtoken)
 
     session.flush()
@@ -232,19 +251,28 @@ async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> 
     # If the user is logged on, simply remoe his access token
     # revoke ALL refresh tokens created by the user.
 
-    user_id = session.execute(select(User.id).where(
-        User.id == model.sub)).scalar_one()
+    user_id = session.execute(select(User.id).where(User.id == model.sub)).scalar_one()
     _ = session.execute(
-        update(RefreshTokens).where(RefreshTokens.user_id == user_id, RefreshTokens.revoked == False).values(revoked=True))
+        update(RefreshTokens)
+        .where(RefreshTokens.user_id == user_id, RefreshTokens.revoked == False)
+        .values(revoked=True)
+    )
 
     session.commit()
 
 
-@router.post(path="/refresh", status_code=status.HTTP_200_OK, response_model=LoginTokenResponse, responses={403: {"model": Message}})
-async def refresh(response: Response, refresh_token: str = Cookie(..., include_in_schema=False)):
+@router.post(
+    path="/refresh",
+    status_code=status.HTTP_200_OK,
+    response_model=LoginTokenResponse,
+    responses={403: {"model": Message}},
+)
+async def refresh(
+    response: Response, refresh_token: str = Cookie(..., include_in_schema=False)
+):
     """
-        returns a new access token to the user after it's expired using the refresh_token.
-        the access token will be received in the response.
+    returns a new access token to the user after it's expired using the refresh_token.
+    the access token will be received in the response.
     """
     # NOTE: All of this should happen without the user having to do anything.
     # NOTE 2: the refrsh_token rotation should happen in a different function, since both login AND refresh use it.
@@ -290,8 +318,9 @@ async def refresh(response: Response, refresh_token: str = Cookie(..., include_i
 
         new_refresh_token = create_refresh_token(result.user_id)
 
-        db_new_refresh_token = RefreshTokens(user_id=result.user_id,
-                                             token_hash=hash_password(new_refresh_token))
+        db_new_refresh_token = RefreshTokens(
+            user_id=result.user_id, token_hash=hash_password(new_refresh_token)
+        )
         session.add(db_new_refresh_token)
         session.flush()
 
@@ -301,7 +330,8 @@ async def refresh(response: Response, refresh_token: str = Cookie(..., include_i
 
         response.set_cookie("refresh_token", new_refresh_token)
         access_token: str = create_access_token(
-            user_id=result.user_id, role=RolesEnum.USER)
+            user_id=result.user_id, role=RolesEnum.USER
+        )
 
         return LoginTokenResponse(access_token=access_token)
 

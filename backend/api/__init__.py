@@ -1,19 +1,30 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from . import api
-from . import login
-app = FastAPI(title='monkey')
+
+from . import api, login
+
+app = FastAPI(title="monkey")
+
+WEBSITE_URL = os.getenv("CORS_ORIGIN")
+
+if not WEBSITE_URL:
+    raise Exception("Env doesn't contain cors_origin")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://localhost:5173', 'localhost:5173'],
+    allow_origins=[WEBSITE_URL],
     allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*']
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-app.include_router(api.router, prefix='/v1')
+app.include_router(api.router, prefix="/v1")
 app.include_router(login.router, prefix="/v1")
-@app.get('/')
+
+
+@app.get("/")
 def test():
-    return 'monkey'
+    return "monkey"
+

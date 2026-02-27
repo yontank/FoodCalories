@@ -1,6 +1,7 @@
 """A Setup module for when you want to create a database to make everything u use to work"""
 
 import csv
+import os
 from pathlib import Path
 from typing import TypeVar
 
@@ -44,18 +45,26 @@ def insert_to_db(schema: type[S], models: list[T], session: Session):
 
 
 if __name__ == "__main__":
+    database_url = os.getenv("DATABASE_URL")
+    print("Running setup.py")
+
+    if not database_url:
+        raise Exception("Env doesn't contain Docker path for container DB")
     # If the Database, exists, raise an error because setup.py should get an non-existing database.
-    engine = create_engine("postgresql://postgres:postgres@localhost:5432/ARE")
+    engine = create_engine(database_url)
 
     if not database_exists(engine.url):
         create_database(engine.url)
     Base.metadata.create_all(engine)
 
     session = Session(engine)
+    print("Starting Session")
 
     moh_mitzrachim_file = Path("CSV/moh_mitzrachim.csv")
     moh_yehidot_mida_file = Path("CSV/moh_yehidot_mida.csv")
     moh_yehidot_mida_lemitzrachim_file = Path("CSV/moh_yehidot_mida_lemitzrachim.csv")
+
+    print("Importing CSV Files")
 
     mitz: list[MohMitzrachim] = read_csv_file(moh_mitzrachim_file, MohMitzrachim)
     yeh: list[MohYehidotMida] = read_csv_file(
@@ -74,6 +83,7 @@ if __name__ == "__main__":
     yml: list[MohYehidotMidaLemitzrachim] = [
         x for x in yehmle if x.mida in PK_yeh and x.mmitzrach in PK_mitz
     ]
+    print("Adding them to the database")
 
     insert_to_db(MohMitzrachimDB, mitz, session)
     insert_to_db(YehidotMidaDB, yeh, session)
