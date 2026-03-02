@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: foodcalories_db
+    restart: always
+    environment:
+      POSTGRES_USER: fooduser
+      POSTGRES_PASSWORD: foodpassword
+      POSTGRES_DB: fooddb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: foodcalories_backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://fooduser:foodpassword@db:5432/fooddb
+      SECRET_KEY: 05a51bc52b1fe64aa9d0bb81d373199439d11e1b9f6e40b3237709c2f45ec519
+      CORS_ORIGIN: http://localhost:5173
+      ENVIRONMENT: production
+      PORT: 8000
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:

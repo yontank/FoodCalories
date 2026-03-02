@@ -1,10 +1,14 @@
 """Schema table for the food information in the database and application"""
+
 from datetime import datetime
 from typing import override
-from sqlalchemy import SmallInteger, Integer, String, DateTime, DOUBLE_PRECISION
-from sqlalchemy.orm import mapped_column, relationship, Mapped
+
+from sqlalchemy import DOUBLE_PRECISION, DateTime, Integer, SmallInteger, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from ..schemas.based import Base
 from .moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
+
 # from .meals_eaten import MealsEaten
 
 
@@ -21,6 +25,7 @@ class MohMitzrachim(Base):
 
 
     """
+
     __tablename__: str = "moh_mitzrachim"
 
     code: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
@@ -28,13 +33,15 @@ class MohMitzrachim(Base):
     shmmitzrach: Mapped[str] = mapped_column(String(255))
     makor: Mapped[int | None] = mapped_column(SmallInteger(), nullable=True)
 
-    protein: Mapped[float] = mapped_column(DOUBLE_PRECISION )
+    protein: Mapped[float] = mapped_column(DOUBLE_PRECISION)
     total_fat: Mapped[float] = mapped_column(DOUBLE_PRECISION)
     carbohydrates: Mapped[float | None] = mapped_column(DOUBLE_PRECISION, nullable=True)
     food_energy: Mapped[float] = mapped_column(SmallInteger)
     alcohol: Mapped[float | None] = mapped_column(DOUBLE_PRECISION)
 
-    total_dietary_fiber: Mapped[float | None] = mapped_column(DOUBLE_PRECISION, nullable=True)
+    total_dietary_fiber: Mapped[float | None] = mapped_column(
+        DOUBLE_PRECISION, nullable=True
+    )
     calcium: Mapped[float | None] = mapped_column(DOUBLE_PRECISION, nullable=True)
     iron: Mapped[float | None] = mapped_column(DOUBLE_PRECISION, nullable=True)
     magnesium: Mapped[float | None] = mapped_column(DOUBLE_PRECISION, nullable=True)
@@ -51,16 +58,20 @@ class MohMitzrachim(Base):
     vitamin_b12: Mapped[float | None] = mapped_column(DOUBLE_PRECISION, nullable=True)
     vitamin_k: Mapped[float | None] = mapped_column(DOUBLE_PRECISION, nullable=True)
 
-    english_name: Mapped[str | None]  = mapped_column(String(255), nullable=True)
+    english_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     tarich_ptiha: Mapped[datetime | None] = mapped_column(DateTime(True), nullable=True)
     midot: Mapped[list["YehidotMidaLemitzrachim"]] = relationship()
 
-    meals_eaten: Mapped["MealsEaten"] = relationship(  # pyright: ignore[reportUndefinedVariable]
-        'MealsEaten', back_populates='code')
+    meals_eaten: Mapped["MealsEaten"] = (  # pyright: ignore[reportUndefinedVariable]
+        relationship(
+            "MealsEaten",
+            back_populates="code",
+            overlaps="meal_mishkal",
+        )
+    )
 
     @override
     def __repr__(self) -> str:
-        return f'<Mitzrahim | code(id): {self.code} sml: {self.smlmitzrach} shmm:{self.shmmitzrach}, codes:{self.midot}>'
+        return f"<Mitzrahim | code(id): {self.code} sml: {self.smlmitzrach} shmm:{self.shmmitzrach}, codes:{self.midot}>"
 
-# Parent
