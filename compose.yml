@@ -29,6 +29,14 @@ services:
       PORT: 8000
     ports:
       - "8000:8000"
+  
+  frontend:
+    build: ./frontend
+    container_name: foodcalories_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - "backend"
 
 volumes:
   postgres_data:

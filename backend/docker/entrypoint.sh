@@ -6,7 +6,15 @@ echo "Starting application..."
 # Optional: wait for database (if using Postgres)
 if [ -n "$DATABASE_URL" ]; then
   echo "Waiting for database..."
-  while ! python -c "import sqlalchemy; sqlalchemy.create_engine('$DATABASE_URL').connect()" 2>/dev/null; do
+  while true; do
+    output=$(python -c "import sqlalchemy; sqlalchemy.create_engine('$DATABASE_URL').connect()" 2>&1)
+    status=$?
+
+    if [ $status -eq 0 ]; then
+      break
+    fi
+
+    echo "failed: $output"
     sleep 2
   done
   echo "Database is ready."
