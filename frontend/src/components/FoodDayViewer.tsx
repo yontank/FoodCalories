@@ -99,7 +99,7 @@ export function FoodDayViewer() {
 
   const { data, error } = reactClient.useQuery(
     "get",
-    "/v1/meals",
+    "/api/v1/meals",
     {
       params: {
         query: {

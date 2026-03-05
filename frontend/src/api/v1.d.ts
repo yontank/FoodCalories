@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/v1/foods": {
+    "/api/v1/foods": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,7 +12,7 @@ export interface paths {
             cookie?: never;
         };
         /** Query Foods */
-        get: operations["query_foods_v1_foods_get"];
+        get: operations["query_foods_api_v1_foods_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -21,7 +21,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/meal": {
+    "/api/v1/meal": {
         parameters: {
             query?: never;
             header?: never;
@@ -33,23 +33,23 @@ export interface paths {
          * Add Meal
          * @description Creates a new meal data and sends it into the database
          */
-        put: operations["add_meal_v1_meal_put"];
+        put: operations["add_meal_api_v1_meal_put"];
         post?: never;
         /**
          * Delete Meal
          * @description given a meal id, deletes a user meal
          */
-        delete: operations["delete_meal_v1_meal_delete"];
+        delete: operations["delete_meal_api_v1_meal_delete"];
         options?: never;
         head?: never;
         /**
          * Update Meal
          * @description Update a meal value from a specific user
          */
-        patch: operations["update_meal_v1_meal_patch"];
+        patch: operations["update_meal_api_v1_meal_patch"];
         trace?: never;
     };
-    "/v1/meals": {
+    "/api/v1/meals": {
         parameters: {
             query?: never;
             header?: never;
@@ -60,7 +60,7 @@ export interface paths {
          * Get Meals By Date Start End Date
          * @description Returns all the meals the user has consumed in a specific date, or between a range of dates.
          */
-        get: operations["get_meals_by_date_start_end_date_v1_meals_get"];
+        get: operations["get_meals_by_date_start_end_date_api_v1_meals_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -69,7 +69,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/register": {
+    "/api/v1/register": {
         parameters: {
             query?: never;
             header?: never;
@@ -84,14 +84,14 @@ export interface paths {
          *     if the user doesn't already exist inside our databse, we'd like to create one for the client
          *     so he can access the service
          */
-        post: operations["register_v1_register_post"];
+        post: operations["register_api_v1_register_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/currentUser": {
+    "/api/v1/currentUser": {
         parameters: {
             query?: never;
             header?: never;
@@ -105,7 +105,7 @@ export interface paths {
          *
          *     if the user isn't authenticated, it'll return 401
          */
-        get: operations["get_current_user_v1_currentUser_get"];
+        get: operations["get_current_user_api_v1_currentUser_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -114,7 +114,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/token": {
+    "/api/v1/token": {
         parameters: {
             query?: never;
             header?: never;
@@ -130,14 +130,14 @@ export interface paths {
          *
          *     returns forbidden HTTP if the credentials doesn't exist.
          */
-        post: operations["login_v1_token_post"];
+        post: operations["login_api_v1_token_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/logout": {
+    "/api/v1/logout": {
         parameters: {
             query?: never;
             header?: never;
@@ -147,14 +147,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Logout */
-        post: operations["logout_v1_logout_post"];
+        post: operations["logout_api_v1_logout_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/refresh": {
+    "/api/v1/refresh": {
         parameters: {
             query?: never;
             header?: never;
@@ -168,7 +168,7 @@ export interface paths {
          * @description returns a new access token to the user after it's expired using the refresh_token.
          *     the access token will be received in the response.
          */
-        post: operations["refresh_v1_refresh_post"];
+        post: operations["refresh_api_v1_refresh_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -196,8 +196,8 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** Body_login_v1_token_post */
-        Body_login_v1_token_post: {
+        /** Body_login_api_v1_token_post */
+        Body_login_api_v1_token_post: {
             /** Grant Type */
             grant_type?: string | null;
             /** Username */
@@ -405,7 +405,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    query_foods_v1_foods_get: {
+    query_foods_api_v1_foods_get: {
         parameters: {
             query: {
                 food_query: string;
@@ -445,7 +445,7 @@ export interface operations {
             };
         };
     };
-    add_meal_v1_meal_put: {
+    add_meal_api_v1_meal_put: {
         parameters: {
             query?: never;
             header?: never;
@@ -487,7 +487,7 @@ export interface operations {
             };
         };
     };
-    delete_meal_v1_meal_delete: {
+    delete_meal_api_v1_meal_delete: {
         parameters: {
             query: {
                 meal_id: number;
@@ -536,7 +536,7 @@ export interface operations {
             };
         };
     };
-    update_meal_v1_meal_patch: {
+    update_meal_api_v1_meal_patch: {
         parameters: {
             query: {
                 meal_id: number;
@@ -589,7 +589,7 @@ export interface operations {
             };
         };
     };
-    get_meals_by_date_start_end_date_v1_meals_get: {
+    get_meals_by_date_start_end_date_api_v1_meals_get: {
         parameters: {
             query: {
                 date: string;
@@ -639,7 +639,7 @@ export interface operations {
             };
         };
     };
-    register_v1_register_post: {
+    register_api_v1_register_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -681,7 +681,7 @@ export interface operations {
             };
         };
     };
-    get_current_user_v1_currentUser_get: {
+    get_current_user_api_v1_currentUser_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -710,7 +710,7 @@ export interface operations {
             };
         };
     };
-    login_v1_token_post: {
+    login_api_v1_token_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -719,7 +719,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/x-www-form-urlencoded": components["schemas"]["Body_login_v1_token_post"];
+                "application/x-www-form-urlencoded": components["schemas"]["Body_login_api_v1_token_post"];
             };
         };
         responses: {
@@ -752,7 +752,7 @@ export interface operations {
             };
         };
     };
-    logout_v1_logout_post: {
+    logout_api_v1_logout_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -770,7 +770,7 @@ export interface operations {
             };
         };
     };
-    refresh_v1_refresh_post: {
+    refresh_api_v1_refresh_post: {
         parameters: {
             query?: never;
             header?: never;

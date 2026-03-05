@@ -25,7 +25,7 @@ export function FoodSearch({ show, selectedFood, setSelectedFood }: Props) {
     FoodDetail | undefined
   >(selectedFood);
 
-  const { status, data } = reactClient.useQuery("get", "/v1/foods", {
+  const { status, data } = reactClient.useQuery("get", "/api/v1/foods", {
     params: { query: { food_query: debouncedSearch } },
   });
 

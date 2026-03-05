@@ -11,10 +11,10 @@ export const client = createClient<paths>({ baseUrl: "/" });
 export const reactClient = createReactClient(client);
 
 const unprotectedRoutes: (keyof paths)[] = [
-  "/v1/register",
-  "/v1/token",
-  "/v1/logout",
-  "/v1/refresh",
+  "/api/v1/register",
+  "/api/v1/token",
+  "/api/v1/logout",
+  "/api/v1/refresh",
 ];
 
 client.use({
@@ -35,7 +35,7 @@ client.use({
     if (!info.exp || info.exp < Date.now() / 1000) {
       // Access token is expired, ask for a new one via /refresh.
       console.log("Access token is expired.");
-      const { data, error } = await client.POST("/v1/refresh");
+      const { data, error } = await client.POST("/api/v1/refresh");
       if (error) {
         // If refreshing failed, we need the user to log in again.
         console.warn("Access token could not be refreshed.");

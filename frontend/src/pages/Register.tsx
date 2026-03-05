@@ -36,7 +36,7 @@ function RegisterForm() {
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   async function onSubmit(formData: z.infer<typeof loginSchema>) {
-    const { error } = await client.POST("/v1/register", {
+    const { error } = await client.POST("/api/v1/register", {
       body: {
         username: formData.username,
         password: formData.password,
@@ -49,7 +49,7 @@ function RegisterForm() {
       return;
     }
 
-    await client.POST("/v1/token", {
+    await client.POST("/api/v1/token", {
       body: {
         username: formData.username,
         password: formData.password,

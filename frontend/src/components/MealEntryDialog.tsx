@@ -32,7 +32,7 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
       return;
     }
 
-    const { error } = await client.PUT("/v1/meal", {
+    const { error } = await client.PUT("/api/v1/meal", {
       body: {
         food_id: selectedFood.food_id,
         meal_type: mealTime,
@@ -47,7 +47,7 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
       setOpen(false);
       // Invalidate the meals query so that the new meal will appear.
       // (This might be a bit overkill, `/meals` could simply return the ID of the newly added meal and this could be avoided.)
-      queryClient.invalidateQueries({ queryKey: ["get", "/v1/meals"] });
+      queryClient.invalidateQueries({ queryKey: ["get", "/api/v1/meals"] });
     }
   };
 

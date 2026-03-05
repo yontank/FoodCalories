@@ -38,7 +38,7 @@ function LoginForm() {
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   async function onSubmit(formData: z.infer<typeof loginSchema>) {
-    const { data, error } = await client.POST("/v1/token", {
+    const { data, error } = await client.POST("/api/v1/token", {
       body: {
         username: formData.username,
         password: formData.password,
