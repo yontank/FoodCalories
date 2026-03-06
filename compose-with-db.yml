@@ -1,5 +1,5 @@
 include:
-  - compose.yml
+  - docker-compose.yml
 
 services:
   db:
