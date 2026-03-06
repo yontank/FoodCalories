@@ -21,10 +21,21 @@ fi
 cd /
 
 # Run setup only once
-if [ ! -f "/app/.initialized" ]; then
+output=$(python -c "
+import sqlalchemy
+engine = sqlalchemy.create_engine('$DATABASE_URL')
+if sqlalchemy.inspect(engine).has_table('users'):
+    print('exists')
+else:
+    print('not exists')
+" 2>&1)
+
+
+if [ "$output" == "exists" ]; then
+  echo "Table exists, skipping setup"
+else
   echo "Running first-time setup..."
   python -m app.setup.setup
-  touch /app/.initialized
 fi
 
 echo "Starting FastAPI..."
