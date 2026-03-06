@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-set -e
-
 echo "Starting application..."
 
 # Optional: wait for database (if using Postgres)
 if [ -n "$DATABASE_URL" ]; then
-  echo "Waiting for database..."
+  echo "Waiting for database at $DATABASE_URL"
   while true; do
     output=$(python -c "import sqlalchemy; sqlalchemy.create_engine('$DATABASE_URL').connect()" 2>&1)
     status=$?
