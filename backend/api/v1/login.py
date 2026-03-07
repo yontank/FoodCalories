@@ -18,86 +18,12 @@ from db.schemas import User as UserDB
 from db.schemas.refresh_tokens import RefreshTokens
 from db.schemas.roles import RolesEnum, RolesSchema
 from db.schemas.user import User
+from core.config import settings
+from core.security import *
 
 router = APIRouter()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-if not SECRET_KEY:
-    raise Exception("Env doesn't contain SECRET KEY.")
-ALGORITHM = "HS256"
-DEFAULT_ACCESS_TOKEN_LIFESPAN = timedelta(minutes=30)
-DEFAULT_REFRESH_TOKEN_LIFESPAN = timedelta(days=7)
-
-
-ph = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/token", refreshUrl="api/v1/refresh")
-
-# HELPER FUNCTIONS
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Checks if two hashes are the same."""
-    return ph.verify(plain_password, hashed_password)
-
-
-def hash_password(password: str) -> str:
-    """Hashes credentials"""
-    return ph.hash(password)
-
-
-def authenticate_user(user: UserRegister) -> UserDB | None:
-    """
-    a function to check if we can authenticate the user
-    checks the database for the credentials we got,
-    and checks if we got a hit.
-    """
-    db_user = session.query(UserDB).filter(UserDB.username == user.username).first()
-    if not db_user:
-        return None
-    if not verify_password(user.password, str(db_user.hashed_password)):
-        return None
-    return db_user
-
-
-def create_access_token(
-    user_id: int, role: RolesEnum, expires_delta: timedelta | None = None
-) -> str:
-    to_encode: dict[str, str | datetime] = {}
-
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-
-    to_encode.update({"exp": expire})
-    to_encode.update({"sub": str(user_id)})
-    to_encode.update({"role": role})
-
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-    return encoded_jwt
-
-
-def create_refresh_token(user_id: int, expires_delta: timedelta | None = None) -> str:
-    """creates a refresh token for the user"""
-
-    to_encode: dict[str, str | datetime | UUID] = {}
-    if expires_delta:
-        expire = datetime.now(tz=timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(tz=timezone.utc) + DEFAULT_REFRESH_TOKEN_LIFESPAN
-
-    to_encode.update({"sub": str(user_id)})
-    to_encode.update({"exp": expire})
-    to_encode.update({"iat": datetime.now(tz=timezone.utc)})
-    to_encode.update({"jti": str(uuid4())})
-
-    encoded_jwt: str = jwt.encode(
-        payload=to_encode, key=SECRET_KEY, algorithm=ALGORITHM
-    )
-
-    return encoded_jwt
-
 
 @router.post(
     "/register",
@@ -151,7 +77,7 @@ async def get_current_user(request: Request, token: Annotated[str, Depends(oauth
     )
 
     try:
-        jwt_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        jwt_token = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
 
         user_id: str | None = jwt_token.get("sub")
         if not user_id:
@@ -294,7 +220,7 @@ async def refresh(
     # 4) return both tokens to the user.
 
     try:
-        token_payload = jwt.decode(refresh_token, SECRET_KEY, ALGORITHM)
+        token_payload = jwt.decode(refresh_token, settings.SECRET_KEY, ALGORITHM)
 
         user_id: str | None = token_payload.get("sub")
 
