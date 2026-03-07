@@ -2,12 +2,11 @@
 from sqlalchemy import BOOLEAN, Integer, String, false
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
+from db.based import Base, CommonColumnsMixin
 
 from .meals_eaten import MealsEaten
 from .refresh_tokens import RefreshTokens
-
 from .roles import RolesSchema
-from .based import Base, CommonColumnsMixin
 
 
 class User(CommonColumnsMixin, Base):

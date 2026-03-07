@@ -2,26 +2,25 @@ from collections.abc import Sequence
 from datetime import datetime, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
-
-from ..api.login import get_current_user
-from ..db import session
-from ..models.api import Message
-from ..models.food import (
+from core.rate_limit import limiter
+from db.session import session
+from models.api_error_model import Message
+from models.food import (
     FoodDetail,
     MealEntry,
     MealEntryResponse,
     MeasurementUnit,
-    PortionSize,
 )
-from ..models.tokens import JWTAccessBase
-from ..schemas.meals_eaten import MealsEaten
-from ..schemas.moh_mitzrachim import MohMitzrachim
+from models.tokens import JWTAccessBase
+from db.schemas.meals_eaten import MealsEaten
+from db.schemas.moh_mitzrachim import MohMitzrachim
+
+from api.v1.login import get_current_user
 
 router = APIRouter()
-
 
 @router.get(
     "/foods",
@@ -29,9 +28,13 @@ router = APIRouter()
     response_model=list[FoodDetail],
     responses={401: {"model": Message}},
 )
+@limiter.limit("10/minute")
 def query_foods(
+    request: Request,
     food_query: str, _: Annotated[JWTAccessBase, Depends(get_current_user)]
 ):
+    """Given A User query that is authenticated, return food that is a substring of that food"""
+    # NOTE: Maybe this function is supposed to be a recommendation algorithm? There has to be a better way than this.
     res: list[FoodDetail] = []
     if (
         foods := session.query(MohMitzrachim)
@@ -50,7 +53,10 @@ def query_foods(
     status_code=status.HTTP_201_CREATED,
     responses={401: {"model": Message}},
 )
+
+@limiter.limit("10/minute")
 def add_meal(
+    request : Request, 
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)], meal: MealEntry
 ) -> None:
     """Creates a new meal data and sends it into the database"""
@@ -76,6 +82,7 @@ def add_meal(
     responses={403: {"model": Message}, 401: {"model": Message}},
 )
 def delete_meal(
+    request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)], meal_id: int
 ):
     """given a meal id, deletes a user meal"""
@@ -101,7 +108,10 @@ def delete_meal(
     status_code=status.HTTP_200_OK,
     responses={403: {"model": Message}, 401: {"model": Message}},
 )
+
+@limiter.limit("10/minute")
 def update_meal(
+    request : Request, 
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     meal: MealEntry,
     meal_id: int,
@@ -131,7 +141,10 @@ def update_meal(
     status_code=status.HTTP_200_OK,
     responses={400: {"model": Message}, 401: {"model": Message}},
 )
+
+@limiter.limit("10/minute")
 def get_meals_by_date_start_end_date(
+    request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     date: datetime,
     end_date: datetime | None = None,

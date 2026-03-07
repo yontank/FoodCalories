@@ -6,11 +6,8 @@ from typing import override
 from sqlalchemy import DOUBLE_PRECISION, DateTime, Integer, SmallInteger, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..schemas.based import Base
+from db.based import Base
 from .moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
-
-# from .meals_eaten import MealsEaten
-
 
 class MohMitzrachim(Base):
     """_summary_

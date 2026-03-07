@@ -18,7 +18,7 @@ if [ -n "$DATABASE_URL" ]; then
   echo "Database is ready."
 fi
 
-cd /
+cd /app
 
 # Run setup only once
 output=$(python -c "
@@ -35,8 +35,8 @@ if [ "$output" == "exists" ]; then
   echo "Table exists, skipping setup"
 else
   echo "Running first-time setup..."
-  python -m app.setup.setup
+  python -m scripts.setup.setup
 fi
 
 echo "Starting FastAPI..."
-exec uvicorn app.api:app --host 0.0.0.0 --port 8000
+exec python3 main.py

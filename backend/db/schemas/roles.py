@@ -11,8 +11,7 @@ import enum
 from sqlalchemy import ForeignKey, Integer, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .based import Base, CommonColumnsMixin
-# from .user import User
+from db.based import Base, CommonColumnsMixin
 
 
 class RolesEnum(str, enum.Enum):

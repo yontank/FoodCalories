@@ -7,7 +7,7 @@ while checking which one is revoked and which one isnt.
 """
 from sqlalchemy import BOOLEAN, VARCHAR, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .based import Base, CommonColumnsMixin
+from db.based import Base, CommonColumnsMixin
 
 
 class RefreshTokens(CommonColumnsMixin, Base):

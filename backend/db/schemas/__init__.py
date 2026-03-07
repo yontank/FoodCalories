@@ -1,7 +1,7 @@
 """
 Imports all Schemas and other things from the schemas folder
 """
-from .based import *
+from db.based import Base
 from .meals_eaten import *
 from .moh_mitzrachim import *
 from .moh_yehidot_mida import *

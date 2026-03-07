@@ -3,12 +3,10 @@ Pydantic models for the food data, including the base food model,
 query model, and models for food eaten and food eaten today.
 Currently integrated with FastAPI
 """
-
 from datetime import datetime
-
 from pydantic import AliasPath, BaseModel, ConfigDict, Field, PositiveInt
 
-from ..schemas.meals_eaten import MealType
+from db.schemas.meals_eaten import MealType
 
 
 class FoodItem(BaseModel):

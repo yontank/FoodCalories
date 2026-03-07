@@ -17,9 +17,9 @@ from sqlalchemy import (
     and_,
 )
 from sqlalchemy.orm import Mapped, foreign, mapped_column, relationship
+from db.based import Base, CommonColumnsMixin
 
-from ..schemas.moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
-from .based import Base, CommonColumnsMixin
+from .moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
 from .moh_mitzrachim import MohMitzrachim
 from .moh_yehidot_mida import YehidotMida
 

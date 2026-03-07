@@ -1,7 +1,11 @@
-"""A Setup module for when you want to create a database to make everything u use to work"""
+"""
+A Setup module for when you want to create a database to make everything u use to work
+A Setup Script, For when first setting up the project (preferably through docker compose)
+
+simply running setup.py with the correct DB, user and password will generate the correct tables and inital data.
+"""
 
 import csv
-import os
 from pathlib import Path
 from typing import TypeVar
 
@@ -9,11 +13,13 @@ from pydantic.main import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session
 from sqlalchemy_utils import create_database, database_exists
+    
+from core.config import settings
 
-from ..schemas.based import Base
-from ..schemas.moh_mitzrachim import MohMitzrachim as MohMitzrachimDB
-from ..schemas.moh_yehidot_mida import YehidotMida as YehidotMidaDB
-from ..schemas.moh_yehidot_mida_lemitzrachim import (
+from db.based import Base
+from db.schemas.moh_mitzrachim import MohMitzrachim as MohMitzrachimDB
+from db.schemas.moh_yehidot_mida import YehidotMida as YehidotMidaDB
+from db.schemas.moh_yehidot_mida_lemitzrachim import (
     YehidotMidaLemitzrachim as YehidotMidaLemitzrachimDB,
 )
 from .models import MohMitzrachim, MohYehidotMida, MohYehidotMidaLemitzrachim
@@ -45,13 +51,9 @@ def insert_to_db(schema: type[S], models: list[T], session: Session):
 
 
 if __name__ == "__main__":
-    database_url = os.getenv("DATABASE_URL")
     print("Running setup.py")
-
-    if not database_url:
-        raise Exception("Env doesn't contain Docker path for container DB")
     # If the Database, exists, raise an error because setup.py should get an non-existing database.
-    engine = create_engine(database_url)
+    engine = create_engine(str(settings.DATABASE_URL))
 
     if not database_exists(engine.url):
         create_database(engine.url)
@@ -59,10 +61,13 @@ if __name__ == "__main__":
 
     session = Session(engine)
     print("Starting Session")
+    # Get project root based on the location of this file
+    BASE_DIR = Path(__file__).resolve().parent.parent.parent 
+    CSV_DIR = BASE_DIR / "scripts" / "CSV"
 
-    moh_mitzrachim_file = Path("CSV/moh_mitzrachim.csv")
-    moh_yehidot_mida_file = Path("CSV/moh_yehidot_mida.csv")
-    moh_yehidot_mida_lemitzrachim_file = Path("CSV/moh_yehidot_mida_lemitzrachim.csv")
+    moh_mitzrachim_file = CSV_DIR / "moh_mitzrachim.csv"
+    moh_yehidot_mida_file = CSV_DIR / "moh_yehidot_mida.csv"
+    moh_yehidot_mida_lemitzrachim_file = CSV_DIR / "moh_yehidot_mida_lemitzrachim.csv"
 
     print("Importing CSV Files")
 

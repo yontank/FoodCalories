@@ -4,20 +4,20 @@ from typing import Annotated
 from uuid import UUID, uuid4
 
 import jwt
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pwdlib import PasswordHash
 from sqlalchemy import false, select, update
-
-from ..db import session
-from ..models.api import Message
-from ..models.tokens import JWTAccessBase, LoginTokenResponse
-from ..models.user import UserRegister
-from ..schemas import User as UserDB
-from ..schemas.refresh_tokens import RefreshTokens
-from ..schemas.roles import RolesEnum, RolesSchema
-from ..schemas.user import User
+from core.rate_limit import limiter
+from db.session import session
+from models.api_error_model import Message
+from models.tokens import JWTAccessBase, LoginTokenResponse
+from models.user import UserRegister
+from db.schemas import User as UserDB
+from db.schemas.refresh_tokens import RefreshTokens
+from db.schemas.roles import RolesEnum, RolesSchema
+from db.schemas.user import User
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ DEFAULT_REFRESH_TOKEN_LIFESPAN = timedelta(days=7)
 
 
 ph = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/token", refreshUrl="v1/refresh")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/token", refreshUrl="api/v1/refresh")
 
 # HELPER FUNCTIONS
 
@@ -105,7 +105,8 @@ def create_refresh_token(user_id: int, expires_delta: timedelta | None = None) -
     response_model=None,
     responses={409: {"model": Message}},
 )
-async def register(user: UserRegister):
+@limiter.limit("10/minute")
+async def register(request : Request , user: UserRegister):
     """
     given a username and password, creates a new user inside the database
     if the user doesn't already exist inside our databse, we'd like to create one for the client
@@ -134,7 +135,9 @@ async def register(user: UserRegister):
 @router.get(
     "/currentUser", responses={401: {"model": Message}}, response_model=JWTAccessBase
 )
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+
+@limiter.limit("10/minute")
+async def get_current_user(request: Request, token: Annotated[str, Depends(oauth2_scheme)]):
     """
     returns the current user after being logged with an JWT access token.
     should return the a user id, and its role.
@@ -176,8 +179,12 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 @router.post(
     "/token", responses={401: {"model": Message}}, response_model=LoginTokenResponse
 )
+
+@limiter.limit("10/minute")
 async def login(
-    response: Response, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+    request: Request,
+    response: Response,
+      form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
     """
     Login Endpoint for users to the service,
@@ -246,7 +253,8 @@ async def login(
 
 
 @router.post(path="/logout", status_code=204, responses={})
-async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> None:
+@limiter.limit("10/minute")
+async def logout(request: Request, model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> None:
     # Check that the user is logged on (Should happen with Depends)
     # If the user is logged on, simply remoe his access token
     # revoke ALL refresh tokens created by the user.
@@ -268,6 +276,7 @@ async def logout(model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> 
     responses={403: {"model": Message}},
 )
 async def refresh(
+    request : Request, 
     response: Response, refresh_token: str = Cookie(..., include_in_schema=False)
 ):
     """
@@ -315,7 +324,6 @@ async def refresh(
             return JSONResponse(status_code=403, content="not a valid refresh token")
 
         result.revoked = True
-
         new_refresh_token = create_refresh_token(result.user_id)
 
         db_new_refresh_token = RefreshTokens(
@@ -336,4 +344,4 @@ async def refresh(
         return LoginTokenResponse(access_token=access_token)
 
     except jwt.exceptions.PyJWTError:
-        return JSONResponse(status_code=403, content="not a valid refresh token")
+        return JSONResponse(status_code=403, content="noun")

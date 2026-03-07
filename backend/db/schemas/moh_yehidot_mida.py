@@ -1,9 +1,9 @@
 from typing import override
+from db.based import Base
 
 from sqlalchemy import SmallInteger, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .based import Base
 
 # from .meals_eaten import MealsEaten
 
@@ -29,7 +29,3 @@ class YehidotMida(Base):
     @override
     def __repr__(self) -> str:
         return f"<Yehidot_Mida | smlmida(id): {self.smlmida} shmmida: {self.shmmida}>"
-
-
-# Parent
-

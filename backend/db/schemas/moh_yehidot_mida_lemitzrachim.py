@@ -1,7 +1,7 @@
 from typing import override
 from sqlalchemy import SmallInteger, DOUBLE_PRECISION, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .based import Base
+from db.based import Base
 
 
 class YehidotMidaLemitzrachim(Base):
@@ -35,5 +35,3 @@ class YehidotMidaLemitzrachim(Base):
     @override
     def __repr__(self):
         return f'<TableJoin(id={self.mmitzrach} mida={self.mida}, mishkal={self.mishkal}, name={self.name})>'
-
-# Parent
