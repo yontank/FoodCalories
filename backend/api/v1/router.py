@@ -1,12 +1,13 @@
 from fastapi import Request, APIRouter
 from core.rate_limit import limiter
-from . import api, login
+from api.v1 import meal_api, login
+
 
 router = APIRouter(prefix='/v1')
 
 
 
-router.include_router(api.router)
+router.include_router(meal_api.router)
 router.include_router(login.router)
 
 
