@@ -15,14 +15,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
 import * as z from "zod";
 import { useState } from "react";
 import { loginSchema, registerSchema } from "@/schemas/user";
 import { client } from "@/api/client";
+import { useLogin } from "@/hooks/useLogin";
 
 function RegisterForm() {
-  const navigate = useNavigate();
+  const login = useLogin();
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -44,19 +44,15 @@ function RegisterForm() {
     });
 
     if (error) {
-      // TODO after yontank corrects the error types, use them properly here.
       setErrorMessage(JSON.stringify(error));
       return;
     }
 
-    await client.POST("/api/v1/token", {
-      body: {
-        username: formData.username,
-        password: formData.password,
-        scope: "",
-      },
+    login({
+      username: formData.username,
+      password: formData.password,
+      setErrorMessage,
     });
-    navigate("/");
   }
 
   return (

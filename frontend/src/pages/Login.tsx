@@ -1,4 +1,3 @@
-import { accessTokenAtom } from "@/atoms/user";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,18 +14,14 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAtom } from "jotai";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
 import * as z from "zod";
 import { useState } from "react";
 import { loginSchema } from "@/schemas/user";
-import { client } from "@/api/client";
+import { useLogin } from "@/hooks/useLogin";
+import { useNavigate } from "react-router";
 
 function LoginForm() {
-  const [, setAccessToken] = useAtom(accessTokenAtom);
-  const navigate = useNavigate();
-
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -37,26 +32,16 @@ function LoginForm() {
 
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
+  const navigate = useNavigate();
+
+  const login = useLogin();
+
   async function onSubmit(formData: z.infer<typeof loginSchema>) {
-    const { data, error } = await client.POST("/api/v1/token", {
-      body: {
-        username: formData.username,
-        password: formData.password,
-        scope: "",
-      },
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+    login({
+      username: formData.username,
+      password: formData.password,
+      setErrorMessage,
     });
-
-    if (error) {
-      // TODO after yontank corrects the error types, use them properly here.
-      setErrorMessage(JSON.stringify(error));
-      return;
-    }
-
-    setAccessToken(data.access_token);
-    navigate("/");
   }
 
   return (
