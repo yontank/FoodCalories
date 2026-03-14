@@ -1,3 +1,5 @@
 __pycache__/
 *venv/
 .env
+foodcal_cert.pem
+foodcal_key.pem

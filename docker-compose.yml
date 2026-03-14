@@ -6,7 +6,7 @@ services:
     build:
       context: ./backend
     container_name: foodcalories_backend
-    restart: always
+    restart: no
     environment:
       DATABASE_URL: ${DATABASE_URL}
       SECRET_KEY: ${SECRET_KEY}
