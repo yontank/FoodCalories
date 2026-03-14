@@ -20,6 +20,7 @@ services:
     build: ./frontend
     container_name: foodcalories_frontend
     ports:
-      - "3000:80"
+      - "80:80"
+      - "443:443"
     depends_on:
       - "backend"
