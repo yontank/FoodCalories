@@ -12,21 +12,23 @@ from api.v1 import router
 app = FastAPI(title="Israeli Food API")
 # Rate Limiter using slow api, see SlowAPI documentation.
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded,_rate_limit_exceeded_handler) # type: ignore
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.CORS_ORIGIN],
+    allow_origins=[str(o) for o in settings.CORS_ORIGIN],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
+    expose_headers=["X-Process-Time"],
+    max_age=3600,  # Cache preflight requests for 1 hour
 )
-app.include_router(router=router.router, prefix='/api')
+app.include_router(router=router.router, prefix="/api")
+
 
 def main():
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
