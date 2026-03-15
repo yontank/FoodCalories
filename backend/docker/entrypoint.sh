@@ -38,5 +38,10 @@ else
   python -m scripts.setup.setup
 fi
 
-echo "Starting FastAPI..."
-exec python3 main.py
+if [ "$DEBUG" = "true" ]; then
+  echo "Starting in debug mode..."
+  exec python3 main.py
+else
+  echo "Starting in production mode..."
+  exec gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --preload
+fi
