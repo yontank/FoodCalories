@@ -34,7 +34,7 @@ function LoginForm() {
 
   const navigate = useNavigate();
 
-  const login = useLogin();
+  const { login, inProgress } = useLogin();
 
   async function onSubmit(formData: z.infer<typeof loginSchema>) {
     login({
@@ -97,7 +97,7 @@ function LoginForm() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal" className="justify-between">
-          <Button type="submit" form="form-login">
+          <Button type="submit" form="form-login" disabled={inProgress}>
             כניסה
           </Button>
           <Button variant={"secondary"} onClick={() => navigate("/register")}>

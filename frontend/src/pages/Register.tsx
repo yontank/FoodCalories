@@ -22,7 +22,8 @@ import { client } from "@/api/client";
 import { useLogin } from "@/hooks/useLogin";
 
 function RegisterForm() {
-  const login = useLogin();
+  const { login, inProgress: loginInProgress } = useLogin();
+  const [registerInProgress, setRegisterInProgress] = useState(false);
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -36,12 +37,16 @@ function RegisterForm() {
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   async function onSubmit(formData: z.infer<typeof loginSchema>) {
+    setRegisterInProgress(true);
+
     const { error } = await client.POST("/api/v1/register", {
       body: {
         username: formData.username,
         password: formData.password,
       },
     });
+
+    setRegisterInProgress(false);
 
     if (error) {
       setErrorMessage(JSON.stringify(error));
@@ -129,7 +134,11 @@ function RegisterForm() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="submit" form="form-login">
+          <Button
+            type="submit"
+            form="form-login"
+            disabled={loginInProgress || registerInProgress}
+          >
             כניסה
           </Button>
         </Field>
