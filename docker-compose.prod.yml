@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  db:
+    image: public.ecr.aws/docker/library/postgres:16-alpine
+    container_name: foodcalories_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+    container_name: foodcalories_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DEBUG=false
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: foodcalories_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
