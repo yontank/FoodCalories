@@ -20,6 +20,7 @@ import { useState } from "react";
 import { loginSchema } from "@/schemas/user";
 import { useLogin } from "@/hooks/useLogin";
 import { useNavigate } from "react-router";
+import { ErrorBox } from "@/components/ErrorBox";
 
 function LoginForm() {
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -93,7 +94,7 @@ function LoginForm() {
             />
           </FieldGroup>
         </form>
-        {errorMessage && <div>{errorMessage}</div>}
+        {errorMessage && <ErrorBox>{errorMessage}</ErrorBox>}
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal" className="justify-between">

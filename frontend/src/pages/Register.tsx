@@ -20,6 +20,7 @@ import { useState } from "react";
 import { loginSchema, registerSchema } from "@/schemas/user";
 import { client } from "@/api/client";
 import { useLogin } from "@/hooks/useLogin";
+import { ErrorBox } from "@/components/ErrorBox";
 
 function RegisterForm() {
   const { login, inProgress: loginInProgress } = useLogin();
@@ -130,7 +131,7 @@ function RegisterForm() {
             />
           </FieldGroup>
         </form>
-        {errorMessage && <div>{errorMessage}</div>}
+        {errorMessage && <ErrorBox>{errorMessage}</ErrorBox>}
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
