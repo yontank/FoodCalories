@@ -34,6 +34,9 @@ services:
       - "443:443"
     depends_on:
       - backend
+    volumes:
+      # Add Nginx logs to follow later if anything interesting happens.
+      - ./logs/nginx:/var/log/nginx
 
 volumes:
   postgres_data:
