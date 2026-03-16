@@ -1,3 +1,22 @@
 **/__pycache__
 __pycache__
-.venv
+*.pyc
+*.pyo
+.venv/
+
+# Git
+.git/
+.gitignore
+
+# Env files
+.env
+.env.*
+
+# Logs
+*.log
+logs/
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
