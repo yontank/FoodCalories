@@ -18,7 +18,6 @@ if [ -n "$DATABASE_URL" ]; then
   echo "Database is ready."
 fi
 
-cd /app
 
 # Run setup only once
 output=$(python -c "
