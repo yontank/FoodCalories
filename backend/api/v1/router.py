@@ -20,5 +20,6 @@ def test(request: Request):
 
 
 @router.get("/health", status_code=status.HTTP_200_OK)
+@limiter.limit("30/minute")
 async def health_check():
     return JSONResponse(content={"status": "healthy", "timestamp": datetime.now()})
