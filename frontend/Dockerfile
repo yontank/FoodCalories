@@ -18,6 +18,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY foodcal_cert.pem /etc/ssl/certs/foodcal.pem
 COPY foodcal_key.pem /etc/ssl/private/foodcal.pem
 
-EXPOSE 80
+EXPOSE 80 443
 
 CMD ["nginx", "-g", "daemon off;"]
