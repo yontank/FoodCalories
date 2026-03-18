@@ -8,7 +8,7 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pwdlib import PasswordHash
-from sqlalchemy import false, select, update
+from sqlalchemy import delete, false, select, update
 from core.rate_limit import limiter
 from db.session import session
 from models.api_error_model import Message
@@ -16,6 +16,7 @@ from models.tokens import JWTAccessBase, LoginTokenResponse
 from models.user import UserRegister
 from db.schemas import User as UserDB
 from db.schemas.refresh_tokens import RefreshTokens
+from db.schemas.meals_eaten import MealsEaten
 from db.schemas.roles import RolesEnum, RolesSchema
 from db.schemas.user import User
 from core.config import settings
@@ -23,7 +24,10 @@ from core.security import *
 
 router = APIRouter()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/token", refreshUrl="api/v1/refresh")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="api/v1/token", refreshUrl="api/v1/refresh"
+)
+
 
 @router.post(
     "/register",
@@ -32,7 +36,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/token", refreshUrl="api/v1
     responses={409: {"model": Message}},
 )
 @limiter.limit("10/minute")
-async def register(request : Request , user: UserRegister):
+async def register(request: Request, user: UserRegister):
     """
     given a username and password, creates a new user inside the database
     if the user doesn't already exist inside our databse, we'd like to create one for the client
@@ -61,9 +65,10 @@ async def register(request : Request , user: UserRegister):
 @router.get(
     "/currentUser", responses={401: {"model": Message}}, response_model=JWTAccessBase
 )
-
 @limiter.limit("10/minute")
-async def get_current_user(request: Request, token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_current_user(
+    request: Request, token: Annotated[str, Depends(oauth2_scheme)]
+):
     """
     returns the current user after being logged with an JWT access token.
     should return the a user id, and its role.
@@ -105,12 +110,11 @@ async def get_current_user(request: Request, token: Annotated[str, Depends(oauth
 @router.post(
     "/token", responses={401: {"model": Message}}, response_model=LoginTokenResponse
 )
-
 @limiter.limit("10/minute")
 async def login(
     request: Request,
     response: Response,
-      form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ):
     """
     Login Endpoint for users to the service,
@@ -180,7 +184,9 @@ async def login(
 
 @router.post(path="/logout", status_code=204, responses={})
 @limiter.limit("10/minute")
-async def logout(request: Request, model: Annotated[JWTAccessBase, Depends(get_current_user)]) -> None:
+async def logout(
+    request: Request, model: Annotated[JWTAccessBase, Depends(get_current_user)]
+) -> None:
     # Check that the user is logged on (Should happen with Depends)
     # If the user is logged on, simply remoe his access token
     # revoke ALL refresh tokens created by the user.
@@ -202,8 +208,9 @@ async def logout(request: Request, model: Annotated[JWTAccessBase, Depends(get_c
     responses={403: {"model": Message}},
 )
 async def refresh(
-    request : Request, 
-    response: Response, refresh_token: str = Cookie(..., include_in_schema=False)
+    request: Request,
+    response: Response,
+    refresh_token: str = Cookie(..., include_in_schema=False),
 ):
     """
     returns a new access token to the user after it's expired using the refresh_token.
@@ -271,3 +278,24 @@ async def refresh(
 
     except jwt.exceptions.PyJWTError:
         return JSONResponse(status_code=403, content="noun")
+
+
+@router.delete(
+    "/user",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={401: {"model": Message}},
+)
+@limiter.limit("10/minute")
+async def delete_user(
+    request: Request,
+    current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+):
+    """Deletes the current user along with all their meals, refresh tokens, and role"""
+    user_id = current_user.sub
+
+    session.execute(delete(MealsEaten).where(MealsEaten.user_id == user_id))
+    session.execute(delete(RefreshTokens).where(RefreshTokens.user_id == user_id))
+    session.execute(delete(RolesSchema).where(RolesSchema.user_id == user_id))
+    session.execute(delete(User).where(User.id == user_id))
+
+    session.commit()
