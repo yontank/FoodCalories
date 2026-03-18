@@ -1,10 +1,12 @@
+import csv
+import io
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, status
-from fastapi.responses import JSONResponse
-from sqlalchemy import select
+from fastapi.responses import JSONResponse, StreamingResponse
+from sqlalchemy import delete, select
 from core.rate_limit import limiter
 from db.session import session
 from models.api_error_model import Message
@@ -22,6 +24,7 @@ from api.v1.login import get_current_user
 
 router = APIRouter()
 
+
 @router.get(
     "/foods",
     response_model_by_alias=False,
@@ -31,7 +34,8 @@ router = APIRouter()
 @limiter.limit("10/minute")
 def query_foods(
     request: Request,
-    food_query: str, _: Annotated[JWTAccessBase, Depends(get_current_user)]
+    food_query: str,
+    _: Annotated[JWTAccessBase, Depends(get_current_user)],
 ):
     """Given A User query that is authenticated, return food that is a substring of that food"""
     # NOTE: Maybe this function is supposed to be a recommendation algorithm? There has to be a better way than this.
@@ -53,11 +57,11 @@ def query_foods(
     status_code=status.HTTP_201_CREATED,
     responses={401: {"model": Message}},
 )
-
 @limiter.limit("10/minute")
 def add_meal(
-    request : Request, 
-    current_user: Annotated[JWTAccessBase, Depends(get_current_user)], meal: MealEntry
+    request: Request,
+    current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+    meal: MealEntry,
 ) -> None:
     """Creates a new meal data and sends it into the database"""
 
@@ -83,7 +87,8 @@ def add_meal(
 )
 def delete_meal(
     request: Request,
-    current_user: Annotated[JWTAccessBase, Depends(get_current_user)], meal_id: int
+    current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+    meal_id: int,
 ):
     """given a meal id, deletes a user meal"""
     # Check That it is indeed the corect user asking to delete.
@@ -101,6 +106,23 @@ def delete_meal(
     session.commit()
 
 
+@router.delete(
+    "/meals",
+    response_model=None,
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={401: {"model": Message}},
+)
+@limiter.limit("10/minute")
+def delete_all_meals(
+    request: Request,
+    current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+):
+    """Deletes all meal history for the current user"""
+    stmt = delete(MealsEaten).where(MealsEaten.user_id == current_user.sub)
+    session.execute(stmt)
+    session.commit()
+
+
 @router.patch(
     "/meal",
     response_model=None,
@@ -108,10 +130,9 @@ def delete_meal(
     status_code=status.HTTP_200_OK,
     responses={403: {"model": Message}, 401: {"model": Message}},
 )
-
 @limiter.limit("10/minute")
 def update_meal(
-    request : Request, 
+    request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     meal: MealEntry,
     meal_id: int,
@@ -141,7 +162,6 @@ def update_meal(
     status_code=status.HTTP_200_OK,
     responses={400: {"model": Message}, 401: {"model": Message}},
 )
-
 @limiter.limit("10/minute")
 def get_meals_by_date_start_end_date(
     request: Request,
@@ -199,3 +219,66 @@ def get_meals_by_date_start_end_date(
         )
 
     return res
+
+
+@router.get(
+    "/meals/export",
+    status_code=status.HTTP_200_OK,
+    responses={401: {"model": Message}},
+)
+@limiter.limit("10/minute")
+def export_meals_csv(
+    request: Request,
+    current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+):
+    """Returns all meal history for the current user as a downloadable CSV file."""
+    stmt = select(MealsEaten).where(MealsEaten.user_id == current_user.sub)
+    meals: Sequence[MealsEaten] = session.execute(stmt).scalars().all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        [
+            "date",
+            "mealType",
+            "foodName",
+            "amount",
+            "unit",
+            "calories",
+            "protein",
+            "fat",
+            "carbohydrates",
+        ]
+    )
+
+    for meal in meals:
+        writer.writerow(
+            [
+                meal.date.isoformat(),
+                meal.meal_type,
+                meal.code.shmmitzrach,
+                meal.amount,
+                meal.mida.shmmida,
+                round(
+                    meal.code.food_energy * meal.mishkal.mishkal * meal.amount / 100, 2
+                ),
+                round(meal.code.protein * meal.mishkal.mishkal * meal.amount / 100, 2),
+                round(
+                    meal.code.total_fat * meal.mishkal.mishkal * meal.amount / 100, 2
+                ),
+                round(
+                    (meal.code.carbohydrates or 0)
+                    * meal.mishkal.mishkal
+                    * meal.amount
+                    / 100,
+                    2,
+                ),
+            ]
+        )
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=meals.csv"},
+    )
