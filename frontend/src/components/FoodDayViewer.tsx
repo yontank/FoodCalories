@@ -31,34 +31,45 @@ function DataContent({
   const carbSum = data
     .map((e) => ((e.carbohydrates ?? 0) * e.amount * e.mishkal) / 100)
     .reduce((p, a) => p + a, 0);
-  const totalSum = fatSum + proteinSum + carbSum;
 
+  const calorieSum = data
+    .map((e) => (e.food_energy * e.mishkal * e.amount) / 100)
+    .reduce((p, a) => p + a, 0);
   return (
     <>
-      <TotalCalorieProgress
+      {/* <TotalCalorieProgress
         segments={[
           { value: (carbSum / totalSum) * 100 },
           { value: (fatSum / totalSum) * 100, color: "bg-green-300" },
           { value: (proteinSum / totalSum) * 100, color: "bg-red-500" },
         ]}
-      />
+      /> */}
+      <div className="w-full pb-4 flex justify-center items-center">
+        <Progress
+          label="קלוריות"
+          value={(calorieSum / CALORIES.total_calories) * 100}
+          wrapperClassName="w-3/4"
+          barHeight="h-4"
+        />
+      </div>
       <div className="flex w-full justify-around mt-3">
         <Progress
           label="חלבון"
-          value={(proteinSum! / CALORIES.total_grams_protein) * 100}
-          indicatorClassName="bg-red-500"
+          value={(proteinSum / CALORIES.total_grams_protein) * 100}
+          indicatorClassName="bg-blue-500"
         />
         <Progress
           label="שומן"
-          value={(fatSum! / CALORIES.total_grams_fat) * 100}
+          value={(fatSum / CALORIES.total_grams_fat) * 100}
           indicatorClassName="bg-green-300"
         />
         <Progress
           label="פחמימה"
-          value={(carbSum! / CALORIES.total_grams_carbs) * 100}
+          value={(carbSum / CALORIES.total_grams_carbs) * 100}
+          indicatorClassName="bg-red-500"
         />
       </div>
-      <div id="food-container" className="flex flex-col gap-3 mt-3">
+      <div id="food-container" className="flex flex-col gap-3 mt-3 ">
         <MealsEatenContainer
           eatenFood={data.filter((e) => e.meal_type == "breakfast")}
           mealTime={"breakfast"}

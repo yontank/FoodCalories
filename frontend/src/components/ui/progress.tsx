@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 
 interface AdditionalProgressProps {
   indicatorClassName?: string;
+  wrapperClassName?: string;
+  barHeight?: string;
   label: string;
 }
 
@@ -12,13 +14,13 @@ const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root> & AdditionalProgressProps,
   React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> &
     AdditionalProgressProps
->(({ className, value, indicatorClassName, label, ...props }, ref) => (
-  <div className="flex flex-col items-center gap-2 w-1/4">
+>(({ className, value, indicatorClassName, wrapperClassName, barHeight = "h-2", label, ...props }, ref) => (
+  <div className={cn("flex flex-col items-center gap-2 w-1/4", wrapperClassName)}>
     {<h2>{label}</h2>}
     <ProgressPrimitive.Root
       ref={ref}
       className={cn(
-        "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
+        `relative ${barHeight} w-full overflow-hidden rounded-full bg-primary/20`,
         className,
       )}
       {...props}
