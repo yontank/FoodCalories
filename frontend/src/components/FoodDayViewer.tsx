@@ -58,7 +58,7 @@ function DataContent({
           value={(carbSum! / CALORIES.total_grams_carbs) * 100}
         />
       </div>
-      <div id="food-container" className="flex flex-col gap-3 mt-3">
+      <div id="food-container" className="flex flex-col gap-3 mt-3 ">
         <MealsEatenContainer
           eatenFood={data.filter((e) => e.meal_type == "breakfast")}
           mealTime={"breakfast"}
