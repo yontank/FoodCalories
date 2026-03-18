@@ -13,7 +13,7 @@ from core.rate_limit import limiter
 from db.session import session
 from models.api_error_model import Message
 from models.tokens import JWTAccessBase, LoginTokenResponse
-from models.user import UserRegister
+from models.user import ChangePassword, UserRegister
 from db.schemas import User as UserDB
 from db.schemas.refresh_tokens import RefreshTokens
 from db.schemas.meals_eaten import MealsEaten
@@ -278,6 +278,32 @@ async def refresh(
 
     except jwt.exceptions.PyJWTError:
         return JSONResponse(status_code=403, content="noun")
+
+
+@router.put(
+    "/user/password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={401: {"model": Message}, 400: {"model": Message}},
+)
+@limiter.limit("10/minute")
+async def change_password(
+    request: Request,
+    body: ChangePassword,
+    current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+):
+    """Changes the password for the currently authenticated user."""
+    db_user = session.execute(
+        select(User).where(User.id == current_user.sub)
+    ).scalar_one()
+
+    if not verify_password(body.current_password, str(db_user.hashed_password)):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content="Current password is incorrect",
+        )
+
+    db_user.hashed_password = hash_password(body.new_password)
+    session.commit()
 
 
 @router.delete(
