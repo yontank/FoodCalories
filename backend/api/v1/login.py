@@ -303,6 +303,7 @@ async def change_password(
         )
 
     db_user.hashed_password = hash_password(body.new_password)
+    revoke_all_user_refresh_tokens(current_user.sub, session)
     session.commit()
 
 

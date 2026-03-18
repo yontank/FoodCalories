@@ -3,8 +3,10 @@ from uuid import UUID, uuid4
 
 import jwt
 from pwdlib import PasswordHash
+from sqlalchemy.orm import Session
 
 from db.schemas.roles import RolesEnum
+from db.schemas.refresh_tokens import RefreshTokens
 from core.config import settings
 
 ALGORITHM = "HS256"
@@ -62,3 +64,14 @@ def create_refresh_token(user_id: int, expires_delta: timedelta | None = None) -
     )
 
     return encoded_jwt
+
+
+def revoke_all_user_refresh_tokens(user_id: int, db: Session) -> int:
+    """Revokes all active refresh tokens for a user. Returns the number of tokens revoked."""
+    updated = (
+        db.query(RefreshTokens)
+        .filter(RefreshTokens.user_id == user_id, RefreshTokens.revoked == False)
+        .update({"revoked": True})
+    )
+    db.commit()
+    return updated
