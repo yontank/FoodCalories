@@ -10,6 +10,7 @@ from .refresh_tokens import RefreshTokens
 from .roles import RolesSchema
 from .weight_history import WeightHistory
 from .user_profile import UserProfile
+from .user_nutrition_profile import NutritionProfile
 
 
 class User(CommonColumnsMixin, Base):
@@ -48,6 +49,7 @@ class User(CommonColumnsMixin, Base):
     # his height, age, nutrition preferences, etc.
 
     profile: Mapped["UserProfile"] = relationship(back_populates="user")
+    nutrition_settings: Mapped["NutritionProfile"] = relationship(back_populates="user")
 
 
 # PARENT

@@ -13,3 +13,4 @@ from .refresh_tokens import *
 from .user import *
 from .weight_history import *
 from .user_profile import UserProfile
+from .user_nutrition_profile import NutritionProfile

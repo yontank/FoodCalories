@@ -12,14 +12,7 @@ if TYPE_CHECKING:
     from .user import User
 
 
-class Gender(str, Enum):
-    """Enum representing the biological gender of a user."""
-
-    MALE = "male"
-    FEMALE = "female"
-
-
-class UserProfile(CommonColumnsMixin, Base):
+class NutritionProfile(CommonColumnsMixin, Base):
     """
     Stores physical and nutritional profile data for a user.
     Holds attributes like age, height, gender, activity level,
@@ -27,18 +20,20 @@ class UserProfile(CommonColumnsMixin, Base):
     Has a one-to-one relationship with the User table.
     """
 
-    __tablename__ = "user_profile"
+    __tablename__ = "user_nutrition_profile"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
-    age: Mapped[int] = mapped_column(Integer)
-    height: Mapped[int] = mapped_column(Integer)  # In CM, Metric System.
-    gender: Mapped[Gender] = mapped_column(SA_Enum(Gender))
-
     activity_factor: Mapped[float] = mapped_column(DOUBLE_PRECISION)
+
+    # Saves Preferences of the user eating habits. we can calculate the calories from this.
+    carbohydrates_g: Mapped[int] = mapped_column(Integer)
+    protein_g: Mapped[int] = mapped_column(Integer)
+    fat_g: Mapped[int] = mapped_column(Integer)
+
     # One to One RelationShip
-    user: Mapped[User] = relationship(back_populates="profile")
+    user: Mapped[User] = relationship(back_populates="nutrition_settings")
 
     def __repr__(self) -> str:
-        return f"UserProfile: {self.user_id}, \n Age: {self.age}, height:{self.height} "
+        return f""

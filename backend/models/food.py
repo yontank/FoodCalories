@@ -3,10 +3,12 @@ Pydantic models for the food data, including the base food model,
 query model, and models for food eaten and food eaten today.
 Currently integrated with FastAPI
 """
+
 from datetime import datetime
 from pydantic import AliasPath, BaseModel, ConfigDict, Field, PositiveInt
 
 from db.schemas.meals_eaten import MealType
+from db.schemas.user_profile import Gender
 
 
 class FoodItem(BaseModel):
@@ -110,3 +112,16 @@ class MealEntryResponse(BaseModel):
     amount: float = Field()
     mishkal: float
     meal_type: MealType
+
+
+class NutritionValues(BaseModel):
+    protein: int = Field(ge=0)
+    carbohydrates: int = Field(ge=0)
+    fat: int = Field(ge=0)
+
+
+class ProfileValues(BaseModel):
+    height: int = Field(gt=0)
+    age: int = Field(ge=0)
+    activity_factor: float = Field(gt=0)
+    gender: Gender
