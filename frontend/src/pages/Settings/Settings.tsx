@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CalorieDeficitDialog } from "@/components/CalorieDeficitDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +31,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
-import CALORIES from "@/data/settings.json";
+import { useAtom } from "jotai";
+import { nutritionAtom } from "@/atoms/nutrition";
 
 type NutritionInputs = {
   calories: number;
@@ -47,13 +49,26 @@ type AccountInputs = {
 };
 
 export function Settings() {
-  const [theme, setTheme] = useState("system");
   const [language, setLanguage] = useState("he");
+  const [nutrition, setNutrition] = useAtom(nutritionAtom);
 
-  const nutritionForm = useForm<NutritionInputs>();
+  const nutritionForm = useForm<NutritionInputs>({
+    values: {
+      calories: nutrition.calories,
+      maxGramsCarbs: nutrition.carbs,
+      maxGramsFat: nutrition.fat,
+      maxGramsProtein: nutrition.protein,
+    },
+  });
   const accountForm = useForm<AccountInputs>();
 
-  const onSaveNutrition = (values: NutritionInputs) => console.log(values);
+  const onSaveNutrition = (values: NutritionInputs) =>
+    setNutrition({
+      calories: values.calories,
+      carbs: values.maxGramsCarbs,
+      fat: values.maxGramsFat,
+      protein: values.maxGramsProtein,
+    });
   const onSaveAccount = (values: AccountInputs) => console.log(values);
   const onExportData = () => console.log("export data");
   const onClearLogs = () => console.log("clear logs");
@@ -73,7 +88,10 @@ export function Settings() {
         <form onSubmit={nutritionForm.handleSubmit(onSaveNutrition)}>
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>יעדים יומיים</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>יעדים יומיים</CardTitle>
+                <CalorieDeficitDialog />
+              </div>
               <CardDescription>
                 הגדר את הערכים המקסימליים היומיים שלך
               </CardDescription>
@@ -86,7 +104,6 @@ export function Settings() {
                   <Input
                     id="max-calories"
                     type="number"
-                    defaultValue={CALORIES.total_calories}
                     {...nutritionForm.register("calories", {
                       required: "שדה חובה",
                     })}
@@ -103,7 +120,6 @@ export function Settings() {
                   <Input
                     id="carb"
                     type="number"
-                    defaultValue={CALORIES.total_grams_carbs}
                     {...nutritionForm.register("maxGramsCarbs", {
                       required: "שדה חובה",
                     })}
@@ -120,7 +136,6 @@ export function Settings() {
                   <Input
                     id="fat"
                     type="number"
-                    defaultValue={CALORIES.total_grams_fat}
                     {...nutritionForm.register("maxGramsFat", {
                       required: "שדה חובה",
                     })}
@@ -137,7 +152,6 @@ export function Settings() {
                   <Input
                     id="protein"
                     type="number"
-                    defaultValue={CALORIES.total_grams_protein}
                     {...nutritionForm.register("maxGramsProtein", {
                       required: "שדה חובה",
                     })}

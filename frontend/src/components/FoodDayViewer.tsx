@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TotalCalorieProgress } from "./TotalCalorieProgress";
 import { Progress } from "./ui/progress";
 
 import { useEffect, useState } from "react";
@@ -7,7 +6,8 @@ import { useEffect, useState } from "react";
 import { MealTime } from "@/type";
 
 import { MealsEatenContainer } from "./MealsEatenContainer";
-import CALORIES from "../data/settings.json";
+import { useAtomValue } from "jotai";
+import { nutritionAtom } from "@/atoms/nutrition";
 import { MealEntryDialog } from "./MealEntryDialog";
 import { NotLoggedInError, reactClient } from "@/api/client";
 import { useNavigate } from "react-router";
@@ -22,6 +22,7 @@ function DataContent({
   data: components["schemas"]["MealEntryResponse"][];
   openMealEntry: (time: MealTime) => void;
 }) {
+  const CALORIES = useAtomValue(nutritionAtom);
   const proteinSum = data
     .map((e) => (e.protein * e.amount * e.mishkal) / 100)
     .reduce((p, a) => p + a, 0);
@@ -47,26 +48,30 @@ function DataContent({
       <div className="w-full pb-4 flex justify-center items-center">
         <Progress
           label="קלוריות"
-          value={(calorieSum / CALORIES.total_calories) * 100}
+          value={(calorieSum / CALORIES.calories) * 100}
           wrapperClassName="w-3/4"
           barHeight="h-4"
+          goalAt={70}
+          goalLabel="אכילה מעבר לכאן = אכילת יתר להיום"
+          indicatorClassName="bg-amber-500"
+          destructiveOnOverflow
         />
       </div>
       <div className="flex w-full justify-around mt-3">
         <Progress
           label="חלבון"
-          value={(proteinSum / CALORIES.total_grams_protein) * 100}
+          value={(proteinSum / CALORIES.protein) * 100}
           indicatorClassName="bg-blue-500"
         />
         <Progress
           label="שומן"
-          value={(fatSum / CALORIES.total_grams_fat) * 100}
+          value={(fatSum / CALORIES.fat) * 100}
           indicatorClassName="bg-green-300"
         />
         <Progress
           label="פחמימה"
-          value={(carbSum / CALORIES.total_grams_carbs) * 100}
-          indicatorClassName="bg-red-500"
+          value={(carbSum / CALORIES.carbs) * 100}
+          indicatorClassName="bg-orange-500"
         />
       </div>
       <div id="food-container" className="flex flex-col gap-3 mt-3 ">
