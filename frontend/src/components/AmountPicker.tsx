@@ -55,7 +55,7 @@ export function AmountPicker({
           />
         </div>
         <Select
-          value={selectedSize?.name}
+          value={selectedSize?.name ?? ""}
           onValueChange={(v) =>
             setSelectedSize(food.midot.find((u) => u.name == v))
           }
