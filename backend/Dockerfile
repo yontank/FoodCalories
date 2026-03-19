@@ -24,4 +24,4 @@ USER appuser
 
 EXPOSE 8000
 
-ENTRYPOINT ["docker/entrypoint.sh"]
+ENTRYPOINT ["sh", "docker/entrypoint.sh"]

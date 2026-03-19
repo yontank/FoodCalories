@@ -31,3 +31,8 @@ class UserRegister(BaseModel):
     """
     username: str = Field(min_length=2, max_length=16)
     password: Annotated[str, AfterValidator(is_good_password)]
+
+
+class ChangePassword(BaseModel):
+    current_password: str
+    new_password: Annotated[str, AfterValidator(is_good_password)]

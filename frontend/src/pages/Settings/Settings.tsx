@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CalorieDeficitDialog } from "@/components/CalorieDeficitDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,8 +20,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
-import CALORIES from "@/data/settings.json";
+import { useAtom } from "jotai";
+import { nutritionAtom } from "@/atoms/nutrition";
 
 type NutritionInputs = {
   calories: number;
@@ -37,13 +49,26 @@ type AccountInputs = {
 };
 
 export function Settings() {
-  const [theme, setTheme] = useState("system");
   const [language, setLanguage] = useState("he");
+  const [nutrition, setNutrition] = useAtom(nutritionAtom);
 
-  const nutritionForm = useForm<NutritionInputs>();
+  const nutritionForm = useForm<NutritionInputs>({
+    values: {
+      calories: nutrition.calories,
+      maxGramsCarbs: nutrition.carbs,
+      maxGramsFat: nutrition.fat,
+      maxGramsProtein: nutrition.protein,
+    },
+  });
   const accountForm = useForm<AccountInputs>();
 
-  const onSaveNutrition = (values: NutritionInputs) => console.log(values);
+  const onSaveNutrition = (values: NutritionInputs) =>
+    setNutrition({
+      calories: values.calories,
+      carbs: values.maxGramsCarbs,
+      fat: values.maxGramsFat,
+      protein: values.maxGramsProtein,
+    });
   const onSaveAccount = (values: AccountInputs) => console.log(values);
   const onExportData = () => console.log("export data");
   const onClearLogs = () => console.log("clear logs");
@@ -59,230 +84,188 @@ export function Settings() {
       </div>
 
       <div className="grid grid-cols-2 gap-6">
+        {/* Daily Nutrition Targets */}
+        <form onSubmit={nutritionForm.handleSubmit(onSaveNutrition)}>
+          <Card className="h-full">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>יעדים יומיים</CardTitle>
+                <CalorieDeficitDialog />
+              </div>
+              <CardDescription>
+                הגדר את הערכים המקסימליים היומיים שלך
+              </CardDescription>
+            </CardHeader>
+            <Separator />
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="max-calories">קלוריות</Label>
+                  <Input
+                    id="max-calories"
+                    type="number"
+                    {...nutritionForm.register("calories", {
+                      required: "שדה חובה",
+                    })}
+                  />
+                  {nutritionForm.formState.errors.calories && (
+                    <p className="text-xs text-destructive">
+                      {nutritionForm.formState.errors.calories.message}
+                    </p>
+                  )}
+                </div>
 
-      {/* Daily Nutrition Targets */}
-      <form onSubmit={nutritionForm.handleSubmit(onSaveNutrition)}>
-        <Card className="h-full">
+                <div className="space-y-2">
+                  <Label htmlFor="carb">פחמימות (גרם)</Label>
+                  <Input
+                    id="carb"
+                    type="number"
+                    {...nutritionForm.register("maxGramsCarbs", {
+                      required: "שדה חובה",
+                    })}
+                  />
+                  {nutritionForm.formState.errors.maxGramsCarbs && (
+                    <p className="text-xs text-destructive">
+                      {nutritionForm.formState.errors.maxGramsCarbs.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="fat">שומן (גרם)</Label>
+                  <Input
+                    id="fat"
+                    type="number"
+                    {...nutritionForm.register("maxGramsFat", {
+                      required: "שדה חובה",
+                    })}
+                  />
+                  {nutritionForm.formState.errors.maxGramsFat && (
+                    <p className="text-xs text-destructive">
+                      {nutritionForm.formState.errors.maxGramsFat.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="protein">חלבון (גרם)</Label>
+                  <Input
+                    id="protein"
+                    type="number"
+                    {...nutritionForm.register("maxGramsProtein", {
+                      required: "שדה חובה",
+                    })}
+                  />
+                  {nutritionForm.formState.errors.maxGramsProtein && (
+                    <p className="text-xs text-destructive">
+                      {nutritionForm.formState.errors.maxGramsProtein.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="justify-end border-t pt-4">
+              <Button type="submit">שמור שינויים</Button>
+            </CardFooter>
+          </Card>
+        </form>
+
+        {/* Account Settings */}
+        <form onSubmit={accountForm.handleSubmit(onSaveAccount)}>
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>חשבון</CardTitle>
+              <CardDescription>עדכן את פרטי הכניסה שלך</CardDescription>
+            </CardHeader>
+            <Separator />
+            <CardContent className="pt-6 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="current-password">סיסמה נוכחית</Label>
+                <Input
+                  id="current-password"
+                  type="password"
+                  {...accountForm.register("currentPassword")}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">סיסמה חדשה</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    {...accountForm.register("newPassword")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">אימות סיסמה</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    {...accountForm.register("confirmPassword")}
+                  />
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="justify-end border-t pt-4">
+              <Button type="submit">שמור שינויים</Button>
+            </CardFooter>
+          </Card>
+        </form>
+
+        {/* Data */}
+        <Card>
           <CardHeader>
-            <CardTitle>יעדים יומיים</CardTitle>
-            <CardDescription>
-              הגדר את הערכים המקסימליים היומיים שלך
-            </CardDescription>
-          </CardHeader>
-          <Separator />
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="max-calories">קלוריות</Label>
-                <Input
-                  id="max-calories"
-                  type="number"
-                  defaultValue={CALORIES.total_calories}
-                  {...nutritionForm.register("calories", {
-                    required: "שדה חובה",
-                  })}
-                />
-                {nutritionForm.formState.errors.calories && (
-                  <p className="text-xs text-destructive">
-                    {nutritionForm.formState.errors.calories.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="carb">פחמימות (גרם)</Label>
-                <Input
-                  id="carb"
-                  type="number"
-                  defaultValue={CALORIES.total_grams_carbs}
-                  {...nutritionForm.register("maxGramsCarbs", {
-                    required: "שדה חובה",
-                  })}
-                />
-                {nutritionForm.formState.errors.maxGramsCarbs && (
-                  <p className="text-xs text-destructive">
-                    {nutritionForm.formState.errors.maxGramsCarbs.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="fat">שומן (גרם)</Label>
-                <Input
-                  id="fat"
-                  type="number"
-                  defaultValue={CALORIES.total_grams_fat}
-                  {...nutritionForm.register("maxGramsFat", {
-                    required: "שדה חובה",
-                  })}
-                />
-                {nutritionForm.formState.errors.maxGramsFat && (
-                  <p className="text-xs text-destructive">
-                    {nutritionForm.formState.errors.maxGramsFat.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="protein">חלבון (גרם)</Label>
-                <Input
-                  id="protein"
-                  type="number"
-                  defaultValue={CALORIES.total_grams_protein}
-                  {...nutritionForm.register("maxGramsProtein", {
-                    required: "שדה חובה",
-                  })}
-                />
-                {nutritionForm.formState.errors.maxGramsProtein && (
-                  <p className="text-xs text-destructive">
-                    {nutritionForm.formState.errors.maxGramsProtein.message}
-                  </p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="justify-end border-t pt-4">
-            <Button type="submit">שמור שינויים</Button>
-          </CardFooter>
-        </Card>
-      </form>
-
-      {/* Account Settings */}
-      <form onSubmit={accountForm.handleSubmit(onSaveAccount)}>
-        <Card className="h-full">
-          <CardHeader>
-            <CardTitle>חשבון</CardTitle>
-            <CardDescription>עדכן את פרטי הכניסה שלך</CardDescription>
+            <CardTitle>נתונים</CardTitle>
+            <CardDescription>ייצא או נקה את הנתונים שלך</CardDescription>
           </CardHeader>
           <Separator />
           <CardContent className="pt-6 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">כתובת אימייל</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                {...accountForm.register("email", { required: "שדה חובה" })}
-              />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">ייצא נתונים</p>
+                <p className="text-xs text-muted-foreground">
+                  הורד את כל יומני האוכל שלך כקובץ CSV
+                </p>
+              </div>
+              <Button variant="outline" onClick={onExportData}>
+                ייצא CSV
+              </Button>
             </div>
             <Separator />
-            <p className="text-sm font-medium">שינוי סיסמה</p>
-            <div className="space-y-2">
-              <Label htmlFor="current-password">סיסמה נוכחית</Label>
-              <Input
-                id="current-password"
-                type="password"
-                {...accountForm.register("currentPassword")}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="new-password">סיסמה חדשה</Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  {...accountForm.register("newPassword")}
-                />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">נקה יומנים</p>
+                <p className="text-xs text-muted-foreground">
+                  מחק את כל רשומות האוכל — הגדרות היעדים יישמרו
+                </p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">אימות סיסמה</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  {...accountForm.register("confirmPassword")}
-                />
-              </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline">נקה יומנים</Button>
+                </DialogTrigger>
+                <DialogContent dir="rtl">
+                  <DialogHeader>
+                    <DialogTitle>נקה יומני אוכל</DialogTitle>
+                    <DialogDescription>
+                      האם אתה בטוח? פעולה זו תמחק את כל רשומות האוכל שלך ולא
+                      ניתן יהיה לשחזרן.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="gap-2">
+                    <DialogClose asChild>
+                      <Button variant="outline">ביטול</Button>
+                    </DialogClose>
+                    <DialogClose asChild>
+                      <Button variant="destructive" onClick={onClearLogs}>
+                        נקה יומנים
+                      </Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
-          <CardFooter className="justify-end border-t pt-4">
-            <Button type="submit">שמור שינויים</Button>
-          </CardFooter>
         </Card>
-      </form>
-
-      {/* Appearance */}
-      <Card>
-        <CardHeader>
-          <CardTitle>מראה</CardTitle>
-          <CardDescription>התאם את עיצוב האפליקציה</CardDescription>
-        </CardHeader>
-        <Separator />
-        <CardContent className="pt-6 space-y-6">
-          <div className="space-y-3">
-            <Label>ערכת נושא</Label>
-            <RadioGroup
-              value={theme}
-              onValueChange={setTheme}
-              className="flex gap-6"
-            >
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="light" id="theme-light" />
-                <Label htmlFor="theme-light">בהיר</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="dark" id="theme-dark" />
-                <Label htmlFor="theme-dark">כהה</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="system" id="theme-system" />
-                <Label htmlFor="theme-system">לפי המערכת</Label>
-              </div>
-            </RadioGroup>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="language">שפה</Label>
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger id="language" className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="he">עברית</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-        <CardFooter className="justify-end border-t pt-4">
-          <Button onClick={() => console.log({ theme, language })}>
-            שמור שינויים
-          </Button>
-        </CardFooter>
-      </Card>
-
-      {/* Data */}
-      <Card>
-        <CardHeader>
-          <CardTitle>נתונים</CardTitle>
-          <CardDescription>ייצא או נקה את הנתונים שלך</CardDescription>
-        </CardHeader>
-        <Separator />
-        <CardContent className="pt-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">ייצא נתונים</p>
-              <p className="text-xs text-muted-foreground">
-                הורד את כל יומני האוכל שלך כקובץ CSV
-              </p>
-            </div>
-            <Button variant="outline" onClick={onExportData}>
-              ייצא CSV
-            </Button>
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">נקה יומנים</p>
-              <p className="text-xs text-muted-foreground">
-                מחק את כל רשומות האוכל — הגדרות היעדים יישמרו
-              </p>
-            </div>
-            <Button variant="outline" onClick={onClearLogs}>
-              נקה יומנים
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       </div>
 
       {/* Danger Zone */}
@@ -300,9 +283,30 @@ export function Settings() {
                 מחק לצמיתות את חשבונך וכל הנתונים המשויכים אליו
               </p>
             </div>
-            <Button variant="destructive" onClick={onDeleteAccount}>
-              מחק חשבון
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="destructive">מחק חשבון</Button>
+              </DialogTrigger>
+              <DialogContent dir="rtl">
+                <DialogHeader>
+                  <DialogTitle>מחיקת חשבון</DialogTitle>
+                  <DialogDescription>
+                    האם אתה בטוח? פעולה זו תמחק לצמיתות את חשבונך וכל הנתונים
+                    המשויכים אליו. לא ניתן יהיה לשחזר את החשבון.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-2">
+                  <DialogClose asChild>
+                    <Button variant="outline">ביטול</Button>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <Button variant="destructive" onClick={onDeleteAccount}>
+                      מחק חשבון
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardContent>
       </Card>
