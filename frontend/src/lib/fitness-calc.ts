@@ -1,4 +1,5 @@
 import { Activity } from "lucide-react";
+import i18next from "i18next";
 
 type Gender = "male" | "female";
 
@@ -25,7 +26,8 @@ export function calculateBMI(weight: number, height: number) {
   let BMIClass: BMITypes;
 
   if (BMIScore < 18.5) BMIClass = "Underweight";
-  else if (18.5 <= BMIScore && BMIScore < 25) BMIClass = "Normal Weight";
+  else if (18.5 <= BMIScore && BMIScore < 25)
+    BMIClass = i18next.t("normalWeight", "Normal Weight");
   else if (25 <= BMIScore && BMIScore < 30) BMIClass = "Overweight";
   else if (30 <= BMIScore && BMIScore < 35) BMIClass = "Obesity I";
   else if (35 <= BMIScore && BMIScore < 40) BMIClass = "Obesity II";
