@@ -179,14 +179,12 @@ def get_meals_by_date_start_end_date(
             content="End date must be after start date",
         )
 
-    start_of_start_date = date.replace(minute=0, second=0, microsecond=0, hour=0)
+    start_of_start_date = date
 
     if not end_date:
         end_of_end_date = start_of_start_date + timedelta(days=1)
     else:
-        end_of_end_date = end_date.replace(
-            minute=0, second=0, microsecond=0, hour=0
-        ) + timedelta(days=1)
+        end_of_end_date = end_date + timedelta(days=1)
 
     stmt = select(MealsEaten).where(
         MealsEaten.user_id == current_user.sub,

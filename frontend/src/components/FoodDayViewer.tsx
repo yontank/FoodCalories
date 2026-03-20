@@ -12,7 +12,7 @@ import { MealEntryDialog } from "./MealEntryDialog";
 import { NotLoggedInError, reactClient } from "@/api/client";
 import { useNavigate } from "react-router";
 import { DayPicker } from "./DayPicker";
-import { formatISO } from "date-fns";
+import { formatISO, startOfDay } from "date-fns";
 import { components } from "@/api/v1";
 import { useTranslation } from "react-i18next";
 
@@ -115,14 +115,13 @@ export function FoodDayViewer() {
     setMealEntryOpen(true);
     setMealEntryTime(mealTime);
   };
-
   const { data, error } = reactClient.useQuery(
     "get",
     "/api/v1/meals",
     {
       params: {
         query: {
-          date: formatISO(date, { representation: "date" }).substring(0, 10),
+          date: startOfDay(date).toISOString(),
         },
       },
     },
