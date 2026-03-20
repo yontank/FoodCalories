@@ -8,8 +8,8 @@
 //     (see i18next-locize-backend: https://github.com/locize/i18next-locize-backend)
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
-import enTranslation from "../public/locales/en/translation.json";
-import heTranslation from "../public/locales/he/translation.json";
+import enTranslation from "@/locales/en/translation.json";
+import heTranslation from "@/locales/he/translation.json";
 
 i18next.use(initReactI18next).init({
   returnEmptyString: false, // allows empty string as valid translation
