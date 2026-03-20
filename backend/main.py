@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import settings
+from core.scheduler import start_scheduler
 from core.rate_limit import limiter
 from api.v1 import router
 
@@ -26,9 +27,12 @@ app.add_middleware(
 app.include_router(router=router.router, prefix="/api")
 
 
-def main():
+start_scheduler()
+
+
+def dev_mode():
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
 
 
 if __name__ == "__main__":
-    main()
+    dev_mode()
