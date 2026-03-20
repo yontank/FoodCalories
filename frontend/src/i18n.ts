@@ -13,7 +13,7 @@ import heTranslation from "../public/locales/he/translation.json";
 
 i18next.use(initReactI18next).init({
   returnEmptyString: false, // allows empty string as valid translation
-  lng: 'he',
+  lng: "he",
   fallbackLng: "en",
   defaultNS: "translation",
   resources: {

@@ -6,25 +6,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Field, FieldGroup } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState } from "react";
 import { loginSchema } from "@/schemas/user";
 import { useLogin } from "@/hooks/useLogin";
 import { useNavigate } from "react-router";
 import { ErrorBox } from "@/components/ErrorBox";
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from "react-i18next";
+import { ControlledField } from "@/components/ControlledField";
 
 function LoginForm() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -50,49 +45,23 @@ function LoginForm() {
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>{t('key5', 'כניסה')}</CardTitle>
+        <CardTitle>{t("key5", "כניסה")}</CardTitle>
       </CardHeader>
       <CardContent>
         <form id="form-login" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
-            <Controller
+            <ControlledField
+              form={form}
+              formName="form-login"
               name="username"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-login-username">
-                    {t('key2', 'שם משתמש')}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-login-username"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
+              label={t("key2", "שם משתמש")}
             />
-            <Controller
+            <ControlledField
+              form={form}
+              formName="form-login"
               name="password"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-login-password">{t('key3', 'סיסמה')}</FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-login-password"
-                    type="password"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
+              label={t("key3", "סיסמה")}
+              type="password"
             />
           </FieldGroup>
         </form>
@@ -101,10 +70,10 @@ function LoginForm() {
       <CardFooter>
         <Field orientation="horizontal" className="justify-between">
           <Button type="submit" form="form-login" disabled={inProgress}>
-            {t('key5', 'כניסה')}
+            {t("key5", "כניסה")}
           </Button>
           <Button variant={"secondary"} onClick={() => navigate("/register")}>
-            {t('key', 'הרשמה')}
+            {t("key", "הרשמה")}
           </Button>
         </Field>
       </CardFooter>
