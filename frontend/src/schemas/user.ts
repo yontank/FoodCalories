@@ -24,3 +24,14 @@ export const registerSchema = z
     message: "passwordsDoNotMatch",
     path: ["confirmPassword"],
   });
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: password,
+    newPassword: password,
+    confirmPassword: password,
+  })
+  .refine((values) => values.confirmPassword == values.newPassword, {
+    message: "passwordsDoNotMatch",
+    path: ["confirmPassword"],
+  });

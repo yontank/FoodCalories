@@ -25,20 +25,17 @@ import {
 import { useForm } from "react-hook-form";
 import { useAtom } from "jotai";
 import { nutritionAtom } from "@/atoms/nutrition";
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from "react-i18next";
+import { ControlledField } from "@/components/ControlledField";
+import * as z from "zod";
+import { changePasswordSchema } from "@/schemas/user";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type NutritionInputs = {
   calories: number;
   maxGramsCarbs: number;
   maxGramsFat: number;
   maxGramsProtein: number;
-};
-
-type AccountInputs = {
-  email: string;
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
 };
 
 export function Settings() {
@@ -53,7 +50,14 @@ export function Settings() {
       maxGramsProtein: nutrition.protein,
     },
   });
-  const accountForm = useForm<AccountInputs>();
+  const accountForm = useForm<z.infer<typeof changePasswordSchema>>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
 
   const onSaveNutrition = (values: NutritionInputs) =>
     setNutrition({
@@ -62,45 +66,46 @@ export function Settings() {
       fat: values.maxGramsFat,
       protein: values.maxGramsProtein,
     });
-  const onSaveAccount = (values: AccountInputs) => console.log(values);
+  const onSaveAccount = (values: z.infer<typeof changePasswordSchema>) =>
+    console.log(values);
   const onExportData = () => console.log("export data");
   const onClearLogs = () => console.log("clear logs");
   const onDeleteAccount = () => console.log("delete account");
 
-  const dir = i18n.language === 'he' ? 'rtl' : 'ltr';
+  const dir = i18n.language === "he" ? "rtl" : "ltr";
 
   return (
     <div className="p-6 max-w-4xl" dir={dir}>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">{t('key46', 'Settings')}</h1>
+        <h1 className="text-2xl font-bold">{t("key46", "Settings")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {t('key47', 'Manage your account and app preferences')}
+          {t("key47", "Manage your account and app preferences")}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6" dir="ltr">
+      <div className="grid grid-cols-2 gap-6">
         {/* Daily Nutrition Targets */}
         <form onSubmit={nutritionForm.handleSubmit(onSaveNutrition)} dir={dir}>
           <Card className="h-full">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>{t('key48', 'יעדים יומיים')}</CardTitle>
+                <CardTitle>{t("key48", "יעדים יומיים")}</CardTitle>
                 <CalorieDeficitDialog />
               </div>
               <CardDescription>
-                {t('key49', 'הגדר את הערכים המקסימליים היומיים שלך')}
+                {t("key49", "הגדר את הערכים המקסימליים היומיים שלך")}
               </CardDescription>
             </CardHeader>
             <Separator />
             <CardContent className="pt-6">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="max-calories">{t('key6', 'קלוריות')}</Label>
+                  <Label htmlFor="max-calories">{t("key6", "קלוריות")}</Label>
                   <Input
                     id="max-calories"
                     type="number"
                     {...nutritionForm.register("calories", {
-                      required: t('requiredField', 'Required field'),
+                      required: t("requiredField", "Required field"),
                     })}
                   />
                   {nutritionForm.formState.errors.calories && (
@@ -111,12 +116,12 @@ export function Settings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="carb">{t('key50', 'פחמימות (גרם)')}</Label>
+                  <Label htmlFor="carb">{t("key50", "פחמימות (גרם)")}</Label>
                   <Input
                     id="carb"
                     type="number"
                     {...nutritionForm.register("maxGramsCarbs", {
-                      required: t('requiredField', 'Required field'),
+                      required: t("requiredField", "Required field"),
                     })}
                   />
                   {nutritionForm.formState.errors.maxGramsCarbs && (
@@ -127,12 +132,12 @@ export function Settings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="fat">{t('key51', 'שומן (גרם)')}</Label>
+                  <Label htmlFor="fat">{t("key51", "שומן (גרם)")}</Label>
                   <Input
                     id="fat"
                     type="number"
                     {...nutritionForm.register("maxGramsFat", {
-                      required: t('requiredField', 'Required field'),
+                      required: t("requiredField", "Required field"),
                     })}
                   />
                   {nutritionForm.formState.errors.maxGramsFat && (
@@ -143,12 +148,12 @@ export function Settings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="protein">{t('key52', 'חלבון (גרם)')}</Label>
+                  <Label htmlFor="protein">{t("key52", "חלבון (גרם)")}</Label>
                   <Input
                     id="protein"
                     type="number"
                     {...nutritionForm.register("maxGramsProtein", {
-                      required: t('requiredField', 'Required field'),
+                      required: t("requiredField", "Required field"),
                     })}
                   />
                   {nutritionForm.formState.errors.maxGramsProtein && (
@@ -160,49 +165,58 @@ export function Settings() {
               </div>
             </CardContent>
             <CardFooter className="justify-end border-t pt-4">
-              <Button type="submit">{t('key53', 'שמור שינויים')}</Button>
+              <Button type="submit">{t("key53", "שמור שינויים")}</Button>
             </CardFooter>
           </Card>
         </form>
 
         {/* Account Settings */}
-        <form onSubmit={accountForm.handleSubmit(onSaveAccount)} dir={dir}>
+        <form
+          id="form-change-password"
+          onSubmit={accountForm.handleSubmit(onSaveAccount)}
+          dir={dir}
+        >
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>{t('key54', 'חשבון')}</CardTitle>
-              <CardDescription>{t('key55', 'עדכן את פרטי הכניסה שלך')}</CardDescription>
+              <CardTitle>{t("key54", "חשבון")}</CardTitle>
+              <CardDescription>
+                {t("key55", "עדכן את פרטי הכניסה שלך")}
+              </CardDescription>
             </CardHeader>
             <Separator />
             <CardContent className="pt-6 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="current-password">{t('key56', 'סיסמה נוכחית')}</Label>
-                <Input
-                  id="current-password"
+                <ControlledField
+                  form={accountForm}
+                  formName="form-change-password"
+                  name="currentPassword"
                   type="password"
-                  {...accountForm.register("currentPassword")}
+                  label={t("key56", "סיסמה נוכחית")}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="new-password">{t('key57', 'סיסמה חדשה')}</Label>
-                  <Input
-                    id="new-password"
+                  <ControlledField
+                    form={accountForm}
+                    formName="form-change-password"
+                    name="newPassword"
                     type="password"
-                    {...accountForm.register("newPassword")}
+                    label={t("key57", "סיסמה חדשה")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">{t('key58', 'אימות סיסמה')}</Label>
-                  <Input
-                    id="confirm-password"
+                  <ControlledField
+                    form={accountForm}
+                    formName="form-change-password"
+                    name="confirmPassword"
                     type="password"
-                    {...accountForm.register("confirmPassword")}
+                    label={t("key58", "אימות סיסמה")}
                   />
                 </div>
               </div>
             </CardContent>
             <CardFooter className="justify-end border-t pt-4">
-              <Button type="submit">{t('key53', 'שמור שינויים')}</Button>
+              <Button type="submit">{t("key53", "שמור שינויים")}</Button>
             </CardFooter>
           </Card>
         </form>
@@ -210,23 +224,25 @@ export function Settings() {
         {/* Language */}
         <Card dir={dir}>
           <CardHeader>
-            <CardTitle>{t('language', 'שפה')}</CardTitle>
-            <CardDescription>{t('languageDesc', 'שנה את שפת הממשק')}</CardDescription>
+            <CardTitle>{t("language", "שפה")}</CardTitle>
+            <CardDescription>
+              {t("languageDesc", "שנה את שפת הממשק")}
+            </CardDescription>
           </CardHeader>
           <Separator />
           <CardContent className="pt-6">
             <div className="flex gap-2" dir="ltr">
               <Button
-                variant={i18n.language === 'he' ? 'default' : 'outline'}
+                variant={i18n.language === "he" ? "default" : "outline"}
                 className="flex-1"
-                onClick={() => i18n.changeLanguage('he')}
+                onClick={() => i18n.changeLanguage("he")}
               >
                 עברית
               </Button>
               <Button
-                variant={i18n.language === 'en' ? 'default' : 'outline'}
+                variant={i18n.language === "en" ? "default" : "outline"}
                 className="flex-1"
-                onClick={() => i18n.changeLanguage('en')}
+                onClick={() => i18n.changeLanguage("en")}
               >
                 English
               </Button>
@@ -237,48 +253,57 @@ export function Settings() {
         {/* Data */}
         <Card dir={dir}>
           <CardHeader>
-            <CardTitle>{t('key59', 'נתונים')}</CardTitle>
-            <CardDescription>{t('key60', 'ייצא או נקה את הנתונים שלך')}</CardDescription>
+            <CardTitle>{t("key59", "נתונים")}</CardTitle>
+            <CardDescription>
+              {t("key60", "ייצא או נקה את הנתונים שלך")}
+            </CardDescription>
           </CardHeader>
           <Separator />
           <CardContent className="pt-6 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">{t('key61', 'ייצא נתונים')}</p>
+                <p className="text-sm font-medium">
+                  {t("key61", "ייצא נתונים")}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  {t('csv', 'הורד את כל יומני האוכל שלך כקובץ CSV')}
+                  {t("csv", "הורד את כל יומני האוכל שלך כקובץ CSV")}
                 </p>
               </div>
               <Button variant="outline" onClick={onExportData}>
-                {t('csv2', 'ייצא CSV')}
+                {t("csv2", "ייצא CSV")}
               </Button>
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">{t('key62', 'נקה יומנים')}</p>
+                <p className="text-sm font-medium">
+                  {t("key62", "נקה יומנים")}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  {t('key63', 'מחק את כל רשומות האוכל — הגדרות היעדים יישמרו')}
+                  {t("key63", "מחק את כל רשומות האוכל — הגדרות היעדים יישמרו")}
                 </p>
               </div>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline">{t('key62', 'נקה יומנים')}</Button>
+                  <Button variant="outline">{t("key62", "נקה יומנים")}</Button>
                 </DialogTrigger>
                 <DialogContent dir={dir}>
                   <DialogHeader>
-                    <DialogTitle>{t('key64', 'נקה יומני אוכל')}</DialogTitle>
+                    <DialogTitle>{t("key64", "נקה יומני אוכל")}</DialogTitle>
                     <DialogDescription>
-                      {t('key65', 'האם אתה בטוח? פעולה זו תמחק את כל רשומות האוכל שלך ולא\n                      ניתן יהיה לשחזרן.')}
+                      {t(
+                        "key65",
+                        "האם אתה בטוח? פעולה זו תמחק את כל רשומות האוכל שלך ולא\n                      ניתן יהיה לשחזרן.",
+                      )}
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter className="gap-2">
                     <DialogClose asChild>
-                      <Button variant="outline">{t('key66', 'ביטול')}</Button>
+                      <Button variant="outline">{t("key66", "ביטול")}</Button>
                     </DialogClose>
                     <DialogClose asChild>
                       <Button variant="destructive" onClick={onClearLogs}>
-                        {t('key62', 'נקה יומנים')}
+                        {t("key62", "נקה יומנים")}
                       </Button>
                     </DialogClose>
                   </DialogFooter>
@@ -292,36 +317,41 @@ export function Settings() {
       {/* Danger Zone */}
       <Card className="border-destructive/50 mt-6" dir={dir}>
         <CardHeader>
-          <CardTitle className="text-destructive">{t('key67', 'אזור מסוכן')}</CardTitle>
-          <CardDescription>{t('key68', 'פעולות בלתי הפיכות')}</CardDescription>
+          <CardTitle className="text-destructive">
+            {t("key67", "אזור מסוכן")}
+          </CardTitle>
+          <CardDescription>{t("key68", "פעולות בלתי הפיכות")}</CardDescription>
         </CardHeader>
         <Separator />
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium">{t('key69', 'מחק חשבון')}</p>
+              <p className="text-sm font-medium">{t("key69", "מחק חשבון")}</p>
               <p className="text-xs text-muted-foreground">
-                {t('key70', 'מחק לצמיתות את חשבונך וכל הנתונים המשויכים אליו')}
+                {t("key70", "מחק לצמיתות את חשבונך וכל הנתונים המשויכים אליו")}
               </p>
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="destructive">{t('key69', 'מחק חשבון')}</Button>
+                <Button variant="destructive">{t("key69", "מחק חשבון")}</Button>
               </DialogTrigger>
               <DialogContent dir="rtl">
                 <DialogHeader>
-                  <DialogTitle>{t('key71', 'מחיקת חשבון')}</DialogTitle>
+                  <DialogTitle>{t("key71", "מחיקת חשבון")}</DialogTitle>
                   <DialogDescription>
-                    {t('key72', 'האם אתה בטוח? פעולה זו תמחק לצמיתות את חשבונך וכל הנתונים\n                    המשויכים אליו. לא ניתן יהיה לשחזר את החשבון.')}
+                    {t(
+                      "key72",
+                      "האם אתה בטוח? פעולה זו תמחק לצמיתות את חשבונך וכל הנתונים\n                    המשויכים אליו. לא ניתן יהיה לשחזר את החשבון.",
+                    )}
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="gap-2">
                   <DialogClose asChild>
-                    <Button variant="outline">{t('key66', 'ביטול')}</Button>
+                    <Button variant="outline">{t("key66", "ביטול")}</Button>
                   </DialogClose>
                   <DialogClose asChild>
                     <Button variant="destructive" onClick={onDeleteAccount}>
-                      {t('key69', 'מחק חשבון')}
+                      {t("key69", "מחק חשבון")}
                     </Button>
                   </DialogClose>
                 </DialogFooter>
