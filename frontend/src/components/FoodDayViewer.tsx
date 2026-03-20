@@ -71,7 +71,7 @@ function DataContent({
           indicatorClassName="bg-green-300"
         />
         <Progress
-          label={t("carbohydrates")}
+          label={t("carbs")}
           value={(carbSum / CALORIES.carbs) * 100}
           indicatorClassName="bg-orange-500"
         />
