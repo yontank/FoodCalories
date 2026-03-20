@@ -11,7 +11,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Query Foods */
+        /**
+         * Query Foods
+         * @description Given A User query that is authenticated, return food that is a substring of that food
+         */
         get: operations["query_foods_api_v1_foods_get"];
         put?: never;
         post?: never;
@@ -61,6 +64,30 @@ export interface paths {
          * @description Returns all the meals the user has consumed in a specific date, or between a range of dates.
          */
         get: operations["get_meals_by_date_start_end_date_api_v1_meals_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete All Meals
+         * @description Deletes all meal history for the current user
+         */
+        delete: operations["delete_all_meals_api_v1_meals_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/meals/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Meals Csv
+         * @description Returns all meal history for the current user as a downloadable CSV file.
+         */
+        get: operations["export_meals_csv_api_v1_meals_export_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -175,7 +202,107 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/": {
+    "/api/v1/user/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Change Password
+         * @description Changes the password for the currently authenticated user.
+         */
+        put: operations["change_password_api_v1_user_password_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete User
+         * @description Deletes the current user along with all their meals, refresh tokens, and role
+         */
+        delete: operations["delete_user_api_v1_user_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/weight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Add Weight Entry
+         * @description Adds a weight entry to the user's weight history.
+         */
+        put: operations["add_weight_entry_api_v1_weight_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/profile/nutrition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Save Nutrition Values
+         * @description Saves or updates the user's daily macro-nutrient targets.
+         */
+        patch: operations["save_nutrition_values_api_v1_profile_nutrition_patch"];
+        trace?: never;
+    };
+    "/api/v1/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Save Personal Profile
+         * @description Saves or updates the user's personal profile (age, height, gender, activity factor).
+         */
+        patch: operations["save_personal_profile_api_v1_profile_patch"];
+        trace?: never;
+    };
+    "/api/v1/": {
         parameters: {
             query?: never;
             header?: never;
@@ -183,7 +310,24 @@ export interface paths {
             cookie?: never;
         };
         /** Test */
-        get: operations["test__get"];
+        get: operations["test_api_v1__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Health Check */
+        get: operations["health_check_api_v1_health_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -220,6 +364,13 @@ export interface components {
              */
             client_secret?: string | null;
         };
+        /** ChangePassword */
+        ChangePassword: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+        };
         /**
          * FoodDetail
          * @description A Pydantic model that shows what information to expect from a query on food from food items
@@ -246,6 +397,12 @@ export interface components {
             /** Midot */
             midot: components["schemas"]["PortionSize"][];
         };
+        /**
+         * Gender
+         * @description Enum representing the biological gender of a user.
+         * @enum {string}
+         */
+        Gender: "male" | "female";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -354,6 +511,15 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** NutritionValues */
+        NutritionValues: {
+            /** Protein */
+            protein: number;
+            /** Carbohydrates */
+            carbohydrates: number;
+            /** Fat */
+            fat: number;
+        };
         /**
          * PortionSize
          * @description A model representing the relationship between a food item (MohMitzrach) and its unit of measurement (Yehida).
@@ -372,6 +538,16 @@ export interface components {
             name: string;
             /** Mishkal */
             mishkal: number;
+        };
+        /** ProfileValues */
+        ProfileValues: {
+            /** Height */
+            height: number;
+            /** Age */
+            age: number;
+            /** Activity Factor */
+            activity_factor: number;
+            gender: components["schemas"]["Gender"];
         };
         /**
          * UserRegister
@@ -639,6 +815,62 @@ export interface operations {
             };
         };
     };
+    delete_all_meals_api_v1_meals_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+        };
+    };
+    export_meals_csv_api_v1_meals_export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+        };
+    };
     register_api_v1_register_post: {
         parameters: {
             query?: never;
@@ -808,7 +1040,227 @@ export interface operations {
             };
         };
     };
-    test__get: {
+    change_password_api_v1_user_password_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePassword"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_user_api_v1_user_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+        };
+    };
+    add_weight_entry_api_v1_weight_put: {
+        parameters: {
+            query: {
+                weight: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_nutrition_values_api_v1_profile_nutrition_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NutritionValues"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_personal_profile_api_v1_profile_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileValues"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_api_v1__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    health_check_api_v1_health_get: {
         parameters: {
             query?: never;
             header?: never;
