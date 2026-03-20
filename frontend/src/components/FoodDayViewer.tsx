@@ -14,6 +14,7 @@ import { useNavigate } from "react-router";
 import { DayPicker } from "./DayPicker";
 import { formatISO } from "date-fns";
 import { components } from "@/api/v1";
+import { useTranslation } from "react-i18next";
 
 function DataContent({
   data,
@@ -22,6 +23,7 @@ function DataContent({
   data: components["schemas"]["MealEntryResponse"][];
   openMealEntry: (time: MealTime) => void;
 }) {
+  const { t } = useTranslation();
   const CALORIES = useAtomValue(nutritionAtom);
   const proteinSum = data
     .map((e) => (e.protein * e.amount * e.mishkal) / 100)
@@ -47,7 +49,7 @@ function DataContent({
       /> */}
       <div className="w-full pb-4 flex justify-center items-center">
         <Progress
-          label="קלוריות"
+          label={t("calories")}
           value={(calorieSum / CALORIES.calories) * 100}
           wrapperClassName="w-3/4"
           barHeight="h-4"
@@ -59,17 +61,17 @@ function DataContent({
       </div>
       <div className="flex w-full justify-around mt-3">
         <Progress
-          label="חלבון"
+          label={t("protein")}
           value={(proteinSum / CALORIES.protein) * 100}
           indicatorClassName="bg-blue-500"
         />
         <Progress
-          label="שומן"
+          label={t("fats")}
           value={(fatSum / CALORIES.fat) * 100}
           indicatorClassName="bg-green-300"
         />
         <Progress
-          label="פחמימה"
+          label={t("carbohydrates")}
           value={(carbSum / CALORIES.carbs) * 100}
           indicatorClassName="bg-orange-500"
         />
@@ -79,21 +81,21 @@ function DataContent({
           eatenFood={data.filter((e) => e.meal_type == "breakfast")}
           mealTime={"breakfast"}
           openMealEntry={openMealEntry}
-          title="ארוחת בוקר"
+          title={t("key13", "ארוחת בוקר")}
         />
 
         <MealsEatenContainer
           eatenFood={data.filter((e) => e.meal_type == "lunch")}
           mealTime={"lunch"}
           openMealEntry={openMealEntry}
-          title="ארוחת צהריים"
+          title={t("key14", "ארוחת צהריים")}
         />
 
         <MealsEatenContainer
           eatenFood={data.filter((e) => e.meal_type == "dinner")}
           mealTime={"dinner"}
           openMealEntry={openMealEntry}
-          title="ארוחת ערב"
+          title={t("key15", "ארוחת ערב")}
         />
       </div>
     </>
@@ -101,6 +103,7 @@ function DataContent({
 }
 
 export function FoodDayViewer() {
+  const { t } = useTranslation();
   const [date, setDate] = useState<Date>(new Date());
   const [mealEntryTime, setMealEntryTime] = useState<MealTime>("breakfast");
   const [mealEntryOpen, setMealEntryOpen] = useState(false);
@@ -136,7 +139,7 @@ export function FoodDayViewer() {
     <>
       <Card className="w-full">
         <CardHeader className="flex-row items-center gap-4 space-y-0">
-          <CardTitle>יומן אוכל</CardTitle>
+          <CardTitle>{t("key16", "יומן אוכל")}</CardTitle>
           <DayPicker date={date} setDate={setDate} />
         </CardHeader>
 
@@ -144,7 +147,7 @@ export function FoodDayViewer() {
           {data ? (
             <DataContent data={data} openMealEntry={openMealEntry} />
           ) : (
-            "Loading..."
+            t("loading", "Loading...")
           )}
         </CardContent>
       </Card>

@@ -12,26 +12,27 @@ import {
 } from "@/components/ui/sidebar";
 
 import { Link } from "react-router";
-// Menu items.
-const items = [
-  {
-    title: "Home",
-    url: "/",
-    icon: Home,
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-  },
-];
+import { useTranslation } from 'react-i18next'
 
 function AppSidebar() {
+  const { t } = useTranslation()
+  const items = [
+    {
+      title: t('home', 'Home'),
+      url: "/",
+      icon: Home,
+    },
+    {
+      title: t('settings', 'Settings'),
+      url: "/settings",
+      icon: Settings,
+    },
+  ];
   return (
     <Sidebar side="right" variant="inset">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('application', 'Application')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

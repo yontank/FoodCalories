@@ -21,8 +21,10 @@ import { loginSchema } from "@/schemas/user";
 import { useLogin } from "@/hooks/useLogin";
 import { useNavigate } from "react-router";
 import { ErrorBox } from "@/components/ErrorBox";
+import { useTranslation } from 'react-i18next'
 
 function LoginForm() {
+  const { t } = useTranslation()
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -48,7 +50,7 @@ function LoginForm() {
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>כניסה</CardTitle>
+        <CardTitle>{t('key5', 'כניסה')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form id="form-login" onSubmit={form.handleSubmit(onSubmit)}>
@@ -59,7 +61,7 @@ function LoginForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="form-login-username">
-                    שם משתמש
+                    {t('key2', 'שם משתמש')}
                   </FieldLabel>
                   <Input
                     {...field}
@@ -78,7 +80,7 @@ function LoginForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-login-password">סיסמה</FieldLabel>
+                  <FieldLabel htmlFor="form-login-password">{t('key3', 'סיסמה')}</FieldLabel>
                   <Input
                     {...field}
                     id="form-login-password"
@@ -99,10 +101,10 @@ function LoginForm() {
       <CardFooter>
         <Field orientation="horizontal" className="justify-between">
           <Button type="submit" form="form-login" disabled={inProgress}>
-            כניסה
+            {t('key5', 'כניסה')}
           </Button>
           <Button variant={"secondary"} onClick={() => navigate("/register")}>
-            הרשמה
+            {t('key', 'הרשמה')}
           </Button>
         </Field>
       </CardFooter>

@@ -13,6 +13,7 @@ import { Edit2 } from "lucide-react";
 import { AmountPicker } from "./AmountPicker";
 import { client } from "@/api/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   mealTime: MealTime;
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
+  const { t } = useTranslation()
   const [selectedFood, setSelectedFood] = useState<FoodDetail | undefined>();
   const [searchingFood, setSearchingFood] = useState(selectedFood == undefined);
   const [selectedSize, setSelectedSize] = useState<PortionSize | undefined>();
@@ -56,7 +58,7 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            מה אכלת לארוחת {mealTimeToString(mealTime)}?
+            {t('key10', 'מה אכלת לארוחת')} {mealTimeToString(mealTime)}?
           </DialogTitle>
         </DialogHeader>
 
@@ -97,7 +99,7 @@ export function MealEntryDialog({ mealTime, setOpen, open }: Props) {
                 disabled={!selectedSize || amount <= 0}
                 onClick={handleSubmit}
               >
-                הוספה
+                {t('key11', 'הוספה')}
               </Button>
             </DialogFooter>
           </div>

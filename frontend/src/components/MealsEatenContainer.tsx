@@ -1,6 +1,7 @@
 import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
 import { MealEntryResponse, MealTime } from "../type";
+import { useTranslation } from 'react-i18next'
 
 interface MealsEatenContainerProps {
   openMealEntry: (mealTime: MealTime) => void;
@@ -15,6 +16,7 @@ export function MealsEatenContainer({
   mealTime,
   openMealEntry,
 }: MealsEatenContainerProps) {
+  const { t } = useTranslation()
   const eatenToday = eatenFood?.map((e) => (
     <div
       key={e.meal_id}
@@ -28,11 +30,11 @@ export function MealsEatenContainer({
       </div>
       <div className="flex justify-around flex-1">
         <div>
-          קלוריות
+          {t('key6', 'קלוריות')}
           <p>{((e.mishkal / 100) * e.amount * e.food_energy).toFixed(2)} </p>
         </div>
         <div>
-          פחמימות{" "}
+          {t('key7', 'פחמימות')}{" "}
           <p>
             {((e.mishkal / 100) * e.amount * (e.carbohydrates ?? 0)).toFixed(
               2,
@@ -40,11 +42,11 @@ export function MealsEatenContainer({
           </p>
         </div>
         <div>
-          חלבון
+          {t('key8', 'חלבון')}
           <p> {((e.mishkal / 100) * e.amount * e.protein).toFixed(2)} </p>
         </div>
         <div>
-          שומן<p>{((e.mishkal / 100) * e.amount * e.total_fat).toFixed(2)} </p>
+          {t('key9', 'שומן')}<p>{((e.mishkal / 100) * e.amount * e.total_fat).toFixed(2)} </p>
         </div>
       </div>
     </div>

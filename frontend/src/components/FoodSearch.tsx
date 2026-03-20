@@ -7,6 +7,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
 import { Separator } from "./ui/separator";
 import { reactClient } from "@/api/client";
 import { FoodDetail } from "@/type";
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   selectedFood?: FoodDetail;
@@ -18,6 +19,7 @@ interface Props {
  * Lets the user search for a specific food item by its name and select it.
  */
 export function FoodSearch({ show, selectedFood, setSelectedFood }: Props) {
+  const { t } = useTranslation()
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 500);
 
@@ -29,7 +31,7 @@ export function FoodSearch({ show, selectedFood, setSelectedFood }: Props) {
     params: { query: { food_query: debouncedSearch } },
   });
 
-  if (status === "error") return <h3>Error</h3>;
+  if (status === "error") return <h3>{t('error', 'Error')}</h3>;
 
   return (
     <div className={show ? "" : "hidden"}>
@@ -75,7 +77,7 @@ export function FoodSearch({ show, selectedFood, setSelectedFood }: Props) {
           setSelectedFood(selectedFoodPre);
         }}
       >
-        בחירה
+        {t('key12', 'בחירה')}
       </Button>
     </div>
   );

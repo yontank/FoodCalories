@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   food: FoodDetail;
@@ -31,6 +32,7 @@ export function AmountPicker({
   selectedSize,
   setSelectedSize,
 }: Props) {
+  const { t } = useTranslation()
   const [amountInput, setAmountInput] = useState<string>(amount.toString());
 
   const calculatedAmount =
@@ -39,7 +41,7 @@ export function AmountPicker({
 
   return (
     <>
-      כמה אכלת?
+      {t('key39', 'כמה אכלת?')}
       <div className="flex mb-8">
         <div className="flex items-center gap-x-2">
           <Input
@@ -62,17 +64,15 @@ export function AmountPicker({
           dir={"rtl"}
         >
           <SelectTrigger className="w-full max-w-48">
-            <SelectValue placeholder="בחר מידה" />
+            <SelectValue placeholder={t('key40', 'בחר מידה')} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectLabel>מידות</SelectLabel>
+              <SelectLabel>{t('key41', 'מידות')}</SelectLabel>
               {food.midot.map((item) => (
                 <SelectItem key={item.id} value={item.name}>
                   {item.name}{" "}
-                  <span className="text-neutral-500 text-xs">
-                    ({item.mishkal} גרם)
-                  </span>
+                  <span className="text-neutral-500 text-xs">{t('mishkal', '({{mishkal}} גרם)', { mishkal: item.mishkal })}</span>
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -82,18 +82,18 @@ export function AmountPicker({
       {calculatedAmount && (
         <div className="flex justify-between flex-row-reverse">
           <div>
-            קלוריות: {(food.food_energy * calculatedAmount).toFixed(2)}{" "}
+            {t('key42', 'קלוריות:')} {(food.food_energy * calculatedAmount).toFixed(2)}{" "}
           </div>
 
           <div className="flex flex-col">
             <div>
-              פחמימה:{" "}
+              {t('key43', 'פחמימה:')}{" "}
               {((food.carbohydrates ?? 0) * calculatedAmount).toFixed(2)}
             </div>
 
-            <div>חלבון: {(food.protein * calculatedAmount).toFixed(2)} </div>
+            <div>{t('key44', 'חלבון:')} {(food.protein * calculatedAmount).toFixed(2)} </div>
 
-            <div>שומן: {(food.total_fat * calculatedAmount).toFixed(2)}</div>
+            <div>{t('key45', 'שומן:')} {(food.total_fat * calculatedAmount).toFixed(2)}</div>
           </div>
         </div>
       )}

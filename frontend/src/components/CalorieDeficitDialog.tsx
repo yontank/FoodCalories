@@ -18,36 +18,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { getDailyCaloriesDeficit } from "@/lib/fitness-calc";
+import { getDailyCaloriesDeficit, KCAL_PER_GRAM } from "@/lib/fitness-calc";
 import { useSetAtom } from "jotai";
 import { nutritionAtom } from "@/atoms/nutrition";
 import { cn } from "@/lib/utils";
-
-const ACTIVITY_LEVELS = [
-  { label: "יושבני (ללא פעילות גופנית)", value: "1.2" },
-  { label: "קל (1-3 ימים בשבוע)", value: "1.375" },
-  { label: "מתון (3-5 ימים בשבוע)", value: "1.55" },
-  { label: "פעיל (6-7 ימים בשבוע)", value: "1.725" },
-  { label: "פעיל מאוד (ספורטאי)", value: "1.9" },
-];
-
-const LOSS_TARGETS = [
-  { kg: 0.3, label: "0.3 ק״ג / שבוע" },
-  { kg: 0.5, label: "0.5 ק״ג / שבוע" },
-  { kg: 0.7, label: "0.7 ק״ג / שבוע" },
-  { kg: 1.0, label: "1 ק״ג / שבוע" },
-];
-
-const DIET_PRESETS = [
-  { label: "גיזרה", protein: 40, carbs: 35, fat: 25 },
-  { label: "מאוזן", protein: 30, carbs: 40, fat: 30 },
-  { label: "קטו", protein: 25, carbs: 10, fat: 65 },
-];
+import { useTranslation } from 'react-i18next'
 
 type Step = 1 | 2;
 
 export function CalorieDeficitDialog() {
+  const { t } = useTranslation()
   const setNutrition = useSetAtom(nutritionAtom);
+
+  const ACTIVITY_LEVELS = [
+    { label: t('key17', 'Sedentary (no exercise)'), value: "1.2" },
+    { label: t('13', 'Light (1-3 days/week)'), value: "1.375" },
+    { label: t('35', 'Moderate (3-5 days/week)'), value: "1.55" },
+    { label: t('67', 'Active (6-7 days/week)'), value: "1.725" },
+    { label: t('key18', 'Very active (athlete)'), value: "1.9" },
+  ];
+
+  const LOSS_TARGETS = [
+    { kg: 0.3, label: t('03', '0.3 kg / week') },
+    { kg: 0.5, label: t('05', '0.5 kg / week') },
+    { kg: 0.7, label: t('07', '0.7 kg / week') },
+    { kg: 1.0, label: t('1', '1 kg / week') },
+  ];
+
+  const DIET_PRESETS = [
+    { label: t('key19', 'Lean'), protein: 40, carbs: 35, fat: 25 },
+    { label: t('key20', 'Balanced'), protein: 30, carbs: 40, fat: 30 },
+    { label: t('key21', 'Keto'), protein: 25, carbs: 10, fat: 65 },
+  ];
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>(1);
 
@@ -97,9 +99,9 @@ export function CalorieDeficitDialog() {
 
     setNutrition({
       calories: selectedCalories,
-      protein: Math.round((selectedCalories * proteinPct) / 100 / 4),
-      carbs: Math.round((selectedCalories * carbsPct) / 100 / 4),
-      fat: Math.round((selectedCalories * fatPct) / 100 / 9),
+      protein: Math.round((selectedCalories * proteinPct) / 100 / KCAL_PER_GRAM.protein),
+      carbs: Math.round((selectedCalories * carbsPct) / 100 / KCAL_PER_GRAM.carbohydrates),
+      fat: Math.round((selectedCalories * fatPct) / 100 / KCAL_PER_GRAM.fat),
     });
 
     setOpen(false);
@@ -121,13 +123,13 @@ export function CalorieDeficitDialog() {
   };
 
   const proteinGrams = selectedCalories
-    ? Math.round((selectedCalories * proteinPct) / 100 / 4)
+    ? Math.round((selectedCalories * proteinPct) / 100 / KCAL_PER_GRAM.protein)
     : null;
   const carbsGrams = selectedCalories
-    ? Math.round((selectedCalories * carbsPct) / 100 / 4)
+    ? Math.round((selectedCalories * carbsPct) / 100 / KCAL_PER_GRAM.carbohydrates)
     : null;
   const fatGrams = selectedCalories
-    ? Math.round((selectedCalories * fatPct) / 100 / 9)
+    ? Math.round((selectedCalories * fatPct) / 100 / KCAL_PER_GRAM.fat)
     : null;
 
   return (
@@ -146,7 +148,7 @@ export function CalorieDeficitDialog() {
 
       <DialogContent className="max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
-          <DialogTitle>הגדר יעדי תזונה</DialogTitle>
+          <DialogTitle>{t('key22', 'הגדר יעדי תזונה')}</DialogTitle>
         </DialogHeader>
 
         {/* Step indicator */}
@@ -171,7 +173,7 @@ export function CalorieDeficitDialog() {
                   step === s ? "font-medium" : "text-muted-foreground",
                 )}
               >
-                {s === 1 ? "פרטים אישיים" : "הרכב תזונה"}
+                {t('key38', { defaultValue_one: 'פרטים אישיים', defaultValue_other: 'הרכב תזונה', count: s })}
               </span>
               {s < 2 && (
                 <div className="h-px w-6 bg-muted-foreground/30 mx-1" />
@@ -185,7 +187,7 @@ export function CalorieDeficitDialog() {
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="weight">משקל (ק"ג)</Label>
+                <Label htmlFor="weight">{t('key23', 'משקל (ק"ג)')}</Label>
                 <Input
                   id="weight"
                   type="number"
@@ -199,7 +201,7 @@ export function CalorieDeficitDialog() {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="height">גובה (ס"מ)</Label>
+                <Label htmlFor="height">{t('key24', 'גובה (ס"מ)')}</Label>
                 <Input
                   id="height"
                   type="number"
@@ -213,7 +215,7 @@ export function CalorieDeficitDialog() {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="age">גיל</Label>
+                <Label htmlFor="age">{t('key25', 'גיל')}</Label>
                 <Input
                   id="age"
                   type="number"
@@ -227,7 +229,7 @@ export function CalorieDeficitDialog() {
                 />
               </div>
               <div className="space-y-1">
-                <Label>מגדר</Label>
+                <Label>{t('key26', 'מגדר')}</Label>
                 <div className="flex gap-2">
                   <Button
                     variant={gender === "male" ? "default" : "outline"}
@@ -239,7 +241,7 @@ export function CalorieDeficitDialog() {
                     }}
                     type="button"
                   >
-                    זכר
+                    {t('key27', 'זכר')}
                   </Button>
                   <Button
                     variant={gender === "female" ? "default" : "outline"}
@@ -251,14 +253,14 @@ export function CalorieDeficitDialog() {
                     }}
                     type="button"
                   >
-                    נקבה
+                    {t('key28', 'נקבה')}
                   </Button>
                 </div>
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>רמת פעילות</Label>
+              <Label>{t('key29', 'רמת פעילות')}</Label>
               <Select
                 value={activity}
                 onValueChange={(v) => {
@@ -268,7 +270,7 @@ export function CalorieDeficitDialog() {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="בחר רמת פעילות" />
+                  <SelectValue placeholder={t('key30', 'בחר רמת פעילות')} />
                 </SelectTrigger>
                 <SelectContent>
                   {ACTIVITY_LEVELS.map((level) => (
@@ -285,7 +287,7 @@ export function CalorieDeficitDialog() {
               disabled={!step1Valid}
               variant="outline"
             >
-              חשב
+              {t('key31', 'חשב')}
             </Button>
 
             {calculatedOptions && (
@@ -312,11 +314,11 @@ export function CalorieDeficitDialog() {
                         {label}
                       </div>
                       <div className="text-xl font-bold">
-                        {isTooLow ? "לא בטוח" : kcal}
+                        {isTooLow ? t('notSafe', 'Not safe') : kcal}
                       </div>
                       {!isTooLow && (
                         <div className="text-xs text-muted-foreground">
-                          קל׳ / יום
+                          {t('key32', 'קל׳ / יום')}
                         </div>
                       )}
                     </button>
@@ -332,7 +334,7 @@ export function CalorieDeficitDialog() {
           <div className="grid gap-4">
             {/* Presets */}
             <div className="space-y-1">
-              <Label>בחר תוכנית מהירה</Label>
+              <Label>{t('key33', 'בחר תוכנית מהירה')}</Label>
               <div className="flex gap-2">
                 {DIET_PRESETS.map((preset) => (
                   <Button
@@ -357,21 +359,21 @@ export function CalorieDeficitDialog() {
               {(
                 [
                   {
-                    label: "חלבון",
+                    label: t('key8', 'חלבון'),
                     value: proteinPct,
                     set: setProteinPct,
                     grams: proteinGrams,
                     color: "text-blue-500",
                   },
                   {
-                    label: "פחמימות",
+                    label: t('key7', 'פחמימות'),
                     value: carbsPct,
                     set: setCarbsPct,
                     grams: carbsGrams,
                     color: "text-yellow-500",
                   },
                   {
-                    label: "שומן",
+                    label: t('key9', 'שומן'),
                     value: fatPct,
                     set: setFatPct,
                     grams: fatGrams,
@@ -400,7 +402,7 @@ export function CalorieDeficitDialog() {
                     <span className="text-sm text-muted-foreground w-4">%</span>
                   </div>
                   <div className="text-sm text-muted-foreground text-left w-20">
-                    {grams !== null ? `${grams} גרם` : "—"}
+                    {grams !== null ? t('grams', '{{grams}} גרם', { grams }) : "—"}
                   </div>
                 </div>
               ))}
@@ -416,29 +418,29 @@ export function CalorieDeficitDialog() {
               )}
             >
               {macroValid
-                ? "סה״כ: 100% ✓"
-                : `סה״כ: ${macroSum}% — חייב להיות 100%`}
+                ? t('100', 'סה״כ: 100% ✓')
+                : t('macrosum100', 'סה״כ: {{macroSum}}% — חייב להיות 100%', { macroSum })}
             </div>
 
             {/* Summary */}
             {selectedCalories && macroValid && (
               <div className="rounded-lg border p-3 space-y-1 text-sm">
-                <div className="font-medium text-center mb-2">סיכום יעדים</div>
+                <div className="font-medium text-center mb-2">{t('key34', 'סיכום יעדים')}</div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">קלוריות</span>
+                  <span className="text-muted-foreground">{t('key6', 'קלוריות')}</span>
                   <span className="font-semibold">{selectedCalories}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-blue-500">חלבון</span>
-                  <span>{proteinGrams} גרם</span>
+                  <span className="text-blue-500">{t('key8', 'חלבון')}</span>
+                  <span>{t('proteingrams', '{{proteinGrams}} גרם', { proteinGrams })}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-yellow-500">פחמימות</span>
-                  <span>{carbsGrams} גרם</span>
+                  <span className="text-yellow-500">{t('key7', 'פחמימות')}</span>
+                  <span>{t('carbsgrams', '{{carbsGrams}} גרם', { carbsGrams })}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-orange-500">שומן</span>
-                  <span>{fatGrams} גרם</span>
+                  <span className="text-orange-500">{t('key9', 'שומן')}</span>
+                  <span>{t('fatgrams', '{{fatGrams}} גרם', { fatGrams })}</span>
                 </div>
               </div>
             )}
@@ -450,10 +452,10 @@ export function CalorieDeficitDialog() {
           {step === 2 ? (
             <>
               <Button variant="outline" onClick={() => setStep(1)}>
-                אחורה
+                {t('key35', 'אחורה')}
               </Button>
               <Button onClick={handleConfirm} disabled={!macroValid}>
-                אישור ושמירה
+                {t('key36', 'אישור ושמירה')}
               </Button>
             </>
           ) : (
@@ -462,7 +464,7 @@ export function CalorieDeficitDialog() {
               onClick={() => setStep(2)}
               disabled={!canProceedStep1}
             >
-              הבא
+              {t('key37', 'הבא')}
             </Button>
           )}
         </DialogFooter>

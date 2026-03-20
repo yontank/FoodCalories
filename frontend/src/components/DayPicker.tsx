@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { addDays, format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ButtonGroup } from "./ui/button-group";
+import { useTranslation } from 'react-i18next'
 
 type Props = {
   date: Date;
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function DayPicker({ date, setDate }: Props) {
+  const { t } = useTranslation()
   // TODO the chevron icons here are hardcoded for RTL - they will be incorrect in LTR
   return (
     <Popover>
@@ -28,7 +30,7 @@ export function DayPicker({ date, setDate }: Props) {
             id="date-picker-simple"
             className="font-normal w-[13em]"
           >
-            {date ? format(date, "PPP") : <span>Pick a date</span>}
+            {date ? format(date, "PPP") : <span>{t('pickADate', 'Pick a date')}</span>}
           </Button>
         </PopoverTrigger>
         <Button

@@ -21,8 +21,10 @@ import { loginSchema, registerSchema } from "@/schemas/user";
 import { client } from "@/api/client";
 import { useLogin } from "@/hooks/useLogin";
 import { ErrorBox } from "@/components/ErrorBox";
+import { useTranslation } from 'react-i18next'
 
 function RegisterForm() {
+  const { t } = useTranslation()
   const { login, inProgress: loginInProgress } = useLogin();
   const [registerInProgress, setRegisterInProgress] = useState(false);
 
@@ -64,7 +66,7 @@ function RegisterForm() {
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>הרשמה</CardTitle>
+        <CardTitle>{t('key', 'הרשמה')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form id="form-login" onSubmit={form.handleSubmit(onSubmit)}>
@@ -75,7 +77,7 @@ function RegisterForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="form-login-username">
-                    שם משתמש
+                    {t('key2', 'שם משתמש')}
                   </FieldLabel>
                   <Input
                     {...field}
@@ -94,7 +96,7 @@ function RegisterForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-login-password">סיסמה</FieldLabel>
+                  <FieldLabel htmlFor="form-login-password">{t('key3', 'סיסמה')}</FieldLabel>
                   <Input
                     {...field}
                     id="form-login-password"
@@ -114,7 +116,7 @@ function RegisterForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="form-login-confirmPassword">
-                    אשר סיסמה
+                    {t('key4', 'אשר סיסמה')}
                   </FieldLabel>
                   <Input
                     {...field}
@@ -140,7 +142,7 @@ function RegisterForm() {
             form="form-login"
             disabled={loginInProgress || registerInProgress}
           >
-            כניסה
+            {t('key5', 'כניסה')}
           </Button>
         </Field>
       </CardFooter>
