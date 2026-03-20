@@ -30,6 +30,9 @@ import { ControlledField } from "@/components/ControlledField";
 import * as z from "zod";
 import { changePasswordSchema } from "@/schemas/user";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { client } from "@/api/client";
+import { useState } from "react";
+import { ErrorBox } from "@/components/ErrorBox";
 
 type NutritionInputs = {
   calories: number;
@@ -37,6 +40,103 @@ type NutritionInputs = {
   maxGramsFat: number;
   maxGramsProtein: number;
 };
+
+function ChangePasswordForm() {
+  const { t } = useTranslation();
+
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+
+  const accountForm = useForm<z.infer<typeof changePasswordSchema>>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onChangePassword = async (
+    values: z.infer<typeof changePasswordSchema>,
+  ) => {
+    setErrorMessage(undefined);
+
+    const { error } = await client.PUT("/api/v1/user/password", {
+      body: {
+        current_password: values.currentPassword,
+        new_password: values.newPassword,
+      },
+    });
+
+    if (error) {
+      setErrorMessage(JSON.stringify(error));
+    } else {
+      setConfirmationOpen(true);
+    }
+  };
+
+  return (
+    <form
+      id="form-change-password"
+      onSubmit={accountForm.handleSubmit(onChangePassword)}
+    >
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>{t("key54", "חשבון")}</CardTitle>
+          <CardDescription>
+            {t("key55", "עדכן את פרטי הכניסה שלך")}
+          </CardDescription>
+        </CardHeader>
+        <Separator />
+        <CardContent className="pt-6 space-y-4">
+          <div className="space-y-2">
+            <ControlledField
+              form={accountForm}
+              formName="form-change-password"
+              name="currentPassword"
+              type="password"
+              label={t("key56", "סיסמה נוכחית")}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <ControlledField
+                form={accountForm}
+                formName="form-change-password"
+                name="newPassword"
+                type="password"
+                label={t("key57", "סיסמה חדשה")}
+              />
+            </div>
+            <div className="space-y-2">
+              <ControlledField
+                form={accountForm}
+                formName="form-change-password"
+                name="confirmPassword"
+                type="password"
+                label={t("key58", "אימות סיסמה")}
+              />
+            </div>
+          </div>
+          {errorMessage && <ErrorBox>{errorMessage}</ErrorBox>}
+        </CardContent>
+        <CardFooter className="justify-end border-t pt-4">
+          <Button type="submit">{t("key53", "שמור שינויים")}</Button>
+        </CardFooter>
+      </Card>
+      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
+        <DialogContent>
+          {t("passwordChanged", "סיסמתך שונתה בהצלחה.")}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">OK</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </form>
+  );
+}
 
 export function Settings() {
   const { t, i18n } = useTranslation();
@@ -50,14 +150,6 @@ export function Settings() {
       maxGramsProtein: nutrition.protein,
     },
   });
-  const accountForm = useForm<z.infer<typeof changePasswordSchema>>({
-    resolver: zodResolver(changePasswordSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  });
 
   const onSaveNutrition = (values: NutritionInputs) =>
     setNutrition({
@@ -66,8 +158,7 @@ export function Settings() {
       fat: values.maxGramsFat,
       protein: values.maxGramsProtein,
     });
-  const onSaveAccount = (values: z.infer<typeof changePasswordSchema>) =>
-    console.log(values);
+
   const onExportData = () => console.log("export data");
   const onClearLogs = () => console.log("clear logs");
   const onDeleteAccount = () => console.log("delete account");
@@ -171,55 +262,7 @@ export function Settings() {
         </form>
 
         {/* Account Settings */}
-        <form
-          id="form-change-password"
-          onSubmit={accountForm.handleSubmit(onSaveAccount)}
-          dir={dir}
-        >
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle>{t("key54", "חשבון")}</CardTitle>
-              <CardDescription>
-                {t("key55", "עדכן את פרטי הכניסה שלך")}
-              </CardDescription>
-            </CardHeader>
-            <Separator />
-            <CardContent className="pt-6 space-y-4">
-              <div className="space-y-2">
-                <ControlledField
-                  form={accountForm}
-                  formName="form-change-password"
-                  name="currentPassword"
-                  type="password"
-                  label={t("key56", "סיסמה נוכחית")}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <ControlledField
-                    form={accountForm}
-                    formName="form-change-password"
-                    name="newPassword"
-                    type="password"
-                    label={t("key57", "סיסמה חדשה")}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <ControlledField
-                    form={accountForm}
-                    formName="form-change-password"
-                    name="confirmPassword"
-                    type="password"
-                    label={t("key58", "אימות סיסמה")}
-                  />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="justify-end border-t pt-4">
-              <Button type="submit">{t("key53", "שמור שינויים")}</Button>
-            </CardFooter>
-          </Card>
-        </form>
+        <ChangePasswordForm />
 
         {/* Language */}
         <Card dir={dir}>

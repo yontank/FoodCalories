@@ -101,6 +101,7 @@
   "passwordMin": "Password must be at least 8 characters.",
   "passwordsDoNotMatch": "Passwords do not match.",
   "passwordSpecial": "Password must have at least one special character.",
+  "passwordChanged": "Your password has been changed successfully.",
   "pickADate": "Pick a date",
   "proteingrams": "{{proteinGrams}} g",
   "requiredField": "Required field",
@@ -108,7 +109,7 @@
   "usernameMax": "Username must be at most 32 characters.",
   "usernameMin": "Username must be at least 5 characters.",
   "protein": "Protein",
-  "carbs" :"Carbohydrates",
+  "carbs": "Carbohydrates",
   "fats": "Fats",
   "calories": "Calories"
 }
