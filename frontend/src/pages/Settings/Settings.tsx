@@ -151,13 +151,14 @@ export function Settings() {
     },
   });
 
-  const onSaveNutrition = (values: NutritionInputs) =>
+  const onSaveNutrition = (values: NutritionInputs) => {
     setNutrition({
       calories: values.calories,
       carbs: values.maxGramsCarbs,
       fat: values.maxGramsFat,
       protein: values.maxGramsProtein,
     });
+  };
 
   const onExportData = () => console.log("export data");
   const onClearLogs = () => console.log("clear logs");
@@ -197,6 +198,7 @@ export function Settings() {
                     type="number"
                     {...nutritionForm.register("calories", {
                       required: t("requiredField", "Required field"),
+                      valueAsNumber: true,
                     })}
                   />
                   {nutritionForm.formState.errors.calories && (
@@ -213,6 +215,7 @@ export function Settings() {
                     type="number"
                     {...nutritionForm.register("maxGramsCarbs", {
                       required: t("requiredField", "Required field"),
+                      valueAsNumber: true,
                     })}
                   />
                   {nutritionForm.formState.errors.maxGramsCarbs && (
@@ -229,6 +232,7 @@ export function Settings() {
                     type="number"
                     {...nutritionForm.register("maxGramsFat", {
                       required: t("requiredField", "Required field"),
+                      valueAsNumber: true,
                     })}
                   />
                   {nutritionForm.formState.errors.maxGramsFat && (
@@ -245,6 +249,7 @@ export function Settings() {
                     type="number"
                     {...nutritionForm.register("maxGramsProtein", {
                       required: t("requiredField", "Required field"),
+                      valueAsNumber: true,
                     })}
                   />
                   {nutritionForm.formState.errors.maxGramsProtein && (
