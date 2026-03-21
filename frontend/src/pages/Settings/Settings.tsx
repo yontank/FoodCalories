@@ -141,6 +141,8 @@ function ChangePasswordForm() {
 export function Settings() {
   const { t, i18n } = useTranslation();
   const [nutrition, setNutrition] = useAtom(nutritionAtom);
+  const [deletionSuccessfulDialog, setDeletionSuccessfulDialog] =
+    useState(false);
 
   const nutritionForm = useForm<NutritionInputs>({
     values: {
@@ -173,7 +175,14 @@ export function Settings() {
     window.location.assign(file);
   };
 
-  const onClearLogs = () => console.log("clear logs");
+  const onClearLogs = async () => {
+    const { error } = await client.DELETE("/api/v1/meals");
+    if (error) {
+      return;
+    }
+    setDeletionSuccessfulDialog(true);
+  };
+
   const onDeleteAccount = () => console.log("delete account");
 
   const dir = i18n.language === "he" ? "rtl" : "ltr";
@@ -353,7 +362,7 @@ export function Settings() {
                     <DialogDescription>
                       {t(
                         "key65",
-                        "האם אתה בטוח? פעולה זו תמחק את כל רשומות האוכל שלך ולא\n                      ניתן יהיה לשחזרן.",
+                        "האם אתה בטוח? פעולה זו תמחק את כל רשומות האוכל שלך ולא\nניתן יהיה לשחזרן.",
                       )}
                     </DialogDescription>
                   </DialogHeader>
@@ -371,6 +380,19 @@ export function Settings() {
               </Dialog>
             </div>
           </CardContent>
+          <Dialog
+            open={deletionSuccessfulDialog}
+            onOpenChange={setDeletionSuccessfulDialog}
+          >
+            <DialogContent>
+              {t("logsDeleted", "רשומות האוכל שלך נמחקו.")}
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">OK</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </Card>
       </div>
 

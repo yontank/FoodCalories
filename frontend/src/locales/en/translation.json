@@ -111,5 +111,6 @@
   "protein": "Protein",
   "carbs": "Carbohydrates",
   "fats": "Fats",
-  "calories": "Calories"
+  "calories": "Calories",
+  "logsDeleted": "Your food records have been deleted."
 }
