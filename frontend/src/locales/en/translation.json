@@ -112,5 +112,6 @@
   "carbs": "Carbohydrates",
   "fats": "Fats",
   "calories": "Calories",
-  "logsDeleted": "Your food records have been deleted."
+  "logsDeleted": "Your food records have been deleted.",
+  "userDeleted": "Your account and all associated data has been deleted."
 }

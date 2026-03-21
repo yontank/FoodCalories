@@ -33,6 +33,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { client } from "@/api/client";
 import { useState } from "react";
 import { ErrorBox } from "@/components/ErrorBox";
+import { useNavigate } from "react-router";
+import { accessTokenAtom } from "@/atoms/user";
 
 type NutritionInputs = {
   calories: number;
@@ -141,8 +143,13 @@ function ChangePasswordForm() {
 export function Settings() {
   const { t, i18n } = useTranslation();
   const [nutrition, setNutrition] = useAtom(nutritionAtom);
-  const [deletionSuccessfulDialog, setDeletionSuccessfulDialog] =
+  const [, setAccessToken] = useAtom(accessTokenAtom);
+  const [logDeletionSuccessfulDialog, setLogDeletionSuccessfulDialog] =
     useState(false);
+  const [userDeletionSuccessfulDialog, setUserDeletionSuccessfulDialog] =
+    useState(false);
+
+  const navigate = useNavigate();
 
   const nutritionForm = useForm<NutritionInputs>({
     values: {
@@ -180,10 +187,16 @@ export function Settings() {
     if (error) {
       return;
     }
-    setDeletionSuccessfulDialog(true);
+    setLogDeletionSuccessfulDialog(true);
   };
 
-  const onDeleteAccount = () => console.log("delete account");
+  const onDeleteAccount = async () => {
+    const { error } = await client.DELETE("/api/v1/user");
+    if (error) {
+      return;
+    }
+    setUserDeletionSuccessfulDialog(true);
+  };
 
   const dir = i18n.language === "he" ? "rtl" : "ltr";
 
@@ -381,8 +394,8 @@ export function Settings() {
             </div>
           </CardContent>
           <Dialog
-            open={deletionSuccessfulDialog}
-            onOpenChange={setDeletionSuccessfulDialog}
+            open={logDeletionSuccessfulDialog}
+            onOpenChange={setLogDeletionSuccessfulDialog}
           >
             <DialogContent>
               {t("logsDeleted", "רשומות האוכל שלך נמחקו.")}
@@ -435,6 +448,27 @@ export function Settings() {
                     <Button variant="destructive" onClick={onDeleteAccount}>
                       {t("key69", "מחק חשבון")}
                     </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Dialog
+              open={userDeletionSuccessfulDialog}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setAccessToken(undefined);
+                  navigate("/login");
+                }
+              }}
+            >
+              <DialogContent>
+                {t(
+                  "userDeleted",
+                  "חשבונך וכל הנתונים המשויכים אליו נמחקו בהצלחה.",
+                )}
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">OK</Button>
                   </DialogClose>
                 </DialogFooter>
               </DialogContent>
