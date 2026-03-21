@@ -160,7 +160,19 @@ export function Settings() {
     });
   };
 
-  const onExportData = () => console.log("export data");
+  const onExportData = async () => {
+    const { data, error } = await client.GET("/api/v1/meals/export", {
+      parseAs: "blob",
+    });
+
+    if (error) {
+      return;
+    }
+
+    const file = window.URL.createObjectURL(data);
+    window.location.assign(file);
+  };
+
   const onClearLogs = () => console.log("clear logs");
   const onDeleteAccount = () => console.log("delete account");
 
