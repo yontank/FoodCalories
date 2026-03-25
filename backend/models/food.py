@@ -114,6 +114,13 @@ class MealEntryResponse(BaseModel):
     meal_type: MealType
 
 
+class WeightEntry(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    weight: float
+    created_at: datetime
+
+
 class NutritionValues(BaseModel):
     protein: int = Field(ge=0)
     carbohydrates: int = Field(ge=0)
