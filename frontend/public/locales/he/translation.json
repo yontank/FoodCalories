@@ -109,7 +109,14 @@
   "usernameMax": "שם המשתמש יכול להכיל לכל היותר 32 תווים.",
   "usernameMin": "שם המשתמש חייב להכיל לפחות 5 תווים.",
   "protein": "חלבון",
-  "carbs" :"פחמימות",
+  "carbs": "פחמימות",
   "fats": "שומנים",
-  "calories": "קלוריות"
+  "calories": "קלוריות",
+  "graphs": "גרפים",
+  "weightOverTime": "משקל לאורך זמן",
+  "weightLast3Months": "המשקל שלך ב-3 החודשים האחרונים",
+  "weight": "משקל",
+  "weightUnit": "ק\"ג",
+  "noWeightData": "אין נתוני משקל עדיין",
+  "logout": "התנתק"
 }

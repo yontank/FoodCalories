@@ -108,7 +108,14 @@
   "usernameMax": "Username must be at most 32 characters.",
   "usernameMin": "Username must be at least 5 characters.",
   "protein": "Protein",
-  "carbs" :"Carbohydrates",
+  "carbs": "Carbohydrates",
   "fats": "Fats",
-  "calories": "Calories"
+  "calories": "Calories",
+  "graphs": "Graphs",
+  "weightOverTime": "Weight Over Time",
+  "weightLast3Months": "Your weight over the last 3 months",
+  "weight": "Weight",
+  "weightUnit": "kg",
+  "noWeightData": "No weight data recorded yet",
+  "logout": "Logout"
 }
