@@ -12,7 +12,7 @@ import { MealEntryDialog } from "./MealEntryDialog";
 import { NotLoggedInError, reactClient } from "@/api/client";
 import { useNavigate } from "react-router";
 import { DayPicker } from "./DayPicker";
-import { formatISO, startOfDay } from "date-fns";
+import { startOfDay } from "date-fns";
 import { components } from "@/api/v1";
 import { useTranslation } from "react-i18next";
 

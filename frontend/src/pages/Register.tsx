@@ -6,25 +6,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Field, FieldGroup } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState } from "react";
 import { loginSchema, registerSchema } from "@/schemas/user";
 import { client } from "@/api/client";
 import { useLogin } from "@/hooks/useLogin";
 import { ErrorBox } from "@/components/ErrorBox";
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from "react-i18next";
+import { ControlledField } from "@/components/ControlledField";
 
 function RegisterForm() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const { login, inProgress: loginInProgress } = useLogin();
   const [registerInProgress, setRegisterInProgress] = useState(false);
 
@@ -66,70 +61,30 @@ function RegisterForm() {
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>{t('key', 'הרשמה')}</CardTitle>
+        <CardTitle>{t("key", "הרשמה")}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form id="form-login" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="form-register" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
-            <Controller
+            <ControlledField
+              form={form}
+              formName="form-register"
               name="username"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-login-username">
-                    {t('key2', 'שם משתמש')}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-login-username"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
+              label={t("key2", "שם משתמש")}
             />
-            <Controller
+            <ControlledField
+              form={form}
+              formName="form-register"
               name="password"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-login-password">{t('key3', 'סיסמה')}</FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-login-password"
-                    type="password"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
+              label={t("key3", "סיסמה")}
+              type="password"
             />
-            <Controller
+            <ControlledField
+              form={form}
+              formName="form-register"
               name="confirmPassword"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-login-confirmPassword">
-                    {t('key4', 'אשר סיסמה')}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-login-confirmPassword"
-                    type="password"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
+              label={t("key4", "אשר סיסמה")}
+              type="password"
             />
           </FieldGroup>
         </form>
@@ -139,10 +94,10 @@ function RegisterForm() {
         <Field orientation="horizontal">
           <Button
             type="submit"
-            form="form-login"
+            form="form-register"
             disabled={loginInProgress || registerInProgress}
           >
-            {t('key5', 'כניסה')}
+            {t("key5", "כניסה")}
           </Button>
         </Field>
       </CardFooter>

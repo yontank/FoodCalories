@@ -1,6 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -22,99 +20,189 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
-import { useTranslation } from 'react-i18next'
+import { useAtom } from "jotai";
+import { useTranslation } from "react-i18next";
+import { ControlledField } from "@/components/ControlledField";
+import * as z from "zod";
+import { changePasswordSchema } from "@/schemas/user";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { client } from "@/api/client";
+import { useState } from "react";
+import { ErrorBox } from "@/components/ErrorBox";
+import { useNavigate } from "react-router";
+import { accessTokenAtom } from "@/atoms/user";
 
-type AccountInputs = {
-  email: string;
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-};
+function ChangePasswordForm() {
+  const { t } = useTranslation();
+
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+
+  const accountForm = useForm<z.infer<typeof changePasswordSchema>>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onChangePassword = async (
+    values: z.infer<typeof changePasswordSchema>,
+  ) => {
+    setErrorMessage(undefined);
+
+    const { error } = await client.PUT("/api/v1/user/password", {
+      body: {
+        current_password: values.currentPassword,
+        new_password: values.newPassword,
+      },
+    });
+
+    if (error) {
+      setErrorMessage(JSON.stringify(error));
+    } else {
+      setConfirmationOpen(true);
+    }
+  };
+
+  return (
+    <form
+      id="form-change-password"
+      onSubmit={accountForm.handleSubmit(onChangePassword)}
+    >
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>{t("key54", "חשבון")}</CardTitle>
+          <CardDescription>
+            {t("key55", "עדכן את פרטי הכניסה שלך")}
+          </CardDescription>
+        </CardHeader>
+        <Separator />
+        <CardContent className="pt-6 space-y-4">
+          <div className="space-y-2">
+            <ControlledField
+              form={accountForm}
+              formName="form-change-password"
+              name="currentPassword"
+              type="password"
+              label={t("key56", "סיסמה נוכחית")}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <ControlledField
+                form={accountForm}
+                formName="form-change-password"
+                name="newPassword"
+                type="password"
+                label={t("key57", "סיסמה חדשה")}
+              />
+            </div>
+            <div className="space-y-2">
+              <ControlledField
+                form={accountForm}
+                formName="form-change-password"
+                name="confirmPassword"
+                type="password"
+                label={t("key58", "אימות סיסמה")}
+              />
+            </div>
+          </div>
+          {errorMessage && <ErrorBox>{errorMessage}</ErrorBox>}
+        </CardContent>
+        <CardFooter className="justify-end border-t pt-4">
+          <Button type="submit">{t("key53", "שמור שינויים")}</Button>
+        </CardFooter>
+      </Card>
+      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
+        <DialogContent>
+          {t("passwordChanged", "סיסמתך שונתה בהצלחה.")}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">OK</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </form>
+  );
+}
 
 export function Settings() {
   const { t, i18n } = useTranslation();
+  const [, setAccessToken] = useAtom(accessTokenAtom);
+  const [logDeletionSuccessfulDialog, setLogDeletionSuccessfulDialog] =
+    useState(false);
+  const [userDeletionSuccessfulDialog, setUserDeletionSuccessfulDialog] =
+    useState(false);
 
-  const accountForm = useForm<AccountInputs>();
+  const navigate = useNavigate();
 
-  const onSaveAccount = (values: AccountInputs) => console.log(values);
-  const onExportData = () => console.log("export data");
-  const onClearLogs = () => console.log("clear logs");
-  const onDeleteAccount = () => console.log("delete account");
+  const onExportData = async () => {
+    const { data, error } = await client.GET("/api/v1/meals/export", {
+      parseAs: "blob",
+    });
 
-  const dir = i18n.language === 'he' ? 'rtl' : 'ltr';
+    if (error) {
+      return;
+    }
+
+    const file = window.URL.createObjectURL(data);
+    window.location.assign(file);
+  };
+
+  const onClearLogs = async () => {
+    const { error } = await client.DELETE("/api/v1/meals");
+    if (error) {
+      return;
+    }
+    setLogDeletionSuccessfulDialog(true);
+  };
+
+  const onDeleteAccount = async () => {
+    const { error } = await client.DELETE("/api/v1/user");
+    if (error) {
+      return;
+    }
+    setUserDeletionSuccessfulDialog(true);
+  };
 
   return (
-    <div className="p-6 max-w-4xl" dir={dir}>
+    <div className="p-6 max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">{t('key46', 'Settings')}</h1>
+        <h1 className="text-2xl font-bold">{t("key46", "Settings")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {t('key47', 'Manage your account and app preferences')}
+          {t("key47", "Manage your account and app preferences")}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6" dir="ltr">
+      <div className="grid grid-cols-2 gap-6">
         {/* Account Settings */}
-        <form onSubmit={accountForm.handleSubmit(onSaveAccount)} dir={dir}>
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle>{t('key54', 'חשבון')}</CardTitle>
-              <CardDescription>{t('key55', 'עדכן את פרטי הכניסה שלך')}</CardDescription>
-            </CardHeader>
-            <Separator />
-            <CardContent className="pt-6 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="current-password">{t('key56', 'סיסמה נוכחית')}</Label>
-                <Input
-                  id="current-password"
-                  type="password"
-                  {...accountForm.register("currentPassword")}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="new-password">{t('key57', 'סיסמה חדשה')}</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    {...accountForm.register("newPassword")}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">{t('key58', 'אימות סיסמה')}</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    {...accountForm.register("confirmPassword")}
-                  />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="justify-end border-t pt-4">
-              <Button type="submit">{t('key53', 'שמור שינויים')}</Button>
-            </CardFooter>
-          </Card>
-        </form>
+        <ChangePasswordForm />
 
         {/* Language */}
-        <Card dir={dir}>
+        <Card>
           <CardHeader>
-            <CardTitle>{t('language', 'שפה')}</CardTitle>
-            <CardDescription>{t('languageDesc', 'שנה את שפת הממשק')}</CardDescription>
+            <CardTitle>{t("language", "שפה")}</CardTitle>
+            <CardDescription>
+              {t("languageDesc", "שנה את שפת הממשק")}
+            </CardDescription>
           </CardHeader>
           <Separator />
           <CardContent className="pt-6">
-            <div className="flex gap-2" dir="ltr">
+            <div className="flex gap-2">
               <Button
-                variant={i18n.language === 'he' ? 'default' : 'outline'}
+                variant={i18n.language === "he" ? "default" : "outline"}
                 className="flex-1"
-                onClick={() => i18n.changeLanguage('he')}
+                onClick={() => i18n.changeLanguage("he")}
               >
                 עברית
               </Button>
               <Button
-                variant={i18n.language === 'en' ? 'default' : 'outline'}
+                variant={i18n.language === "en" ? "default" : "outline"}
                 className="flex-1"
-                onClick={() => i18n.changeLanguage('en')}
+                onClick={() => i18n.changeLanguage("en")}
               >
                 English
               </Button>
@@ -123,50 +211,59 @@ export function Settings() {
         </Card>
 
         {/* Data */}
-        <Card dir={dir}>
+        <Card>
           <CardHeader>
-            <CardTitle>{t('key59', 'נתונים')}</CardTitle>
-            <CardDescription>{t('key60', 'ייצא או נקה את הנתונים שלך')}</CardDescription>
+            <CardTitle>{t("key59", "נתונים")}</CardTitle>
+            <CardDescription>
+              {t("key60", "ייצא או נקה את הנתונים שלך")}
+            </CardDescription>
           </CardHeader>
           <Separator />
           <CardContent className="pt-6 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">{t('key61', 'ייצא נתונים')}</p>
+                <p className="text-sm font-medium">
+                  {t("key61", "ייצא נתונים")}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  {t('csv', 'הורד את כל יומני האוכל שלך כקובץ CSV')}
+                  {t("csv", "הורד את כל יומני האוכל שלך כקובץ CSV")}
                 </p>
               </div>
               <Button variant="outline" onClick={onExportData}>
-                {t('csv2', 'ייצא CSV')}
+                {t("csv2", "ייצא CSV")}
               </Button>
             </div>
             <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">{t('key62', 'נקה יומנים')}</p>
+                <p className="text-sm font-medium">
+                  {t("key62", "נקה יומנים")}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  {t('key63', 'מחק את כל רשומות האוכל — הגדרות היעדים יישמרו')}
+                  {t("key63", "מחק את כל רשומות האוכל — הגדרות היעדים יישמרו")}
                 </p>
               </div>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline">{t('key62', 'נקה יומנים')}</Button>
+                  <Button variant="outline">{t("key62", "נקה יומנים")}</Button>
                 </DialogTrigger>
-                <DialogContent dir={dir}>
+                <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>{t('key64', 'נקה יומני אוכל')}</DialogTitle>
+                    <DialogTitle>{t("key64", "נקה יומני אוכל")}</DialogTitle>
                     <DialogDescription>
-                      {t('key65', 'האם אתה בטוח? פעולה זו תמחק את כל רשומות האוכל שלך ולא\n                      ניתן יהיה לשחזרן.')}
+                      {t(
+                        "key65",
+                        "האם אתה בטוח? פעולה זו תמחק את כל רשומות האוכל שלך ולא\nניתן יהיה לשחזרן.",
+                      )}
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter className="gap-2">
                     <DialogClose asChild>
-                      <Button variant="outline">{t('key66', 'ביטול')}</Button>
+                      <Button variant="outline">{t("key66", "ביטול")}</Button>
                     </DialogClose>
                     <DialogClose asChild>
                       <Button variant="destructive" onClick={onClearLogs}>
-                        {t('key62', 'נקה יומנים')}
+                        {t("key62", "נקה יומנים")}
                       </Button>
                     </DialogClose>
                   </DialogFooter>
@@ -174,43 +271,82 @@ export function Settings() {
               </Dialog>
             </div>
           </CardContent>
+          <Dialog
+            open={logDeletionSuccessfulDialog}
+            onOpenChange={setLogDeletionSuccessfulDialog}
+          >
+            <DialogContent>
+              {t("logsDeleted", "רשומות האוכל שלך נמחקו.")}
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">OK</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </Card>
       </div>
 
       {/* Danger Zone */}
-      <Card className="border-destructive/50 mt-6" dir={dir}>
+      <Card className="border-destructive/50 mt-6">
         <CardHeader>
-          <CardTitle className="text-destructive">{t('key67', 'אזור מסוכן')}</CardTitle>
-          <CardDescription>{t('key68', 'פעולות בלתי הפיכות')}</CardDescription>
+          <CardTitle className="text-destructive">
+            {t("key67", "אזור מסוכן")}
+          </CardTitle>
+          <CardDescription>{t("key68", "פעולות בלתי הפיכות")}</CardDescription>
         </CardHeader>
         <Separator />
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium">{t('key69', 'מחק חשבון')}</p>
+              <p className="text-sm font-medium">{t("key69", "מחק חשבון")}</p>
               <p className="text-xs text-muted-foreground">
-                {t('key70', 'מחק לצמיתות את חשבונך וכל הנתונים המשויכים אליו')}
+                {t("key70", "מחק לצמיתות את חשבונך וכל הנתונים המשויכים אליו")}
               </p>
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="destructive">{t('key69', 'מחק חשבון')}</Button>
+                <Button variant="destructive">{t("key69", "מחק חשבון")}</Button>
               </DialogTrigger>
               <DialogContent dir="rtl">
                 <DialogHeader>
-                  <DialogTitle>{t('key71', 'מחיקת חשבון')}</DialogTitle>
+                  <DialogTitle>{t("key71", "מחיקת חשבון")}</DialogTitle>
                   <DialogDescription>
-                    {t('key72', 'האם אתה בטוח? פעולה זו תמחק לצמיתות את חשבונך וכל הנתונים\n                    המשויכים אליו. לא ניתן יהיה לשחזר את החשבון.')}
+                    {t(
+                      "key72",
+                      "האם אתה בטוח? פעולה זו תמחק לצמיתות את חשבונך וכל הנתונים\n                    המשויכים אליו. לא ניתן יהיה לשחזר את החשבון.",
+                    )}
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="gap-2">
                   <DialogClose asChild>
-                    <Button variant="outline">{t('key66', 'ביטול')}</Button>
+                    <Button variant="outline">{t("key66", "ביטול")}</Button>
                   </DialogClose>
                   <DialogClose asChild>
                     <Button variant="destructive" onClick={onDeleteAccount}>
-                      {t('key69', 'מחק חשבון')}
+                      {t("key69", "מחק חשבון")}
                     </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Dialog
+              open={userDeletionSuccessfulDialog}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setAccessToken(undefined);
+                  navigate("/login");
+                }
+              }}
+            >
+              <DialogContent>
+                {t(
+                  "userDeleted",
+                  "חשבונך וכל הנתונים המשויכים אליו נמחקו בהצלחה.",
+                )}
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">OK</Button>
                   </DialogClose>
                 </DialogFooter>
               </DialogContent>

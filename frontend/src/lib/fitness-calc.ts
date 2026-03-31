@@ -1,6 +1,3 @@
-import { Activity } from "lucide-react";
-import i18next from "i18next";
-
 type Gender = "male" | "female";
 
 type BMITypes =

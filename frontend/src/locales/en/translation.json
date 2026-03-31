@@ -101,6 +101,7 @@
   "passwordMin": "Password must be at least 8 characters.",
   "passwordsDoNotMatch": "Passwords do not match.",
   "passwordSpecial": "Password must have at least one special character.",
+  "passwordChanged": "Your password has been changed successfully.",
   "pickADate": "Pick a date",
   "proteingrams": "{{proteinGrams}} g",
   "requiredField": "Required field",
@@ -132,5 +133,7 @@
   "lastRecorded": "Last recorded",
   "weightReminder": "It's been over 2 weeks since your last weigh-in",
   "save": "Save",
-  "logout": "Logout"
+  "logout": "Logout",
+  "logsDeleted": "Your food records have been deleted.",
+  "userDeleted": "Your account and all associated data has been deleted."
 }

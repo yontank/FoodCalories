@@ -102,6 +102,7 @@
   "passwordMin": "הסיסמה חייבת להכיל לפחות 8 תווים.",
   "passwordsDoNotMatch": "הסיסמאות אינן תואמות.",
   "passwordSpecial": "הסיסמה חייבת להכיל לפחות תו מיוחד אחד.",
+  "passwordChanged": "סיסמתך שונתה בהצלחה.",
   "pickADate": "בחר תאריך",
   "proteingrams": "{{proteinGrams}} גרם",
   "requiredField": "שדה חובה",
@@ -133,5 +134,7 @@
   "lastRecorded": "נרשם לאחרונה",
   "weightReminder": "עברו יותר משבועיים מאז ששקלת את עצמך",
   "save": "שמור",
-  "logout": "התנתק"
+  "logout": "התנתק",
+  "logsDeleted": "רשומות האוכל שלך נמחקו.",
+  "userDeleted": "חשבונך וכל הנתונים המשויכים אליו נמחקו בהצלחה."
 }
