@@ -70,8 +70,7 @@ type NutritionInputs = {
 };
 
 export function Nutrition() {
-  const { t, i18n } = useTranslation();
-  const dir = i18n.language === "he" ? "rtl" : "ltr";
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [nutrition, setNutrition] = useAtom(nutritionAtom);
 
@@ -280,7 +279,7 @@ export function Nutrition() {
   // ── Render ──
 
   return (
-    <div className="p-6 max-w-4xl space-y-6" dir={dir}>
+    <div className="p-6 max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{t("nutrition", "Nutrition")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -299,9 +298,9 @@ export function Nutrition() {
         onSave={onSaveWeight}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6" dir="ltr">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Nutrition Goals */}
-        <form onSubmit={nutritionForm.handleSubmit(onSaveNutrition)} dir={dir}>
+        <form onSubmit={nutritionForm.handleSubmit(onSaveNutrition)}>
           <Card className="h-full">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -368,7 +367,7 @@ export function Nutrition() {
         </form>
 
         {/* Personal Profile */}
-        <Card className="h-full" dir={dir}>
+        <Card className="h-full">
           <CardHeader>
             <CardTitle>{t("personalProfile", "Personal Profile")}</CardTitle>
             <CardDescription>
@@ -448,7 +447,7 @@ export function Nutrition() {
         </Card>
 
         {/* Log Weight */}
-        <Card dir={dir}>
+        <Card>
           <CardHeader>
             <CardTitle>{t("logWeight", "Log Weight")}</CardTitle>
             <CardDescription>

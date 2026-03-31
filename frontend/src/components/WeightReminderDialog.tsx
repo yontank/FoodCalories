@@ -23,13 +23,12 @@ export function WeightReminderDialog({
   saving: boolean;
   onSave: (value: string) => Promise<void>;
 }) {
-  const { t, i18n } = useTranslation();
-  const dir = i18n.language === "he" ? "rtl" : "ltr";
+  const { t } = useTranslation();
   const [value, setValue] = useState("");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent dir={dir}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("logWeight", "Log Weight")}</DialogTitle>
           <DialogDescription>

@@ -168,10 +168,8 @@ export function Settings() {
     setUserDeletionSuccessfulDialog(true);
   };
 
-  const dir = i18n.language === "he" ? "rtl" : "ltr";
-
   return (
-    <div className="p-6 max-w-4xl" dir={dir}>
+    <div className="p-6 max-w-4xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">{t("key46", "Settings")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -184,7 +182,7 @@ export function Settings() {
         <ChangePasswordForm />
 
         {/* Language */}
-        <Card dir={dir}>
+        <Card>
           <CardHeader>
             <CardTitle>{t("language", "שפה")}</CardTitle>
             <CardDescription>
@@ -193,7 +191,7 @@ export function Settings() {
           </CardHeader>
           <Separator />
           <CardContent className="pt-6">
-            <div className="flex gap-2" dir="ltr">
+            <div className="flex gap-2">
               <Button
                 variant={i18n.language === "he" ? "default" : "outline"}
                 className="flex-1"
@@ -213,7 +211,7 @@ export function Settings() {
         </Card>
 
         {/* Data */}
-        <Card dir={dir}>
+        <Card>
           <CardHeader>
             <CardTitle>{t("key59", "נתונים")}</CardTitle>
             <CardDescription>
@@ -249,7 +247,7 @@ export function Settings() {
                 <DialogTrigger asChild>
                   <Button variant="outline">{t("key62", "נקה יומנים")}</Button>
                 </DialogTrigger>
-                <DialogContent dir={dir}>
+                <DialogContent>
                   <DialogHeader>
                     <DialogTitle>{t("key64", "נקה יומני אוכל")}</DialogTitle>
                     <DialogDescription>
@@ -290,7 +288,7 @@ export function Settings() {
       </div>
 
       {/* Danger Zone */}
-      <Card className="border-destructive/50 mt-6" dir={dir}>
+      <Card className="border-destructive/50 mt-6">
         <CardHeader>
           <CardTitle className="text-destructive">
             {t("key67", "אזור מסוכן")}
