@@ -4,9 +4,22 @@ from typing import Annotated
 from uuid import UUID, uuid4
 
 import jwt
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
+from fastapi import (
+    APIRouter,
+    Cookie,
+    Depends,
+    HTTPException,
+    Request,
+    Response,
+    status,
+    Security,
+)
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+    SecurityScopes,
+)
 from pwdlib import PasswordHash
 from sqlalchemy import delete, false, select, update
 from core.rate_limit import limiter
@@ -27,6 +40,8 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="api/v1/token", refreshUrl="api/v1/refresh"
 )
+
+"קן"
 
 
 @router.post(

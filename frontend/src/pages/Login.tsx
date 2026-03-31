@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { GoogleLogin } from "@react-oauth/google";
 import {
   Card,
   CardContent,
@@ -76,6 +77,16 @@ function LoginForm() {
             {t("key", "הרשמה")}
           </Button>
         </Field>
+        --- OR
+        <GoogleLogin
+          onSuccess={(credentialResponse) => {
+            console.log(credentialResponse);
+          }}
+          onError={() => {
+            console.log("Login Failed");
+          }}
+        />
+        ;
       </CardFooter>
     </Card>
   );

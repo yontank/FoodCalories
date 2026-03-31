@@ -1,4 +1,4 @@
-import { Home, Settings } from "lucide-react";
+import { Home, Settings, ChartLine } from "lucide-react";
 
 import {
   Sidebar,
@@ -9,30 +9,68 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 
 import { Link } from "react-router";
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from "react-i18next";
+import { Button } from "./ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { getDefaultStore } from "jotai";
+import { accessTokenAtom } from "@/atoms/user";
 
 function AppSidebar() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
+
+  // Implement logout logic here
+  const { refetch } = useQuery({
+    enabled: false, // Disable automatic execution
+    queryKey: ["logout"],
+    queryFn: async () => {
+      // Call your logout API endpoint here
+      const store = getDefaultStore();
+      const accessToken = store.get(accessTokenAtom);
+
+      const response = await fetch("/api/v1/logout", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+      store.set(accessTokenAtom, undefined); // Clear access token from Jotai store
+      return true;
+    },
+  });
+
   const items = [
     {
-      title: t('home', 'Home'),
+      title: t("home", "Home"),
       url: "/",
       icon: Home,
     },
     {
-      title: t('settings', 'Settings'),
+      title: t("nutrition", "Nutrition"),
+      url: "/nutrition",
+      icon: ChartLine,
+    },
+    {
+      title: t("settings", "Settings"),
       url: "/settings",
       icon: Settings,
     },
   ];
+
   return (
     <Sidebar side="right" variant="inset">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{t('application', 'Application')}</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {t("application", "Application")}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -49,6 +87,12 @@ function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter>
+        <Button variant={"default"} onClick={() => refetch()}>
+          {t("logout", "Logout")}
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }
