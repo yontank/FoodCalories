@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { subMonths, subDays, startOfDay, format, differenceInDays } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  subMonths,
+  subDays,
+  startOfDay,
+  format,
+  differenceInDays,
+} from "date-fns";
 import {
   LineChart,
   Line,
@@ -15,10 +21,8 @@ import { useTranslation } from "react-i18next";
 import { useAtom } from "jotai";
 import { useForm } from "react-hook-form";
 
-import { reactClient } from "@/api/client";
+import { client, reactClient } from "@/api/client";
 import { nutritionAtom } from "@/atoms/nutrition";
-import { getToken } from "@/lib/auth";
-import type { WeightEntry, ProfileData } from "@/lib/api-types";
 import { CalorieDeficitDialog } from "@/components/CalorieDeficitDialog";
 import { WeightReminderDialog } from "@/components/WeightReminderDialog";
 import { Button } from "@/components/ui/button";
@@ -106,17 +110,7 @@ export function Nutrition() {
     { label: t("key18", "Very active (athlete)"), value: "1.9" },
   ];
 
-  const { data: profileData } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      const res = await fetch("/api/v1/profile", {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error("Failed to fetch profile");
-      return (await res.json()) as ProfileData;
-    },
-  });
+  const { data: profileData } = reactClient.useQuery("get", "/api/v1/profile");
 
   useEffect(() => {
     if (profileData) {
@@ -130,20 +124,15 @@ export function Nutrition() {
   const onSaveProfile = async () => {
     setProfileSaving(true);
     try {
-      await fetch("/api/v1/profile", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({
+      await client.PATCH("/api/v1/profile", {
+        body: {
           height: Number(profileHeight),
           age: Number(profileAge),
           gender: profileGender,
           activity_factor: Number(profileActivity),
-        }),
+        },
       });
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["get", "/api/v1/profile"] });
     } finally {
       setProfileSaving(false);
     }
@@ -163,17 +152,18 @@ export function Nutrition() {
   const [reminderOpen, setReminderOpen] = useState(false);
   const [reminderChecked, setReminderChecked] = useState(false);
 
-  const { data: weightData, isLoading: weightLoading } = useQuery({
-    queryKey: ["weight", weightStart.toISOString(), now.toISOString()],
-    queryFn: async () => {
-      const res = await fetch(
-        `/api/v1/weight?start_date=${weightStart.toISOString()}&end_date=${now.toISOString()}`,
-        { headers: { Authorization: `Bearer ${getToken()}` } },
-      );
-      if (!res.ok) throw new Error("Failed to fetch weight data");
-      return (await res.json()) as WeightEntry[];
+  const { data: weightData, isLoading: weightLoading } = reactClient.useQuery(
+    "get",
+    "/api/v1/weight",
+    {
+      params: {
+        query: {
+          start_date: weightStart.toISOString(),
+          end_date: now.toISOString(),
+        },
+      },
     },
-  });
+  );
 
   const latestWeight = weightData?.length
     ? weightData[weightData.length - 1]
@@ -195,16 +185,13 @@ export function Nutrition() {
   }, [weightLoading, latestWeight, reminderChecked]);
 
   const onSaveWeight = async (value?: string) => {
-    const w = Number(value ?? newWeight);
-    if (!w || w <= 0) return;
+    const weight = Number(value ?? newWeight);
+    if (!weight || weight <= 0) return;
     setWeightSaving(true);
     try {
-      await fetch(`/api/v1/weight?weight=${w}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      await client.PUT("/api/v1/weight", { params: { query: { weight } } });
       setNewWeight("");
-      queryClient.invalidateQueries({ queryKey: ["weight"] });
+      queryClient.invalidateQueries({ queryKey: ["get", "/api/v1/weight"] });
     } finally {
       setWeightSaving(false);
     }
@@ -297,7 +284,10 @@ export function Nutrition() {
       <div>
         <h1 className="text-2xl font-bold">{t("nutrition", "Nutrition")}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {t("nutritionDesc", "Manage your goals, profile, and track your progress")}
+          {t(
+            "nutritionDesc",
+            "Manage your goals, profile, and track your progress",
+          )}
         </p>
       </div>
 
@@ -336,7 +326,9 @@ export function Nutrition() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="carb">{t("key50", "Carbohydrates (g)")}</Label>
+                  <Label htmlFor="carb">
+                    {t("key50", "Carbohydrates (g)")}
+                  </Label>
                   <Input
                     id="carb"
                     type="number"
@@ -356,7 +348,9 @@ export function Nutrition() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="protein-input">{t("key52", "Protein (g)")}</Label>
+                  <Label htmlFor="protein-input">
+                    {t("key52", "Protein (g)")}
+                  </Label>
                   <Input
                     id="protein-input"
                     type="number"
@@ -423,9 +417,14 @@ export function Nutrition() {
               </div>
               <div className="space-y-2">
                 <Label>{t("key29", "Activity Level")}</Label>
-                <Select value={profileActivity} onValueChange={setProfileActivity}>
+                <Select
+                  value={profileActivity}
+                  onValueChange={setProfileActivity}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder={t("key30", "Select activity level")} />
+                    <SelectValue
+                      placeholder={t("key30", "Select activity level")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {ACTIVITY_LEVELS.map((level) => (
@@ -508,10 +507,26 @@ export function Nutrition() {
             <ChartContainer config={weightChartConfig}>
               <LineChart data={weightChartData}>
                 <CartesianGrid vertical={false} />
-                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickLine={false} axisLine={false} tickMargin={8} domain={["dataMin - 2", "dataMax + 2"]} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  domain={["dataMin - 2", "dataMax + 2"]}
+                />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Line type="monotone" dataKey="weight" stroke="var(--color-weight)" strokeWidth={2} dot={false} />
+                <Line
+                  type="monotone"
+                  dataKey="weight"
+                  stroke="var(--color-weight)"
+                  strokeWidth={2}
+                  dot={false}
+                />
               </LineChart>
             </ChartContainer>
           )}
@@ -523,7 +538,10 @@ export function Nutrition() {
         <CardHeader>
           <CardTitle>{t("caloriesPerDay", "Calories Per Day")}</CardTitle>
           <CardDescription>
-            {t("caloriesLast2Weeks", "Your daily calories over the last 2 weeks")}
+            {t(
+              "caloriesLast2Weeks",
+              "Your daily calories over the last 2 weeks",
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -539,7 +557,12 @@ export function Nutrition() {
             <ChartContainer config={caloriesChartConfig}>
               <BarChart data={dailyData}>
                 <CartesianGrid vertical={false} />
-                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                />
                 <YAxis tickLine={false} axisLine={false} tickMargin={8} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <ReferenceLine
@@ -553,7 +576,11 @@ export function Nutrition() {
                     fontSize: 12,
                   }}
                 />
-                <Bar dataKey="calories" fill="var(--color-calories)" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="calories"
+                  fill="var(--color-calories)"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ChartContainer>
           )}
@@ -565,7 +592,10 @@ export function Nutrition() {
         <CardHeader>
           <CardTitle>{t("macrosPerDay", "Macros Per Day")}</CardTitle>
           <CardDescription>
-            {t("macrosLast2Weeks", "Daily protein, carbs, and fat over the last 2 weeks (g)")}
+            {t(
+              "macrosLast2Weeks",
+              "Daily protein, carbs, and fat over the last 2 weeks (g)",
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -581,12 +611,32 @@ export function Nutrition() {
             <ChartContainer config={macrosChartConfig}>
               <BarChart data={dailyData}>
                 <CartesianGrid vertical={false} />
-                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                />
                 <YAxis tickLine={false} axisLine={false} tickMargin={8} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="protein" fill="var(--color-protein)" stackId="macros" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="carbs" fill="var(--color-carbs)" stackId="macros" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="fat" fill="var(--color-fat)" stackId="macros" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="protein"
+                  fill="var(--color-protein)"
+                  stackId="macros"
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar
+                  dataKey="carbs"
+                  fill="var(--color-carbs)"
+                  stackId="macros"
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar
+                  dataKey="fat"
+                  fill="var(--color-fat)"
+                  stackId="macros"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ChartContainer>
           )}

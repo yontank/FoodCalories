@@ -249,7 +249,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Get Weight History
+         * @description Returns weight entries for the current user between start_date and end_date.
+         */
+        get: operations["get_weight_history_api_v1_weight_get"];
         /**
          * Add Weight Entry
          * @description Adds a weight entry to the user's weight history.
@@ -262,26 +266,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/profile/nutrition": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Save Nutrition Values
-         * @description Saves or updates the user's daily macro-nutrient targets.
-         */
-        patch: operations["save_nutrition_values_api_v1_profile_nutrition_patch"];
-        trace?: never;
-    };
     "/api/v1/profile": {
         parameters: {
             query?: never;
@@ -289,7 +273,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Get Personal Profile
+         * @description Returns the user's personal profile.
+         */
+        get: operations["get_personal_profile_api_v1_profile_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -300,6 +288,30 @@ export interface paths {
          * @description Saves or updates the user's personal profile (age, height, gender, activity factor).
          */
         patch: operations["save_personal_profile_api_v1_profile_patch"];
+        trace?: never;
+    };
+    "/api/v1/profile/nutrition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Nutrition Profile
+         * @description Returns the user's nutrition profile.
+         */
+        get: operations["get_nutrition_profile_api_v1_profile_nutrition_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Save Nutrition Values
+         * @description Saves or updates the user's daily macro-nutrient targets.
+         */
+        patch: operations["save_nutrition_values_api_v1_profile_nutrition_patch"];
         trace?: never;
     };
     "/api/v1/": {
@@ -571,6 +583,16 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** WeightEntry */
+        WeightEntry: {
+            /** Weight */
+            weight: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
     };
     responses: never;
@@ -1116,6 +1138,47 @@ export interface operations {
             };
         };
     };
+    get_weight_history_api_v1_weight_get: {
+        parameters: {
+            query: {
+                start_date: string;
+                end_date: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WeightEntry"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_weight_entry_api_v1_weight_put: {
         parameters: {
             query: {
@@ -1156,7 +1219,45 @@ export interface operations {
             };
         };
     };
-    save_nutrition_values_api_v1_profile_nutrition_patch: {
+    get_personal_profile_api_v1_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileValues"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+        };
+    };
+    save_personal_profile_api_v1_profile_patch: {
         parameters: {
             query?: never;
             header?: never;
@@ -1165,7 +1266,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NutritionValues"];
+                "application/json": components["schemas"]["ProfileValues"];
             };
         };
         responses: {
@@ -1198,7 +1299,45 @@ export interface operations {
             };
         };
     };
-    save_personal_profile_api_v1_profile_patch: {
+    get_nutrition_profile_api_v1_profile_nutrition_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NutritionValues"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+        };
+    };
+    save_nutrition_values_api_v1_profile_nutrition_patch: {
         parameters: {
             query?: never;
             header?: never;
@@ -1207,7 +1346,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ProfileValues"];
+                "application/json": components["schemas"]["NutritionValues"];
             };
         };
         responses: {
