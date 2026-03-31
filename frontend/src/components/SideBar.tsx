@@ -1,4 +1,4 @@
-import { Home, Settings } from "lucide-react";
+import { Home, Settings, ChartLine } from "lucide-react";
 
 import {
   Sidebar,
@@ -48,21 +48,29 @@ function AppSidebar() {
 
   const items = [
     {
-      title: t('home', 'Home'),
+      title: t("home", "Home"),
       url: "/",
       icon: Home,
     },
     {
-      title: t('settings', 'Settings'),
+      title: t("nutrition", "Nutrition"),
+      url: "/nutrition",
+      icon: ChartLine,
+    },
+    {
+      title: t("settings", "Settings"),
       url: "/settings",
       icon: Settings,
     },
   ];
+
   return (
     <Sidebar side="right" variant="inset">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{t('application', 'Application')}</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {t("application", "Application")}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

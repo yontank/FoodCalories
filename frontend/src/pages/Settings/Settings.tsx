@@ -1,4 +1,3 @@
-import { CalorieDeficitDialog } from "@/components/CalorieDeficitDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,16 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
-import { useAtom } from "jotai";
-import { nutritionAtom } from "@/atoms/nutrition";
 import { useTranslation } from 'react-i18next'
-
-type NutritionInputs = {
-  calories: number;
-  maxGramsCarbs: number;
-  maxGramsFat: number;
-  maxGramsProtein: number;
-};
 
 type AccountInputs = {
   email: string;
@@ -43,25 +33,9 @@ type AccountInputs = {
 
 export function Settings() {
   const { t, i18n } = useTranslation();
-  const [nutrition, setNutrition] = useAtom(nutritionAtom);
 
-  const nutritionForm = useForm<NutritionInputs>({
-    values: {
-      calories: nutrition.calories,
-      maxGramsCarbs: nutrition.carbs,
-      maxGramsFat: nutrition.fat,
-      maxGramsProtein: nutrition.protein,
-    },
-  });
   const accountForm = useForm<AccountInputs>();
 
-  const onSaveNutrition = (values: NutritionInputs) =>
-    setNutrition({
-      calories: values.calories,
-      carbs: values.maxGramsCarbs,
-      fat: values.maxGramsFat,
-      protein: values.maxGramsProtein,
-    });
   const onSaveAccount = (values: AccountInputs) => console.log(values);
   const onExportData = () => console.log("export data");
   const onClearLogs = () => console.log("clear logs");
@@ -79,92 +53,6 @@ export function Settings() {
       </div>
 
       <div className="grid grid-cols-2 gap-6" dir="ltr">
-        {/* Daily Nutrition Targets */}
-        <form onSubmit={nutritionForm.handleSubmit(onSaveNutrition)} dir={dir}>
-          <Card className="h-full">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{t('key48', 'יעדים יומיים')}</CardTitle>
-                <CalorieDeficitDialog />
-              </div>
-              <CardDescription>
-                {t('key49', 'הגדר את הערכים המקסימליים היומיים שלך')}
-              </CardDescription>
-            </CardHeader>
-            <Separator />
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="max-calories">{t('key6', 'קלוריות')}</Label>
-                  <Input
-                    id="max-calories"
-                    type="number"
-                    {...nutritionForm.register("calories", {
-                      required: t('requiredField', 'Required field'),
-                    })}
-                  />
-                  {nutritionForm.formState.errors.calories && (
-                    <p className="text-xs text-destructive">
-                      {nutritionForm.formState.errors.calories.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="carb">{t('key50', 'פחמימות (גרם)')}</Label>
-                  <Input
-                    id="carb"
-                    type="number"
-                    {...nutritionForm.register("maxGramsCarbs", {
-                      required: t('requiredField', 'Required field'),
-                    })}
-                  />
-                  {nutritionForm.formState.errors.maxGramsCarbs && (
-                    <p className="text-xs text-destructive">
-                      {nutritionForm.formState.errors.maxGramsCarbs.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="fat">{t('key51', 'שומן (גרם)')}</Label>
-                  <Input
-                    id="fat"
-                    type="number"
-                    {...nutritionForm.register("maxGramsFat", {
-                      required: t('requiredField', 'Required field'),
-                    })}
-                  />
-                  {nutritionForm.formState.errors.maxGramsFat && (
-                    <p className="text-xs text-destructive">
-                      {nutritionForm.formState.errors.maxGramsFat.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="protein">{t('key52', 'חלבון (גרם)')}</Label>
-                  <Input
-                    id="protein"
-                    type="number"
-                    {...nutritionForm.register("maxGramsProtein", {
-                      required: t('requiredField', 'Required field'),
-                    })}
-                  />
-                  {nutritionForm.formState.errors.maxGramsProtein && (
-                    <p className="text-xs text-destructive">
-                      {nutritionForm.formState.errors.maxGramsProtein.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="justify-end border-t pt-4">
-              <Button type="submit">{t('key53', 'שמור שינויים')}</Button>
-            </CardFooter>
-          </Card>
-        </form>
-
         {/* Account Settings */}
         <form onSubmit={accountForm.handleSubmit(onSaveAccount)} dir={dir}>
           <Card className="h-full">
