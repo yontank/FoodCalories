@@ -35,13 +35,11 @@ from db.schemas.user import User
 from core.config import settings
 from core.security import *
 
-router = APIRouter()
+router = APIRouter(tags=["Authentication"])
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="api/v1/token", refreshUrl="api/v1/refresh"
 )
-
-"קן"
 
 
 @router.post(

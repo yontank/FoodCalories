@@ -22,7 +22,7 @@ from db.schemas.moh_mitzrachim import MohMitzrachim
 
 from api.v1.login import get_current_user
 
-router = APIRouter()
+router = APIRouter(tags=["Meals"])
 
 
 @router.get(

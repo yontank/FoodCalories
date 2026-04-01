@@ -16,7 +16,7 @@ from models.tokens import JWTAccessBase
 from api.v1.login import get_current_user
 
 
-router = APIRouter()
+router = APIRouter(tags=["User Profile"])
 
 
 ## Function to add a users weight to history
