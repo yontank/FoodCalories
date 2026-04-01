@@ -5,6 +5,7 @@ Since we need to know how to follow refresh tokens,
 it's a good idea to save them inside the DB
 while checking which one is revoked and which one isnt.
 """
+
 from sqlalchemy import BOOLEAN, VARCHAR, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.based import Base, CommonColumnsMixin
@@ -14,10 +15,10 @@ class RefreshTokens(CommonColumnsMixin, Base):
     """
     Sql Alchemy Schem for Refresh Tokens
     """
+
     __tablename__: str = "refresh_tokens"
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     token_hash: Mapped[str] = mapped_column(VARCHAR(255), nullable=False)
     revoked: Mapped[bool] = mapped_column(BOOLEAN, default=False)
 
@@ -30,7 +31,7 @@ class RefreshTokens(CommonColumnsMixin, Base):
         "RefreshTokens",
         remote_side=[id],
         back_populates="replaced_token",
-        uselist=False
+        uselist=False,
     )
 
     replaced_token: Mapped["RefreshTokens"] = relationship(

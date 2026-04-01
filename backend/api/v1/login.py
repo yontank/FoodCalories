@@ -333,9 +333,6 @@ async def delete_user(
     """Deletes the current user along with all their meals, refresh tokens, and role"""
     user_id = current_user.sub
 
-    session.execute(delete(MealsEaten).where(MealsEaten.user_id == user_id))
-    session.execute(delete(RefreshTokens).where(RefreshTokens.user_id == user_id))
-    session.execute(delete(RolesSchema).where(RolesSchema.user_id == user_id))
     session.execute(delete(User).where(User.id == user_id))
 
     session.commit()

@@ -32,7 +32,7 @@ class RolesSchema(CommonColumnsMixin, Base):
     id: Mapped[int] = mapped_column(
         Integer, autoincrement=True, primary_key=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     user: Mapped["User"] = (  # pyright: ignore[reportUndefinedVariable]
         # because of cycle imports Can't add User as an import.

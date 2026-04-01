@@ -28,28 +28,38 @@ class User(CommonColumnsMixin, Base):
     disabled: Mapped[bool] = mapped_column(BOOLEAN, default=false())
 
     # One to One Mapping with Role Schema, to know what role the user is
-    role: Mapped["RolesSchema"] = relationship(back_populates="user", uselist=False)
+    role: Mapped["RolesSchema"] = relationship(
+        back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )
 
     # One to Many Relationship with meals_eaten
     # To get the meals eaten by the user.
-    meals: Mapped[list["MealsEaten"]] = relationship()
+    meals: Mapped[list["MealsEaten"]] = relationship(cascade="all, delete-orphan")
 
     # One To Many RelationShip with RefreshTokens Schema
     # NOTE: Some Refresh tokens for a user will be revoked!
     # in that instance, if a user asks a /refresh endpoint to refresh with an invalid refresh token
     # We should turn all the refresh tokens that the user has into revoked
     # And notify the user.
-    refresh_tokens: Mapped[list["RefreshTokens"]] = relationship()
+    refresh_tokens: Mapped[list["RefreshTokens"]] = relationship(
+        cascade="all, delete-orphan"
+    )
 
     # One to Many Relationship with WeightHistory
-    weight_history: Mapped[list["WeightHistory"]] = relationship(back_populates="user")
+    weight_history: Mapped[list["WeightHistory"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
     # One to One Relationship with UserProfile
     # Returns Profile Information of the user, like
     # his height, age, nutrition preferences, etc.
 
-    profile: Mapped["UserProfile"] = relationship(back_populates="user")
-    nutrition_settings: Mapped["NutritionProfile"] = relationship(back_populates="user")
+    profile: Mapped["UserProfile"] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    nutrition_settings: Mapped["NutritionProfile"] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 # PARENT

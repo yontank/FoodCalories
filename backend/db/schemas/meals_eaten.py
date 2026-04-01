@@ -57,7 +57,7 @@ class MealsEaten(CommonColumnsMixin, Base):
 
     id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     code_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey(MohMitzrachim.code))
     mida_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey(YehidotMida.smlmida))
 

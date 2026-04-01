@@ -22,7 +22,7 @@ class NutritionProfile(CommonColumnsMixin, Base):
     __tablename__ = "user_nutrition_profile"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     # Saves Preferences of the user eating habits. we can calculate the calories from this.
     carbohydrates_g: Mapped[int] = mapped_column(Integer)

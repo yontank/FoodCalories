@@ -14,7 +14,7 @@ class WeightHistory(CommonColumnsMixin, Base):
     __tablename__ = "weight_history"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     weight: Mapped[float] = mapped_column(DOUBLE_PRECISION)
 
     user: Mapped[User] = relationship(back_populates="weight_history")

@@ -30,7 +30,7 @@ class UserProfile(CommonColumnsMixin, Base):
     __tablename__ = "user_profile"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     age: Mapped[int] = mapped_column(Integer)
     height: Mapped[int] = mapped_column(Integer)  # In CM, Metric System.
