@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { getDailyCaloriesDeficit, KCAL_PER_GRAM } from "@/lib/fitness-calc";
+import { getActivityLevels, getDailyCaloriesDeficit, KCAL_PER_GRAM, DIET_PRESETS, LOSS_TARGETS, calculateMacroGrams } from "@/lib/fitness-calc";
 import { useSetAtom } from "jotai";
 import { nutritionAtom } from "@/atoms/nutrition";
 import { cn } from "@/lib/utils";
@@ -30,26 +30,10 @@ export function CalorieDeficitDialog() {
   const { t } = useTranslation()
   const setNutrition = useSetAtom(nutritionAtom);
 
-  const ACTIVITY_LEVELS = [
-    { label: t('key17', 'Sedentary (no exercise)'), value: "1.2" },
-    { label: t('13', 'Light (1-3 days/week)'), value: "1.375" },
-    { label: t('35', 'Moderate (3-5 days/week)'), value: "1.55" },
-    { label: t('67', 'Active (6-7 days/week)'), value: "1.725" },
-    { label: t('key18', 'Very active (athlete)'), value: "1.9" },
-  ];
+  const ACTIVITY_LEVELS = getActivityLevels(t);
 
-  const LOSS_TARGETS = [
-    { kg: 0.3, label: t('03', '0.3 kg / week') },
-    { kg: 0.5, label: t('05', '0.5 kg / week') },
-    { kg: 0.7, label: t('07', '0.7 kg / week') },
-    { kg: 1.0, label: t('1', '1 kg / week') },
-  ];
-
-  const DIET_PRESETS = [
-    { label: t('key19', 'Lean'), protein: 40, carbs: 35, fat: 25 },
-    { label: t('key20', 'Balanced'), protein: 30, carbs: 40, fat: 30 },
-    { label: t('key21', 'Keto'), protein: 25, carbs: 10, fat: 65 },
-  ];
+  const lossTargets = LOSS_TARGETS.map(lt => ({ ...lt, label: t(lt.key, lt.default) }));
+  const dietPresets = DIET_PRESETS.map(dp => ({ ...dp, label: t(dp.key, dp.default) }));
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>(1);
 
@@ -87,7 +71,7 @@ export function CalorieDeficitDialog() {
     const a = parseFloat(age);
     const act = parseFloat(activity);
 
-    const calcs = LOSS_TARGETS.map(({ kg }) =>
+    const calcs = lossTargets.map(({ kg }) =>
       Math.round(getDailyCaloriesDeficit(kg / 7, w, h, a, gender, act)),
     );
     setCalculatedOptions(calcs);
@@ -97,11 +81,12 @@ export function CalorieDeficitDialog() {
   const handleConfirm = () => {
     if (!selectedCalories || !macroValid) return;
 
+    const macros = calculateMacroGrams(selectedCalories, proteinPct, carbsPct, fatPct);
     setNutrition({
       calories: selectedCalories,
-      protein: Math.round((selectedCalories * proteinPct) / 100 / KCAL_PER_GRAM.protein),
-      carbs: Math.round((selectedCalories * carbsPct) / 100 / KCAL_PER_GRAM.carbohydrates),
-      fat: Math.round((selectedCalories * fatPct) / 100 / KCAL_PER_GRAM.fat),
+      protein: macros.protein,
+      carbs: macros.carbohydrates,
+      fat: macros.fat,
     });
 
     setOpen(false);
@@ -122,15 +107,12 @@ export function CalorieDeficitDialog() {
     setFatPct(30);
   };
 
-  const proteinGrams = selectedCalories
-    ? Math.round((selectedCalories * proteinPct) / 100 / KCAL_PER_GRAM.protein)
+  const computedMacros = selectedCalories
+    ? calculateMacroGrams(selectedCalories, proteinPct, carbsPct, fatPct)
     : null;
-  const carbsGrams = selectedCalories
-    ? Math.round((selectedCalories * carbsPct) / 100 / KCAL_PER_GRAM.carbohydrates)
-    : null;
-  const fatGrams = selectedCalories
-    ? Math.round((selectedCalories * fatPct) / 100 / KCAL_PER_GRAM.fat)
-    : null;
+  const proteinGrams = computedMacros?.protein ?? null;
+  const carbsGrams = computedMacros?.carbohydrates ?? null;
+  const fatGrams = computedMacros?.fat ?? null;
 
   return (
     <Dialog
@@ -292,7 +274,7 @@ export function CalorieDeficitDialog() {
 
             {calculatedOptions && (
               <div className="grid grid-cols-2 gap-2">
-                {LOSS_TARGETS.map(({ label }, i) => {
+                {lossTargets.map(({ label }, i) => {
                   const kcal = calculatedOptions[i];
                   const isSelected = selectedCalories === kcal;
                   const isTooLow = kcal < 1200;
@@ -336,7 +318,7 @@ export function CalorieDeficitDialog() {
             <div className="space-y-1">
               <Label>{t('key33', 'בחר תוכנית מהירה')}</Label>
               <div className="flex gap-2">
-                {DIET_PRESETS.map((preset) => (
+                {dietPresets.map((preset) => (
                   <Button
                     key={preset.label}
                     variant="outline"

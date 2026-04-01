@@ -22,6 +22,7 @@ import { useAtom } from "jotai";
 import { useForm } from "react-hook-form";
 
 import { client, reactClient } from "@/api/client";
+import { getActivityLevels } from "@/lib/fitness-calc";
 import { nutritionAtom } from "@/atoms/nutrition";
 import { CalorieDeficitDialog } from "@/components/CalorieDeficitDialog";
 import { WeightReminderDialog } from "@/components/WeightReminderDialog";
@@ -101,13 +102,7 @@ export function Nutrition() {
   const [profileActivity, setProfileActivity] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
 
-  const ACTIVITY_LEVELS = [
-    { label: t("key17", "Sedentary (no exercise)"), value: "1.2" },
-    { label: t("13", "Light (1-3 days/week)"), value: "1.375" },
-    { label: t("35", "Moderate (3-5 days/week)"), value: "1.55" },
-    { label: t("67", "Active (6-7 days/week)"), value: "1.725" },
-    { label: t("key18", "Very active (athlete)"), value: "1.9" },
-  ];
+  const ACTIVITY_LEVELS = getActivityLevels(t);
 
   const { data: profileData } = reactClient.useQuery("get", "/api/v1/profile");
 

@@ -1,4 +1,4 @@
-type Gender = "male" | "female";
+export type Gender = "male" | "female";
 
 type BMITypes =
   | "Underweight"
@@ -57,6 +57,18 @@ export function calculateBMR(
   );
 }
 
+export function getActivityLevels(
+  t: (key: string, defaultValue: string) => string,
+) {
+  return [
+    { label: t("key17", "Sedentary (no exercise)"), value: "1.2" },
+    { label: t("13", "Light (1-3 days/week)"), value: "1.375" },
+    { label: t("35", "Moderate (3-5 days/week)"), value: "1.55" },
+    { label: t("67", "Active (6-7 days/week)"), value: "1.725" },
+    { label: t("key18", "Very active (athlete)"), value: "1.9" },
+  ];
+}
+
 export function getDailyCaloriesDeficit(
   KgAmount: number,
   weight: number,
@@ -73,4 +85,52 @@ export function getDailyCaloriesDeficit(
 
   // Calculate Calorie Amount for Deficit
   return BMR * activity - FAT_KG * KgAmount;
+}
+
+export type DietPreset = {
+  key: string;
+  default: string;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
+
+export const DIET_PRESETS: DietPreset[] = [
+  { key: "key19", default: "Lean", protein: 40, carbs: 35, fat: 25 },
+  { key: "key20", default: "Balanced", protein: 30, carbs: 40, fat: 30 },
+  { key: "key21", default: "Keto", protein: 25, carbs: 10, fat: 65 },
+];
+
+export const LOSS_TARGETS = [
+  { kg: 0.3, key: "03", default: "0.3 kg / week" },
+  { kg: 0.5, key: "05", default: "0.5 kg / week" },
+  { kg: 0.7, key: "07", default: "0.7 kg / week" },
+  { kg: 1.0, key: "1", default: "1 kg / week" },
+];
+
+export function calculateMacroGrams(
+  totalCalories: number,
+  proteinPct: number,
+  carbsPct: number,
+  fatPct: number,
+): { protein: number; carbohydrates: number; fat: number } {
+  return {
+    protein: Math.round(((totalCalories * proteinPct) / 100) / KCAL_PER_GRAM.protein),
+    carbohydrates: Math.round(((totalCalories * carbsPct) / 100) / KCAL_PER_GRAM.carbohydrates),
+    fat: Math.round(((totalCalories * fatPct) / 100) / KCAL_PER_GRAM.fat),
+  };
+}
+
+export function getCaloriesFromNutrients(
+  carbohydrates: number,
+  fat: number,
+  protein: number,
+  alcohol: number,
+) {
+  return (
+    carbohydrates * KCAL_PER_GRAM.carbohydrates +
+    fat * KCAL_PER_GRAM.fat +
+    protein * KCAL_PER_GRAM.protein +
+    alcohol * KCAL_PER_GRAM.alcohol
+  );
 }
