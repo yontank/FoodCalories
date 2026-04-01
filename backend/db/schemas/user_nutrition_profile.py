@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from enum import Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, ForeignKey, DOUBLE_PRECISION, Enum as SA_Enum
+from sqlalchemy import Integer, ForeignKey
 
 from db.based import Base, CommonColumnsMixin
 
@@ -24,8 +23,6 @@ class NutritionProfile(CommonColumnsMixin, Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-
-    activity_factor: Mapped[float] = mapped_column(DOUBLE_PRECISION)
 
     # Saves Preferences of the user eating habits. we can calculate the calories from this.
     carbohydrates_g: Mapped[int] = mapped_column(Integer)
