@@ -6,7 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse, StreamingResponse
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, func
 from core.rate_limit import limiter
 from db.session import session
 from models.api_error_model import Message
@@ -31,7 +31,7 @@ router = APIRouter(tags=["Meals"])
     response_model=list[FoodDetail],
     responses={401: {"model": Message}},
 )
-@limiter.limit("10/minute")
+@limiter.limit("60/minute")
 def query_foods(
     request: Request,
     food_query: str,
@@ -39,10 +39,12 @@ def query_foods(
 ):
     """Given A User query that is authenticated, return food that is a substring of that food"""
     # NOTE: Maybe this function is supposed to be a recommendation algorithm? There has to be a better way than this.
+    food_query = "".join(e for e in food_query if e.isalnum() or e.isspace())
     res: list[FoodDetail] = []
     if (
         foods := session.query(MohMitzrachim)
-        .filter(MohMitzrachim.shmmitzrach.contains(food_query))
+        .filter(MohMitzrachim.search_name.op("%")(f"{food_query}"))
+        .order_by(func.similarity(MohMitzrachim.search_name, food_query).desc())
         .limit(20)
         .all()
     ):

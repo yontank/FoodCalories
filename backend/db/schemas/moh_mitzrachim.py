@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.based import Base
 from .moh_yehidot_mida_lemitzrachim import YehidotMidaLemitzrachim
 
+
 class MohMitzrachim(Base):
     """_summary_
     A Valid Schema for table in the databse using SQLAlchemy,
@@ -27,6 +28,7 @@ class MohMitzrachim(Base):
 
     code: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
     smlmitzrach: Mapped[int] = mapped_column(Integer())
+    search_name: Mapped[str] = mapped_column(String(255))
     shmmitzrach: Mapped[str] = mapped_column(String(255))
     makor: Mapped[int | None] = mapped_column(SmallInteger(), nullable=True)
 
@@ -71,4 +73,3 @@ class MohMitzrachim(Base):
     @override
     def __repr__(self) -> str:
         return f"<Mitzrahim | code(id): {self.code} sml: {self.smlmitzrach} shmm:{self.shmmitzrach}, codes:{self.midot}>"
-
