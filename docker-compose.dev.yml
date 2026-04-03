@@ -12,6 +12,7 @@ services:
   backend:
     build:
       context: ./backend
+      target: dev
     container_name: foodcalories_backend
     restart: no
     env_file:
@@ -26,20 +27,19 @@ services:
       - db
 
   frontend:
-    working_dir: /app
-    image: public.ecr.aws/docker/library/node:20-alpine
+    build:
+      context: ./frontend
+      target: dev
     container_name: foodcalories_frontend
-    volumes: 
+    volumes:
       - ./frontend:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=development
-      - BACKEND_URL=http://foodcalories_backend:8000
-
     ports:
       - "5173:5173"
     depends_on:
       - backend
-    command: npm run dev -- --host
 
 volumes:
   foodcal_db:
