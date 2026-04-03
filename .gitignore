@@ -41,3 +41,6 @@ Thumbs.db
 
 # Project
 backend/todo
+.vscode/
+node_modules/
+.vite/
