@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     db_password: str | None = Field(validation_alias="POSTGRES_PASSWORD", default=None)
     db_db: str | None = Field(validation_alias="POSTGRES_DB", default=None)
 
+    GOOGLE_CLIENT_ID: str = Field(..., min_length=32)
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 

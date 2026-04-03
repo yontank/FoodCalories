@@ -1,7 +1,4 @@
-import os
-from datetime import datetime, timedelta, timezone
 from typing import Annotated
-from uuid import UUID, uuid4
 
 import jwt
 from fastapi import (
@@ -12,28 +9,28 @@ from fastapi import (
     Request,
     Response,
     status,
-    Security,
 )
 from fastapi.responses import JSONResponse
 from fastapi.security import (
     OAuth2PasswordBearer,
     OAuth2PasswordRequestForm,
-    SecurityScopes,
 )
-from pwdlib import PasswordHash
 from sqlalchemy import delete, false, select, update
 from core.rate_limit import limiter
+from db.schemas.oauth_users import OAuthUser
 from db.session import session
 from models.api_error_model import Message
+from models.oauth import GoogleAuthRequest
 from models.tokens import JWTAccessBase, LoginTokenResponse
 from models.user import ChangePassword, UserRegister
 from db.schemas import User as UserDB
 from db.schemas.refresh_tokens import RefreshTokens
-from db.schemas.meals_eaten import MealsEaten
 from db.schemas.roles import RolesEnum, RolesSchema
 from db.schemas.user import User
 from core.config import settings
 from core.security import *
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 router = APIRouter(tags=["Authentication"])
 
@@ -154,42 +151,7 @@ async def login(
         role=db_user.role.role_type,
     )
 
-    db_old_rtoken = session.execute(
-        select(RefreshTokens).where(
-            RefreshTokens.user_id == db_user.id, RefreshTokens.revoked == false()
-        )
-    ).scalar_one_or_none()
-
-    if db_old_rtoken:
-        db_old_rtoken.revoked = True
-
-    r_token = create_refresh_token(user_id=db_user.id)
-
-    # NOTE: WE STILL HAE THINGS TO DO!
-    # 1) Make all older Refresh tokens of the user revoked.
-    # 2) Set the new refresh token we just created at the DB, and set it as revoked=False.
-
-    # Set refresh token as secure HTTP-only cookie
-    response.set_cookie(
-        key="refresh_token",
-        value=r_token,
-        httponly=True,  # prevents JS access (XSS protection)
-        secure=True,  # HTTPS only (set False in local dev if needed)
-        samesite="strict",  # CSRF protection ("lax" if needed)
-        # 7 days (adjust to your refresh token lifespan)
-        max_age=60 * 60 * 24 * 7,
-        path="/",
-    )
-
-    # Put the refresh token inside the database.
-    db_rtoken = RefreshTokens(user_id=db_user.id, token_hash=hash_password(r_token))
-    session.add(db_rtoken)
-
-    session.flush()
-
-    if db_old_rtoken:
-        db_old_rtoken.replaced_by_id = db_rtoken.id
-
+    issue_refresh_token(user_id=db_user.id, response=response, db=session)
     session.commit()
 
     return LoginTokenResponse(access_token=access_token)
@@ -269,20 +231,9 @@ async def refresh(
 
             return JSONResponse(status_code=403, content="not a valid refresh token")
 
-        result.revoked = True
-        new_refresh_token = create_refresh_token(result.user_id)
-
-        db_new_refresh_token = RefreshTokens(
-            user_id=result.user_id, token_hash=hash_password(new_refresh_token)
-        )
-        session.add(db_new_refresh_token)
-        session.flush()
-
-        result.replaced_by_id = db_new_refresh_token.id
-
+        issue_refresh_token(user_id=result.user_id, response=response, db=session)
         session.commit()
 
-        response.set_cookie("refresh_token", new_refresh_token)
         access_token: str = create_access_token(
             user_id=result.user_id, role=RolesEnum.USER
         )
@@ -336,3 +287,67 @@ async def delete_user(
     session.execute(delete(User).where(User.id == user_id))
 
     session.commit()
+
+
+## Google JWT Login Endpoints
+@router.post(
+    "/google-login",
+    status_code=status.HTTP_200_OK,
+    response_model=LoginTokenResponse,
+    responses={401: {"model": Message}},
+)
+@limiter.limit("10/minute")
+async def google_auth(request: Request, response: Response, token: GoogleAuthRequest):
+    try:
+        id_info = id_token.verify_oauth2_token(
+            token.credential, google_requests.Request(), settings.GOOGLE_CLIENT_ID
+        )
+
+        email = id_info.get("email")
+        if not email and not id_info.get("is_verified"):
+            raise ValueError("Email not available in token.")
+
+        # If the OAuth doesnt exist, add it to the OAuth table in our schemas.
+        # Since the OAuth doesn't exist, we first need to create the User In our "Users" Table.
+        # Then, we need to create the OAuth Row, and connect it to the user we just created.
+        # Since the user for sure doesn't exist (We're not fixing the linking problem, since we won't use email providerss)
+        # We will just make sure theat the user in the UsersTable is None,
+        # None, making sure we NEVER link an OAuth user to an existing user,
+        # since we won't use email providers,
+        # and we don't want to cause any security issues.
+        oauth_user = session.execute(
+            select(OAuthUser).where(
+                OAuthUser.provider == "google",
+                OAuthUser.provider_user_id == id_info["sub"],
+            )
+        ).scalar_one_or_none()
+        if not oauth_user:
+            new_user = User(
+                username=None,
+                hashed_password=None,
+                role=RolesSchema(role_type=RolesEnum.USER),
+            )
+            session.add(new_user)
+            session.flush()  # To get the new user's ID
+
+            oauth_user = OAuthUser(
+                provider="google",
+                provider_user_id=id_info["sub"],
+                user_id=new_user.id,
+                email=email,
+            )
+            session.add(oauth_user)
+        else:
+            new_user = session.execute(
+                select(User).where(User.id == oauth_user.user_id)
+            ).scalar_one()
+        access_token = create_access_token(
+            user_id=new_user.id, role=new_user.role.role_type
+        )
+        issue_refresh_token(user_id=new_user.id, response=response, db=session)
+        session.commit()
+
+        return LoginTokenResponse(access_token=access_token)
+
+    except ValueError as e:
+        return JSONResponse(status_code=401, content=str(e))

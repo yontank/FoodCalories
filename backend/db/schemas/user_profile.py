@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from enum import Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, ForeignKey, DOUBLE_PRECISION, Enum as SA_Enum
+from sqlalchemy import Integer, String, ForeignKey, DOUBLE_PRECISION, Enum as SA_Enum
 
 from db.based import Base, CommonColumnsMixin
 
@@ -31,7 +31,9 @@ class UserProfile(CommonColumnsMixin, Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-
+    name_display: Mapped[str] = mapped_column(
+        String(255)
+    )  # Optional display name for the user profile.
     age: Mapped[int] = mapped_column(Integer)
     height: Mapped[int] = mapped_column(Integer)  # In CM, Metric System.
     gender: Mapped[Gender] = mapped_column(SA_Enum(Gender))

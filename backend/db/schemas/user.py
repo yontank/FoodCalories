@@ -4,6 +4,7 @@ from sqlalchemy import BOOLEAN, Integer, String, false
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from db.based import Base, CommonColumnsMixin
+from db.schemas.oauth_users import OAuthUser
 
 from .meals_eaten import MealsEaten
 from .refresh_tokens import RefreshTokens
@@ -22,8 +23,8 @@ class User(CommonColumnsMixin, Base):
     __tablename__: str = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    username: Mapped[str | None] = mapped_column(String(50), nullable=True, unique=True)
+    hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     disabled: Mapped[bool] = mapped_column(BOOLEAN, default=false())
 
@@ -61,5 +62,6 @@ class User(CommonColumnsMixin, Base):
         back_populates="user", cascade="all, delete-orphan"
     )
 
-
-# PARENT
+    oauth_users: Mapped[OAuthUser] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )

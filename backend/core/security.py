@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 import jwt
 from pwdlib import PasswordHash
+from sqlalchemy import false
 from sqlalchemy.orm import Session
 
 from db.schemas.roles import RolesEnum
@@ -15,6 +16,7 @@ DEFAULT_REFRESH_TOKEN_LIFESPAN = timedelta(days=7)
 
 
 ph = PasswordHash.recommended()
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Checks if two hashes are the same."""
@@ -75,3 +77,42 @@ def revoke_all_user_refresh_tokens(user_id: int, db: Session) -> int:
     )
     db.commit()
     return updated
+
+
+def issue_refresh_token(user_id: int, response: "Response", db: Session) -> str:
+    """Revokes old refresh tokens, creates a new one, stores it in DB, and sets the cookie.
+
+    Returns the raw refresh token string.
+    """
+    from fastapi import Response  # local import to avoid circular dependency
+
+    # Revoke existing active refresh token
+    old_token = (
+        db.query(RefreshTokens)
+        .filter(RefreshTokens.user_id == user_id, RefreshTokens.revoked == false())
+        .first()
+    )
+    if old_token:
+        old_token.revoked = True
+
+    # Create and store new refresh token
+    raw_token = create_refresh_token(user_id=user_id)
+    db_token = RefreshTokens(user_id=user_id, token_hash=hash_password(raw_token))
+    db.add(db_token)
+    db.flush()
+
+    if old_token:
+        old_token.replaced_by_id = db_token.id
+
+    # Set HTTP-only cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=raw_token,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        max_age=60 * 60 * 24 * 7,
+        path="/",
+    )
+
+    return raw_token

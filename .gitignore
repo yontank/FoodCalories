@@ -4,3 +4,4 @@ __pycache__/
 foodcal_cert.pem
 foodcal_key.pem
 backend/todo
+.vscode/

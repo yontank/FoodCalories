@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Annotated
 
+from haikunator import Haikunator
 from fastapi import Query, Request, APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
@@ -179,7 +180,10 @@ def save_personal_profile(
     ).scalar_one_or_none()
 
     if not profile_var:
-        profile_var = UserProfile(user_id=current_user.sub)
+        profile_var = UserProfile(
+            user_id=current_user.sub,
+            name_display=Haikunator().haikunate(),
+        )
         session.add(profile_var)
 
     profile_var.age = profile.age
