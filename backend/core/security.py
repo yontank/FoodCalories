@@ -75,7 +75,6 @@ def revoke_all_user_refresh_tokens(user_id: int, db: Session) -> int:
         .filter(RefreshTokens.user_id == user_id, RefreshTokens.revoked == False)
         .update({"revoked": True})
     )
-    db.commit()
     return updated
 
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import Request, APIRouter, status
 from fastapi.responses import JSONResponse
@@ -23,5 +23,8 @@ def test(request: Request):
 @limiter.limit("30/minute")
 async def health_check(request: Request):
     return JSONResponse(
-        content={"status": "healthy", "timestamp": datetime.now().isoformat()}
+        content={
+            "status": "healthy",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
     )

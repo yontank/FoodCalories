@@ -7,8 +7,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import delete, select, func
+from sqlalchemy.orm import Session
 from core.rate_limit import limiter
-from db.session import session
+from db.dependency import get_db
 from models.api_error_model import Message
 from models.food import (
     FoodDetail,
@@ -36,13 +37,14 @@ def query_foods(
     request: Request,
     food_query: str,
     _: Annotated[JWTAccessBase, Depends(get_current_user)],
+    db: Session = Depends(get_db),
 ):
     """Given A User query that is authenticated, return food that is a substring of that food"""
     # NOTE: Maybe this function is supposed to be a recommendation algorithm? There has to be a better way than this.
     food_query = "".join(e for e in food_query if e.isalnum() or e.isspace())
     res: list[FoodDetail] = []
     if (
-        foods := session.query(MohMitzrachim)
+        foods := db.query(MohMitzrachim)
         .filter(MohMitzrachim.search_name.op("%")(f"{food_query}"))
         .order_by(func.similarity(MohMitzrachim.search_name, food_query).desc())
         .limit(20)
@@ -64,6 +66,7 @@ def add_meal(
     request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     meal: MealEntry,
+    db: Session = Depends(get_db),
 ) -> None:
     """Creates a new meal data and sends it into the database"""
 
@@ -75,9 +78,7 @@ def add_meal(
         meal_type=meal.meal_type,
     )
 
-    session.add(db_meal)
-
-    session.commit()
+    db.add(db_meal)
 
 
 @router.delete(
@@ -91,21 +92,20 @@ def delete_meal(
     request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     meal_id: int,
+    db: Session = Depends(get_db),
 ):
     """given a meal id, deletes a user meal"""
     # Check That it is indeed the corect user asking to delete.
     stmt = select(MealsEaten).where(MealsEaten.id == meal_id)
 
-    db_meal = session.execute(stmt).scalar_one_or_none()
+    db_meal = db.execute(stmt).scalar_one_or_none()
 
     if not db_meal or db_meal.user_id != current_user.sub:
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN, content="Meal item doesn't exist"
         )
 
-    session.delete(db_meal)
-
-    session.commit()
+    db.delete(db_meal)
 
 
 @router.delete(
@@ -118,11 +118,11 @@ def delete_meal(
 def delete_all_meals(
     request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+    db: Session = Depends(get_db),
 ):
     """Deletes all meal history for the current user"""
     stmt = delete(MealsEaten).where(MealsEaten.user_id == current_user.sub)
-    session.execute(stmt)
-    session.commit()
+    db.execute(stmt)
 
 
 @router.patch(
@@ -138,11 +138,12 @@ def update_meal(
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     meal: MealEntry,
     meal_id: int,
+    db: Session = Depends(get_db),
 ):
     """Update a meal value from a specific user"""
     # 1. Check that mida_id Meals Eaten value is the correct user_id
 
-    db_meal = session.get(MealsEaten, meal_id)
+    db_meal = db.get(MealsEaten, meal_id)
 
     if not db_meal or db_meal.user_id != current_user.sub:
         return JSONResponse(
@@ -153,8 +154,6 @@ def update_meal(
 
     for k, v in update_data.items():
         setattr(db_meal, k, v)
-
-    session.commit()
 
 
 @router.get(
@@ -170,6 +169,7 @@ def get_meals_by_date_start_end_date(
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     date: datetime,
     end_date: datetime | None = None,
+    db: Session = Depends(get_db),
 ):
     """
     Returns all the meals the user has consumed in a specific date, or between a range of dates.
@@ -194,7 +194,7 @@ def get_meals_by_date_start_end_date(
         MealsEaten.date < end_of_end_date,
     )
 
-    meals: Sequence[MealsEaten] = session.execute(stmt).scalars().all()
+    meals: Sequence[MealsEaten] = db.execute(stmt).scalars().all()
 
     res: list[MealEntryResponse] = []
 
@@ -230,10 +230,11 @@ def get_meals_by_date_start_end_date(
 def export_meals_csv(
     request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+    db: Session = Depends(get_db),
 ):
     """Returns all meal history for the current user as a downloadable CSV file."""
     stmt = select(MealsEaten).where(MealsEaten.user_id == current_user.sub)
-    meals: Sequence[MealsEaten] = session.execute(stmt).scalars().all()
+    meals: Sequence[MealsEaten] = db.execute(stmt).scalars().all()
 
     output = io.StringIO()
     writer = csv.writer(output)

@@ -5,8 +5,9 @@ from haikunator import Haikunator
 from fastapi import Query, Request, APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 from core.rate_limit import limiter
-from db.session import session
+from db.dependency import get_db
 from db.schemas.weight_history import WeightHistory
 from db.schemas.user_profile import UserProfile
 from db.schemas.user_nutrition_profile import NutritionProfile
@@ -32,11 +33,11 @@ def add_weight_entry(
     request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     weight: float = Query(gt=0),
+    db: Session = Depends(get_db),
 ) -> None:
     """Adds a weight entry to the user's weight history."""
     db_entry = WeightHistory(user_id=current_user.sub, weight=weight)
-    session.add(db_entry)
-    session.commit()
+    db.add(db_entry)
 
 
 @router.get(
@@ -51,6 +52,7 @@ def get_weight_history(
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     start_date: datetime = Query(),
     end_date: datetime = Query(),
+    db: Session = Depends(get_db),
 ) -> list[WeightEntry]:
     """Returns weight entries for the current user between start_date and end_date."""
     stmt = (
@@ -62,7 +64,7 @@ def get_weight_history(
         )
         .order_by(WeightHistory.created_at)
     )
-    entries = session.execute(stmt).scalars().all()
+    entries = db.execute(stmt).scalars().all()
     return [WeightEntry.model_validate(e) for e in entries]
 
 
@@ -76,9 +78,10 @@ def get_weight_history(
 def get_personal_profile(
     request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+    db: Session = Depends(get_db),
 ):
     """Returns the user's personal profile."""
-    profile = session.execute(
+    profile = db.execute(
         select(UserProfile).where(UserProfile.user_id == current_user.sub)
     ).scalar_one_or_none()
 
@@ -106,9 +109,10 @@ def get_personal_profile(
 def get_nutrition_profile(
     request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+    db: Session = Depends(get_db),
 ):
     """Returns the user's nutrition profile."""
-    profile = session.execute(
+    profile = db.execute(
         select(NutritionProfile).where(NutritionProfile.user_id == current_user.sub)
     ).scalar_one_or_none()
 
@@ -141,21 +145,20 @@ def save_nutrition_values(
     request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     nutrition: NutritionValues,
+    db: Session = Depends(get_db),
 ) -> None:
     """Saves or updates the user's daily macro-nutrient targets."""
-    profile = session.execute(
+    profile = db.execute(
         select(NutritionProfile).where(NutritionProfile.user_id == current_user.sub)
     ).scalar_one_or_none()
 
     if profile is None:
         profile = NutritionProfile(user_id=current_user.sub)
-        session.add(profile)
+        db.add(profile)
 
     profile.protein_g = nutrition.protein
     profile.carbohydrates_g = nutrition.carbohydrates
     profile.fat_g = nutrition.fat
-
-    session.commit()
 
 
 ## Function to save User Personal Profile
@@ -173,9 +176,10 @@ def save_personal_profile(
     request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
     profile: ProfileValues,
+    db: Session = Depends(get_db),
 ) -> None:
     """Saves or updates the user's personal profile (age, height, gender, activity factor)."""
-    profile_var = session.execute(
+    profile_var = db.execute(
         select(UserProfile).where(UserProfile.user_id == current_user.sub)
     ).scalar_one_or_none()
 
@@ -184,11 +188,9 @@ def save_personal_profile(
             user_id=current_user.sub,
             name_display=Haikunator().haikunate(),
         )
-        session.add(profile_var)
+        db.add(profile_var)
 
     profile_var.age = profile.age
     profile_var.gender = profile.gender
     profile_var.height = profile.height
     profile_var.activity_factor = profile.activity_factor
-
-    session.commit()
