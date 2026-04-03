@@ -14,6 +14,7 @@ import * as z from "zod";
 import { useState } from "react";
 import { loginSchema } from "@/schemas/user";
 import { useLogin } from "@/hooks/useLogin";
+import { useGoogleLogin } from "@/hooks/useGoogleLogin";
 import { useNavigate } from "react-router";
 import { ErrorBox } from "@/components/ErrorBox";
 import { useTranslation } from "react-i18next";
@@ -34,6 +35,7 @@ function LoginForm() {
   const navigate = useNavigate();
 
   const { login, inProgress } = useLogin();
+  const { googleLogin } = useGoogleLogin();
 
   async function onSubmit(formData: z.infer<typeof loginSchema>) {
     login({
@@ -80,10 +82,15 @@ function LoginForm() {
         --- OR
         <GoogleLogin
           onSuccess={(credentialResponse) => {
-            console.log(credentialResponse);
+            if (credentialResponse.credential) {
+              googleLogin({
+                token: credentialResponse,
+                setErrorMessage,
+              });
+            }
           }}
           onError={() => {
-            console.log("Login Failed");
+            setErrorMessage("Google login failed");
           }}
         />
         ;
