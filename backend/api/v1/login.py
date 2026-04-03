@@ -16,9 +16,10 @@ from fastapi.security import (
     OAuth2PasswordRequestForm,
 )
 from sqlalchemy import delete, false, select, update
+from sqlalchemy.orm import Session
 from core.rate_limit import limiter
 from db.schemas.oauth_users import OAuthUser
-from db.session import session
+from db.dependency import get_db
 from models.api_error_model import Message
 from models.oauth import GoogleAuthRequest
 from models.tokens import JWTAccessBase, LoginTokenResponse
@@ -46,14 +47,16 @@ oauth2_scheme = OAuth2PasswordBearer(
     responses={409: {"model": Message}},
 )
 @limiter.limit("10/minute")
-async def register(request: Request, user: UserRegister):
+async def register(
+    request: Request, user: UserRegister, db: Session = Depends(get_db)
+):
     """
     given a username and password, creates a new user inside the database
     if the user doesn't already exist inside our databse, we'd like to create one for the client
     so he can access the service
     """
 
-    username_exists: int | None = session.execute(
+    username_exists: int | None = db.execute(
         select(User.id).where(User.username == user.username)
     ).scalar()
 
@@ -66,10 +69,9 @@ async def register(request: Request, user: UserRegister):
 
     new_role = RolesSchema(role_type=RolesEnum.USER)
 
-    session.add(
+    db.add(
         User(username=user.username, hashed_password=hashed_password, role=new_role)
     )
-    session.commit()
 
 
 @router.get(
@@ -77,7 +79,9 @@ async def register(request: Request, user: UserRegister):
 )
 @limiter.limit("10/minute")
 async def get_current_user(
-    request: Request, token: Annotated[str, Depends(oauth2_scheme)]
+    request: Request,
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Session = Depends(get_db),
 ):
     """
     returns the current user after being logged with an JWT access token.
@@ -100,7 +104,7 @@ async def get_current_user(
 
         # FIXME: Do we really need to check the DB if we got a valid JWT?
         user: UserDB | None = (
-            session.query(UserDB).filter(UserDB.id == int(user_id)).first()
+            db.query(UserDB).filter(UserDB.id == int(user_id)).first()
         )
 
     except jwt.exceptions.PyJWTError:
@@ -125,6 +129,7 @@ async def login(
     request: Request,
     response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Session = Depends(get_db),
 ):
     """
     Login Endpoint for users to the service,
@@ -137,7 +142,7 @@ async def login(
     )
 
     db_user = (
-        session.query(UserDB).filter(UserDB.username == form_data.username).first()
+        db.query(UserDB).filter(UserDB.username == form_data.username).first()
     )
 
     if not db_user:
@@ -151,8 +156,7 @@ async def login(
         role=db_user.role.role_type,
     )
 
-    issue_refresh_token(user_id=db_user.id, response=response, db=session)
-    session.commit()
+    issue_refresh_token(user_id=db_user.id, response=response, db=db)
 
     return LoginTokenResponse(access_token=access_token)
 
@@ -160,20 +164,20 @@ async def login(
 @router.post(path="/logout", status_code=204, responses={})
 @limiter.limit("10/minute")
 async def logout(
-    request: Request, model: Annotated[JWTAccessBase, Depends(get_current_user)]
+    request: Request,
+    model: Annotated[JWTAccessBase, Depends(get_current_user)],
+    db: Session = Depends(get_db),
 ) -> None:
     # Check that the user is logged on (Should happen with Depends)
     # If the user is logged on, simply remoe his access token
     # revoke ALL refresh tokens created by the user.
 
-    user_id = session.execute(select(User.id).where(User.id == model.sub)).scalar_one()
-    _ = session.execute(
+    user_id = db.execute(select(User.id).where(User.id == model.sub)).scalar_one()
+    _ = db.execute(
         update(RefreshTokens)
         .where(RefreshTokens.user_id == user_id, RefreshTokens.revoked == False)
         .values(revoked=True)
     )
-
-    session.commit()
 
 
 @router.post(
@@ -186,6 +190,7 @@ async def refresh(
     request: Request,
     response: Response,
     refresh_token: str = Cookie(..., include_in_schema=False),
+    db: Session = Depends(get_db),
 ):
     """
     returns a new access token to the user after it's expired using the refresh_token.
@@ -217,7 +222,7 @@ async def refresh(
             .where(RefreshTokens.user_id == User.id)
         )
 
-        result = session.execute(stmt).scalar_one_or_none()
+        result = db.execute(stmt).scalar_one_or_none()
 
         if not result:
             return JSONResponse(status_code=403, content="not a valid refresh token")
@@ -231,8 +236,7 @@ async def refresh(
 
             return JSONResponse(status_code=403, content="not a valid refresh token")
 
-        issue_refresh_token(user_id=result.user_id, response=response, db=session)
-        session.commit()
+        issue_refresh_token(user_id=result.user_id, response=response, db=db)
 
         access_token: str = create_access_token(
             user_id=result.user_id, role=RolesEnum.USER
@@ -254,10 +258,11 @@ async def change_password(
     request: Request,
     body: ChangePassword,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+    db: Session = Depends(get_db),
 ):
     """Changes the password for the currently authenticated user."""
 
-    db_user = session.execute(
+    db_user = db.execute(
         select(User).where(User.id == current_user.sub)
     ).scalar_one()
 
@@ -274,8 +279,7 @@ async def change_password(
         )
 
     db_user.hashed_password = hash_password(body.new_password)
-    revoke_all_user_refresh_tokens(current_user.sub, session)
-    session.commit()
+    revoke_all_user_refresh_tokens(current_user.sub, db)
 
 
 @router.delete(
@@ -287,13 +291,12 @@ async def change_password(
 async def delete_user(
     request: Request,
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
+    db: Session = Depends(get_db),
 ):
     """Deletes the current user along with all their meals, refresh tokens, and role"""
     user_id = current_user.sub
 
-    session.execute(delete(User).where(User.id == user_id))
-
-    session.commit()
+    db.execute(delete(User).where(User.id == user_id))
 
 
 ## Google JWT Login Endpoints
@@ -304,7 +307,12 @@ async def delete_user(
     responses={401: {"model": Message}},
 )
 @limiter.limit("10/minute")
-async def google_auth(request: Request, response: Response, token: GoogleAuthRequest):
+async def google_auth(
+    request: Request,
+    response: Response,
+    token: GoogleAuthRequest,
+    db: Session = Depends(get_db),
+):
     try:
         id_info = id_token.verify_oauth2_token(
             token.credential, google_requests.Request(), settings.GOOGLE_CLIENT_ID
@@ -322,7 +330,7 @@ async def google_auth(request: Request, response: Response, token: GoogleAuthReq
         # None, making sure we NEVER link an OAuth user to an existing user,
         # since we won't use email providers,
         # and we don't want to cause any security issues.
-        oauth_user = session.execute(
+        oauth_user = db.execute(
             select(OAuthUser).where(
                 OAuthUser.provider == "google",
                 OAuthUser.provider_user_id == id_info["sub"],
@@ -334,8 +342,8 @@ async def google_auth(request: Request, response: Response, token: GoogleAuthReq
                 hashed_password=None,
                 role=RolesSchema(role_type=RolesEnum.USER),
             )
-            session.add(new_user)
-            session.flush()  # To get the new user's ID
+            db.add(new_user)
+            db.flush()  # To get the new user's ID
 
             oauth_user = OAuthUser(
                 provider="google",
@@ -343,16 +351,15 @@ async def google_auth(request: Request, response: Response, token: GoogleAuthReq
                 user_id=new_user.id,
                 email=email,
             )
-            session.add(oauth_user)
+            db.add(oauth_user)
         else:
-            new_user = session.execute(
+            new_user = db.execute(
                 select(User).where(User.id == oauth_user.user_id)
             ).scalar_one()
         access_token = create_access_token(
             user_id=new_user.id, role=new_user.role.role_type
         )
-        issue_refresh_token(user_id=new_user.id, response=response, db=session)
-        session.commit()
+        issue_refresh_token(user_id=new_user.id, response=response, db=db)
 
         return LoginTokenResponse(access_token=access_token)
 

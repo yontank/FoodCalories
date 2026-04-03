@@ -1,7 +1,7 @@
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
-from db.session import session
 from sqlalchemy import delete
+from db.session import SessionLocal
 from datetime import timedelta, datetime, timezone
 from db.schemas.refresh_tokens import RefreshTokens
 
@@ -16,8 +16,9 @@ def delete_old_revoked_refresh_tokens_job():
         RefreshTokens.revoked,
         RefreshTokens.created_at < cutoff,
     )
-    session.execute(stmt)
-    session.commit()
+    with SessionLocal() as db:
+        db.execute(stmt)
+        db.commit()
     logger.info("Deleted expired refresh tokens")
 
 
