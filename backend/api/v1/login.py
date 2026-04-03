@@ -256,9 +256,16 @@ async def change_password(
     current_user: Annotated[JWTAccessBase, Depends(get_current_user)],
 ):
     """Changes the password for the currently authenticated user."""
+
     db_user = session.execute(
         select(User).where(User.id == current_user.sub)
     ).scalar_one()
+
+    if db_user.hashed_password is None or db_user.username is None:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content="OAuth users cannot change password",
+        )
 
     if not verify_password(body.current_password, str(db_user.hashed_password)):
         return JSONResponse(
