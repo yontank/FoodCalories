@@ -81,7 +81,7 @@
   "key63": "Delete all food records — goal settings will be kept",
   "key64": "Clear Food Logs",
   "key65": "Are you sure? This action will delete all your food records and cannot be undone.",
-  "key66": "Cancel",
+  "cancel": "Cancel",
   "key67": "Danger Zone",
   "key68": "Irreversible Actions",
   "key69": "Delete Account",
