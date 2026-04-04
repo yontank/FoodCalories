@@ -9,6 +9,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { useState } from "react";
+import { client } from "@/api/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MealsEatenContainerProps {
   openMealEntry: (mealTime: MealTime, editingEntry?: MealEntryResponse) => void;
@@ -25,6 +36,24 @@ export function MealsEatenContainer({
 }: MealsEatenContainerProps) {
   const { t, i18n } = useTranslation();
   const dir = i18n.language === "he" ? "rtl" : "ltr";
+  const [deletingMealID, setDeletingMealID] = useState<number | undefined>();
+  const queryClient = useQueryClient();
+
+  const deleteMeal = async () => {
+    if (deletingMealID === undefined) {
+      return;
+    }
+
+    const { error } = await client.DELETE("/api/v1/meal", {
+      params: { query: { meal_id: deletingMealID } },
+    });
+
+    if (!error) {
+      setDeletingMealID(undefined);
+      queryClient.invalidateQueries({ queryKey: ["get", "/api/v1/meals"] });
+    }
+  };
+
   const eatenToday = eatenFood?.map((e) => (
     <div
       key={e.meal_id}
@@ -39,6 +68,10 @@ export function MealsEatenContainer({
             <DropdownMenuItem onClick={() => openMealEntry(e.meal_type, e)}>
               <Pencil />
               {t("edit", "edit")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setDeletingMealID(e.meal_id)}>
+              <Trash />
+              {t("delete", "delete")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
@@ -88,6 +121,24 @@ export function MealsEatenContainer({
         <h2 className="text-lg font-semibold">{title}</h2>
       </div>
       <div className="flex gap-2 flex-col">{eatenToday}</div>
+      <Dialog
+        open={!!deletingMealID}
+        onOpenChange={(o) => setDeletingMealID(o ? deletingMealID : undefined)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("deleteMeal", "deleteMeal")}</DialogTitle>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2">
+            <Button variant="destructive" onClick={deleteMeal}>
+              {t("delete", "delete")}
+            </Button>
+            <DialogClose asChild>
+              <Button variant="ghost">{t("cancel", "cancel")}</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

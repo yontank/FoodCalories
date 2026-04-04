@@ -138,5 +138,6 @@
   "userDeleted": "Your account and all associated data has been deleted.",
   "edit": "Edit",
   "delete": "Delete",
-  "update": "Update"
+  "update": "Update",
+  "deleteMeal": "Delete this meal?"
 }
