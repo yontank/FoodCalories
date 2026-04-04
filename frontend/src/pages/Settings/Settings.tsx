@@ -259,7 +259,7 @@ export function Settings() {
                   </DialogHeader>
                   <DialogFooter className="gap-2">
                     <DialogClose asChild>
-                      <Button variant="outline">{t("key66", "ביטול")}</Button>
+                      <Button variant="outline">{t("cancel", "ביטול")}</Button>
                     </DialogClose>
                     <DialogClose asChild>
                       <Button variant="destructive" onClick={onClearLogs}>
@@ -320,7 +320,7 @@ export function Settings() {
                 </DialogHeader>
                 <DialogFooter className="gap-2">
                   <DialogClose asChild>
-                    <Button variant="outline">{t("key66", "ביטול")}</Button>
+                    <Button variant="outline">{t("cancel", "ביטול")}</Button>
                   </DialogClose>
                   <DialogClose asChild>
                     <Button variant="destructive" onClick={onDeleteAccount}>

@@ -46,7 +46,7 @@ export function WeightReminderDialog({
         />
         <DialogFooter className="gap-2">
           <DialogClose asChild>
-            <Button variant="outline">{t("key66", "Cancel")}</Button>
+            <Button variant="outline">{t("cancel", "Cancel")}</Button>
           </DialogClose>
           <Button
             disabled={!value || Number(value) <= 0 || saving}

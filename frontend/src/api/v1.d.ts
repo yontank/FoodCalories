@@ -24,6 +24,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/food": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Query Food By Id
+         * @description Returns the food item with the given ID.
+         */
+        get: operations["query_food_by_id_api_v1_food_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/meal": {
         parameters: {
             query?: never;
@@ -468,6 +488,8 @@ export interface components {
         };
         /** MealEntryResponse */
         MealEntryResponse: {
+            /** Food Id */
+            food_id: number;
             /** Food Name */
             food_name: string;
             /**
@@ -547,7 +569,7 @@ export interface components {
             /** Id */
             id: number;
             /** Name */
-            name: string;
+            name: string | null;
             /** Mishkal */
             mishkal: number;
         };
@@ -621,6 +643,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FoodDetail"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    query_food_by_id_api_v1_food_get: {
+        parameters: {
+            query: {
+                food_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FoodDetail"] | null;
                 };
             };
             /** @description Unauthorized */

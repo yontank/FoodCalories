@@ -2,7 +2,7 @@ import csv
 import io
 from collections.abc import Sequence
 from datetime import datetime, timedelta
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -53,6 +53,24 @@ def query_foods(
         for food in foods:
             res.append(FoodDetail.model_validate(food, from_attributes=True))
     return res
+
+
+@router.get(
+    "/food",
+    response_model_by_alias=False,
+    response_model=Optional[FoodDetail],
+    responses={401: {"model": Message}},
+)
+@limiter.limit("10/minute")
+def query_food_by_id(
+    request: Request,
+    food_id: int,
+    _: Annotated[JWTAccessBase, Depends(get_current_user)],
+):
+    """Returns the food item with the given ID."""
+    if (food := session.query(MohMitzrachim).get(food_id)):
+        return FoodDetail.model_validate(food, from_attributes=True)
+    return None
 
 
 @router.put(
@@ -150,10 +168,10 @@ def update_meal(
             status_code=status.HTTP_403_FORBIDDEN, content="Meal item doesn't exist"
         )
 
-    update_data = meal.model_dump(exclude_unset=True)
-
-    for k, v in update_data.items():
-        setattr(db_meal, k, v)
+    db_meal.code_id = meal.food_id
+    db_meal.mida_id = meal.mida_id
+    db_meal.amount = meal.amount
+    db_meal.meal_type = meal.meal_type
 
 
 @router.get(
@@ -201,6 +219,7 @@ def get_meals_by_date_start_end_date(
     for meal in meals:
         res.append(
             MealEntryResponse(
+                food_id=meal.code.code,
                 date=meal.date,
                 meal_type=meal.meal_type,
                 protein=meal.code.protein,
