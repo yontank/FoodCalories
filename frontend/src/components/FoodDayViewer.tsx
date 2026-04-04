@@ -3,7 +3,7 @@ import { Progress } from "./ui/progress";
 
 import { useEffect, useState } from "react";
 
-import { MealTime } from "@/type";
+import { MealEntryResponse, MealTime } from "@/type";
 
 import { MealsEatenContainer } from "./MealsEatenContainer";
 import { useAtomValue } from "jotai";
@@ -108,13 +108,21 @@ export function FoodDayViewer() {
   const [mealEntryTime, setMealEntryTime] = useState<MealTime>("breakfast");
   const [mealEntryOpen, setMealEntryOpen] = useState(false);
   const [mealEntryKey, setMealEntryKey] = useState(0);
+  const [editingEntry, setEditingEntry] = useState<
+    MealEntryResponse | undefined
+  >();
   const navigate = useNavigate();
 
-  const openMealEntry = (mealTime: MealTime) => {
+  const openMealEntry = (
+    mealTime: MealTime,
+    editingEntry?: MealEntryResponse,
+  ) => {
     setMealEntryKey(Math.random()); // Reset the dialog's contents when adding a new meal entry.
     setMealEntryOpen(true);
     setMealEntryTime(mealTime);
+    setEditingEntry(editingEntry);
   };
+
   const { data, error } = reactClient.useQuery(
     "get",
     "/api/v1/meals",
@@ -156,6 +164,7 @@ export function FoodDayViewer() {
         open={mealEntryOpen}
         setOpen={setMealEntryOpen}
         mealTime={mealEntryTime}
+        editingEntry={editingEntry}
       />
     </>
   );

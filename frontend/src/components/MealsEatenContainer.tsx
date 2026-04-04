@@ -1,10 +1,17 @@
 import { Button } from "./ui/button";
-import { Plus } from "lucide-react";
+import { EllipsisVertical, Pencil, Plus, Trash } from "lucide-react";
 import { MealEntryResponse, MealTime } from "../type";
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from "react-i18next";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 interface MealsEatenContainerProps {
-  openMealEntry: (mealTime: MealTime) => void;
+  openMealEntry: (mealTime: MealTime, editingEntry?: MealEntryResponse) => void;
   mealTime: MealTime;
   title: string;
   eatenFood?: MealEntryResponse[];
@@ -16,12 +23,26 @@ export function MealsEatenContainer({
   mealTime,
   openMealEntry,
 }: MealsEatenContainerProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation();
+  const dir = i18n.language === "he" ? "rtl" : "ltr";
   const eatenToday = eatenFood?.map((e) => (
     <div
       key={e.meal_id}
-      className="rounded-lg border border-border bg-card text-card-foreground shadow-sm h-auto w-full text-center flex p-3 "
+      className="rounded-lg border border-border bg-card text-card-foreground shadow-sm h-auto w-full text-center flex items-center p-2 gap-2"
     >
+      <DropdownMenu dir={dir}>
+        <DropdownMenuTrigger asChild>
+          <EllipsisVertical />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent data-lang="he">
+          <DropdownMenuGroup>
+            <DropdownMenuItem onClick={() => openMealEntry(e.meal_type, e)}>
+              <Pencil />
+              {t("edit", "edit")}
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <div className="flex flex-col w-1/3 max-w-3xl text-right">
         <b>{e.food_name}</b>
         <b>
@@ -30,11 +51,11 @@ export function MealsEatenContainer({
       </div>
       <div className="flex justify-around flex-1">
         <div>
-          {t('key6', 'קלוריות')}
+          {t("key6", "קלוריות")}
           <p>{((e.mishkal / 100) * e.amount * e.food_energy).toFixed(2)} </p>
         </div>
         <div>
-          {t('key7', 'פחמימות')}{" "}
+          {t("key7", "פחמימות")}{" "}
           <p>
             {((e.mishkal / 100) * e.amount * (e.carbohydrates ?? 0)).toFixed(
               2,
@@ -42,11 +63,12 @@ export function MealsEatenContainer({
           </p>
         </div>
         <div>
-          {t('key8', 'חלבון')}
+          {t("key8", "חלבון")}
           <p> {((e.mishkal / 100) * e.amount * e.protein).toFixed(2)} </p>
         </div>
         <div>
-          {t('key9', 'שומן')}<p>{((e.mishkal / 100) * e.amount * e.total_fat).toFixed(2)} </p>
+          {t("key9", "שומן")}
+          <p>{((e.mishkal / 100) * e.amount * e.total_fat).toFixed(2)} </p>
         </div>
       </div>
     </div>

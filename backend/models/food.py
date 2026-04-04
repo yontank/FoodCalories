@@ -55,7 +55,7 @@ class PortionSize(BaseModel):
     """
 
     id: int = Field(validation_alias=AliasPath("name", "smlmida"))
-    name: str = Field(validation_alias=AliasPath("name", "shmmida"))
+    name: str | None = Field(validation_alias=AliasPath("name", "shmmida"))
     mishkal: float
 
 
@@ -98,6 +98,7 @@ class MealEntry(BaseModel):
 
 
 class MealEntryResponse(BaseModel):
+    food_id: int = Field()
     food_name: str = Field()
     date: datetime
 

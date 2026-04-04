@@ -135,5 +135,8 @@
   "save": "Save",
   "logout": "Logout",
   "logsDeleted": "Your food records have been deleted.",
-  "userDeleted": "Your account and all associated data has been deleted."
+  "userDeleted": "Your account and all associated data has been deleted.",
+  "edit": "Edit",
+  "delete": "Delete",
+  "update": "Update"
 }
