@@ -12,14 +12,16 @@ class JWTAccessBase(BaseModel):
     role: the current user role (ADMIN / USER)
     exp: the expiration date of the refresh token
     """
+
     sub: int = Field()
-    role: str = Field(pattern=r"[a-z]+")
+    role: str = Field(pattern=r"^[a-z]+$")
 
 
 class FullAccessJWT(JWTAccessBase):
     """
-    all access_token 
+    all access_token
     """
+
     exp: datetime
 
 
@@ -46,6 +48,5 @@ class LoginTokenResponse(BaseModel):
     returns the JWT Access token and the token type.
     """
 
-    access_token : str = Field()
-    token_type : str = Field(default="bearer")
-
+    access_token: str = Field()
+    token_type: str = Field(default="bearer")
