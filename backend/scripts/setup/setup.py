@@ -3,29 +3,27 @@ A Setup module for when you want to create a database to make everything u use t
 A Setup Script, For when first setting up the project (preferably through docker compose)
 
 simply running setup.py with the correct DB, user and password will generate the correct tables and inital data.
+
+NOTE: This script must be run at migration 7fcc6d99d6fb (the first migration, `alembic upgrade +1` from base).
+      Later migrations add columns (e.g. search_name) that don't exist yet at this point.
+      After running this script, continue with `alembic upgrade head` to apply the remaining migrations.
 """
 
 import csv
 from pathlib import Path
 from typing import TypeVar
 
+import sqlalchemy as sa
 from pydantic.main import BaseModel
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, Session
+from sqlalchemy.orm import Session
 from sqlalchemy_utils import create_database, database_exists
-    
+
 from core.config import settings
 
-from db.based import Base
-from db.schemas.moh_mitzrachim import MohMitzrachim as MohMitzrachimDB
-from db.schemas.moh_yehidot_mida import YehidotMida as YehidotMidaDB
-from db.schemas.moh_yehidot_mida_lemitzrachim import (
-    YehidotMidaLemitzrachim as YehidotMidaLemitzrachimDB,
-)
 from .models import MohMitzrachim, MohYehidotMida, MohYehidotMidaLemitzrachim
 
 T = TypeVar("T", bound=BaseModel)
-S = TypeVar("S", bound=DeclarativeBase)
 
 
 def read_csv_file(f_csv: Path, ValidationModel: type[T]) -> list[T]:
@@ -45,8 +43,16 @@ def read_csv_file(f_csv: Path, ValidationModel: type[T]) -> list[T]:
     return res
 
 
-def insert_to_db(schema: type[S], models: list[T], session: Session):
-    session.add_all([schema(**model.model_dump()) for model in models])
+def insert_to_db(table_name: str, models: list[T], session: Session):
+    """Insert rows using Core SQL based on pydantic model fields (ORM-independent)."""
+    if not models:
+        return
+    keys = list(models[0].model_dump().keys())
+    stmt = sa.text(
+        f"INSERT INTO {table_name} ({', '.join(keys)}) "
+        f"VALUES ({', '.join(':' + k for k in keys)})"
+    )
+    session.execute(stmt, [model.model_dump() for model in models])
     session.commit()
 
 
@@ -55,14 +61,15 @@ if __name__ == "__main__":
     # If the Database, exists, raise an error because setup.py should get an non-existing database.
     engine = create_engine(str(settings.DATABASE_URL))
 
-    if not database_exists(engine.url):
-        create_database(engine.url)
-    Base.metadata.create_all(engine)
+    # if not database_exists(engine.url):
+    #     create_database(engine.url)
+
+    # Base.metadata.create_all(engine)
 
     session = Session(engine)
     print("Starting Session")
     # Get project root based on the location of this file
-    BASE_DIR = Path(__file__).resolve().parent.parent.parent 
+    BASE_DIR = Path(__file__).resolve().parent.parent.parent
     CSV_DIR = BASE_DIR / "scripts" / "CSV"
 
     moh_mitzrachim_file = CSV_DIR / "moh_mitzrachim.csv"
@@ -90,6 +97,6 @@ if __name__ == "__main__":
     ]
     print("Adding them to the database")
 
-    insert_to_db(MohMitzrachimDB, mitz, session)
-    insert_to_db(YehidotMidaDB, yeh, session)
-    insert_to_db(YehidotMidaLemitzrachimDB, yml, session)
+    insert_to_db("moh_mitzrachim", mitz, session)
+    insert_to_db("moh_yehidot_mida", yeh, session)
+    insert_to_db("moh_yehidot_mida_lemitzrachim", yml, session)
