@@ -21,14 +21,23 @@ class TestQueryFoods:
         assert response.status_code == 200
         assert isinstance(response.json(), list)
 
-    def test_query_foods_results_contain_expected_fields(self, client, auth_headers, seed_food):
+    def test_query_foods_results_contain_expected_fields(
+        self, client, auth_headers, seed_food
+    ):
         response = client.get(
             "/api/v1/foods", params={"food_query": "test apple"}, headers=auth_headers
         )
         data = response.json()
         if len(data) > 0:
             item = data[0]
-            for field in ("food_id", "food_name", "protein", "total_fat", "food_energy", "midot"):
+            for field in (
+                "food_id",
+                "food_name",
+                "protein",
+                "total_fat",
+                "food_energy",
+                "midot",
+            ):
                 assert field in item
 
     def test_query_foods_returns_max_20_results(self, client, auth_headers, seed_food):
@@ -44,15 +53,23 @@ class TestQueryFoods:
         assert response.status_code == 200
         assert isinstance(response.json(), list)
 
-    def test_query_foods_special_characters_stripped(self, client, auth_headers, seed_food):
+    def test_query_foods_special_characters_stripped(
+        self, client, auth_headers, seed_food
+    ):
         response = client.get(
-            "/api/v1/foods", params={"food_query": "test!@#$%^&*apple"}, headers=auth_headers
+            "/api/v1/foods",
+            params={"food_query": "test!@#$%^&*apple"},
+            headers=auth_headers,
         )
         assert response.status_code == 200
 
-    def test_query_foods_no_results_returns_empty_list(self, client, auth_headers, seed_food):
+    def test_query_foods_no_results_returns_empty_list(
+        self, client, auth_headers, seed_food
+    ):
         response = client.get(
-            "/api/v1/foods", params={"food_query": "zzzznonexistent"}, headers=auth_headers
+            "/api/v1/foods",
+            params={"food_query": "zzzznonexistent"},
+            headers=auth_headers,
         )
         assert response.status_code == 200
         assert response.json() == []
@@ -90,27 +107,41 @@ class TestAddMeal:
     def test_add_meal_returns_201(self, client, auth_headers, seed_food):
         food_code, mida_id, _ = seed_food
         response = client.put(
-            "/api/v1/meal", headers=auth_headers, json=self._meal_body(food_code, mida_id)
+            "/api/v1/meal",
+            headers=auth_headers,
+            json=self._meal_body(food_code, mida_id),
         )
         assert response.status_code == 201
 
-    def test_add_meal_persists_in_database(self, client, auth_headers, seed_food, db_session):
+    def test_add_meal_persists_in_database(
+        self, client, auth_headers, seed_food, db_session
+    ):
         food_code, mida_id, _ = seed_food
         client.put(
-            "/api/v1/meal", headers=auth_headers, json=self._meal_body(food_code, mida_id)
+            "/api/v1/meal",
+            headers=auth_headers,
+            json=self._meal_body(food_code, mida_id),
         )
         count = db_session.query(MealsEaten).count()
         assert count >= 1
 
-    def test_add_meal_associates_with_current_user(self, client, auth_headers, seed_food, db_session, registered_user):
+    def test_add_meal_associates_with_current_user(
+        self, client, auth_headers, seed_food, db_session, registered_user
+    ):
         food_code, mida_id, _ = seed_food
         client.put(
-            "/api/v1/meal", headers=auth_headers, json=self._meal_body(food_code, mida_id)
+            "/api/v1/meal",
+            headers=auth_headers,
+            json=self._meal_body(food_code, mida_id),
         )
         from db.schemas.user import User
 
-        user = db_session.query(User).filter(User.username == registered_user[0]).first()
-        meal = db_session.query(MealsEaten).filter(MealsEaten.user_id == user.id).first()
+        user = (
+            db_session.query(User).filter(User.username == registered_user[0]).first()
+        )
+        meal = (
+            db_session.query(MealsEaten).filter(MealsEaten.user_id == user.id).first()
+        )
         assert meal is not None
 
     def test_add_meal_with_fractional_amount(self, client, auth_headers, seed_food):
@@ -133,7 +164,9 @@ class TestAddMeal:
         response = client.put("/api/v1/meal", json=self._meal_body(food_code, mida_id))
         assert response.status_code == 401
 
-    def test_add_meal_missing_food_id_returns_422(self, client, auth_headers, seed_food):
+    def test_add_meal_missing_food_id_returns_422(
+        self, client, auth_headers, seed_food
+    ):
         _, mida_id, _ = seed_food
         response = client.put(
             "/api/v1/meal",
@@ -142,7 +175,9 @@ class TestAddMeal:
         )
         assert response.status_code == 422
 
-    def test_add_meal_missing_mida_id_returns_422(self, client, auth_headers, seed_food):
+    def test_add_meal_missing_mida_id_returns_422(
+        self, client, auth_headers, seed_food
+    ):
         food_code, _, _ = seed_food
         response = client.put(
             "/api/v1/meal",
@@ -160,7 +195,9 @@ class TestAddMeal:
         )
         assert response.status_code == 422
 
-    def test_add_meal_missing_meal_type_returns_422(self, client, auth_headers, seed_food):
+    def test_add_meal_missing_meal_type_returns_422(
+        self, client, auth_headers, seed_food
+    ):
         food_code, mida_id, _ = seed_food
         response = client.put(
             "/api/v1/meal",
@@ -169,7 +206,9 @@ class TestAddMeal:
         )
         assert response.status_code == 422
 
-    def test_add_meal_invalid_meal_type_returns_422(self, client, auth_headers, seed_food):
+    def test_add_meal_invalid_meal_type_returns_422(
+        self, client, auth_headers, seed_food
+    ):
         food_code, mida_id, _ = seed_food
         body = self._meal_body(food_code, mida_id)
         body["meal_type"] = "snack"
@@ -192,11 +231,18 @@ class TestDeleteMeal:
         client.put(
             "/api/v1/meal",
             headers=auth_headers,
-            json={"food_id": food_code, "mida_id": mida_id, "amount": 1.0, "meal_type": "breakfast"},
+            json={
+                "food_id": food_code,
+                "mida_id": mida_id,
+                "amount": 1.0,
+                "meal_type": "breakfast",
+            },
         )
         return db_session.query(MealsEaten).order_by(MealsEaten.id.desc()).first().id
 
-    def test_delete_own_meal_returns_201(self, client, auth_headers, seed_food, db_session):
+    def test_delete_own_meal_returns_201(
+        self, client, auth_headers, seed_food, db_session
+    ):
         meal_id = self._add_meal(client, auth_headers, seed_food, db_session)
         response = client.delete(
             "/api/v1/meal", params={"meal_id": meal_id}, headers=auth_headers
@@ -204,7 +250,9 @@ class TestDeleteMeal:
         # Endpoint returns 201 (as defined in the route)
         assert response.status_code == 201
 
-    def test_delete_meal_removes_from_database(self, client, auth_headers, seed_food, db_session):
+    def test_delete_meal_removes_from_database(
+        self, client, auth_headers, seed_food, db_session
+    ):
         meal_id = self._add_meal(client, auth_headers, seed_food, db_session)
         client.delete("/api/v1/meal", params={"meal_id": meal_id}, headers=auth_headers)
         assert db_session.get(MealsEaten, meal_id) is None
@@ -247,7 +295,12 @@ class TestDeleteAllMeals:
             client.put(
                 "/api/v1/meal",
                 headers=auth_headers,
-                json={"food_id": food_code, "mida_id": mida_id, "amount": 1.0, "meal_type": "breakfast"},
+                json={
+                    "food_id": food_code,
+                    "mida_id": mida_id,
+                    "amount": 1.0,
+                    "meal_type": "breakfast",
+                },
             )
 
     def test_delete_all_meals_returns_204(self, client, auth_headers, seed_food):
@@ -261,9 +314,13 @@ class TestDeleteAllMeals:
         self._add_meals(client, auth_headers, seed_food, n=3)
         from db.schemas.user import User
 
-        user = db_session.query(User).filter(User.username == registered_user[0]).first()
+        user = (
+            db_session.query(User).filter(User.username == registered_user[0]).first()
+        )
         client.delete("/api/v1/meals", headers=auth_headers)
-        count = db_session.query(MealsEaten).filter(MealsEaten.user_id == user.id).count()
+        count = (
+            db_session.query(MealsEaten).filter(MealsEaten.user_id == user.id).count()
+        )
         assert count == 0
 
     def test_delete_all_meals_when_user_has_no_meals(self, client, auth_headers):
@@ -278,7 +335,12 @@ class TestDeleteAllMeals:
         client.put(
             "/api/v1/meal",
             headers=second_auth_headers,
-            json={"food_id": food_code, "mida_id": mida_id, "amount": 1.0, "meal_type": "lunch"},
+            json={
+                "food_id": food_code,
+                "mida_id": mida_id,
+                "amount": 1.0,
+                "meal_type": "lunch",
+            },
         )
         # User 1 adds meals then deletes all
         self._add_meals(client, auth_headers, seed_food)
@@ -303,7 +365,12 @@ class TestUpdateMeal:
         client.put(
             "/api/v1/meal",
             headers=auth_headers,
-            json={"food_id": food_code, "mida_id": mida_id, "amount": 1.0, "meal_type": "breakfast"},
+            json={
+                "food_id": food_code,
+                "mida_id": mida_id,
+                "amount": 1.0,
+                "meal_type": "breakfast",
+            },
         )
         return db_session.query(MealsEaten).order_by(MealsEaten.id.desc()).first().id
 
@@ -326,21 +393,26 @@ class TestUpdateMeal:
         )
         assert response.status_code == 200
 
-    def test_update_meal_changes_persisted_in_db(self, client, auth_headers, seed_food, db_session):
+    def test_update_meal_changes_persisted_in_db(
+        self, client, auth_headers, seed_food, db_session
+    ):
         meal_id = self._add_meal(client, auth_headers, seed_food, db_session)
         body = self._meal_body(seed_food)
-        body["amount"] = 5.0
+        body["amount"] = 5
         client.patch(
             "/api/v1/meal",
             params={"meal_id": meal_id},
             headers=auth_headers,
             json=body,
         )
+
         db_session.expire_all()
         meal = db_session.get(MealsEaten, meal_id)
         assert meal.amount == 5.0
 
-    def test_update_meal_partial_fields(self, client, auth_headers, seed_food, db_session):
+    def test_update_meal_partial_fields(
+        self, client, auth_headers, seed_food, db_session
+    ):
         meal_id = self._add_meal(client, auth_headers, seed_food, db_session)
         # MealEntry requires all fields, so we send all but change only amount
         body = self._meal_body(seed_food)
@@ -353,7 +425,9 @@ class TestUpdateMeal:
         )
         assert response.status_code == 200
 
-    def test_update_meal_change_meal_type(self, client, auth_headers, seed_food, db_session):
+    def test_update_meal_change_meal_type(
+        self, client, auth_headers, seed_food, db_session
+    ):
         meal_id = self._add_meal(client, auth_headers, seed_food, db_session)
         body = self._meal_body(seed_food)
         body["meal_type"] = "dinner"
@@ -365,7 +439,9 @@ class TestUpdateMeal:
         )
         assert response.status_code == 200
 
-    def test_update_meal_nonexistent_id_returns_403(self, client, auth_headers, seed_food):
+    def test_update_meal_nonexistent_id_returns_403(
+        self, client, auth_headers, seed_food
+    ):
         response = client.patch(
             "/api/v1/meal",
             params={"meal_id": 999999},
@@ -394,7 +470,9 @@ class TestUpdateMeal:
         )
         assert response.status_code == 401
 
-    def test_update_meal_missing_meal_id_returns_422(self, client, auth_headers, seed_food):
+    def test_update_meal_missing_meal_id_returns_422(
+        self, client, auth_headers, seed_food
+    ):
         response = client.patch(
             "/api/v1/meal",
             headers=auth_headers,
@@ -402,7 +480,9 @@ class TestUpdateMeal:
         )
         assert response.status_code == 422
 
-    def test_update_meal_invalid_meal_type_returns_422(self, client, auth_headers, seed_food, db_session):
+    def test_update_meal_invalid_meal_type_returns_422(
+        self, client, auth_headers, seed_food, db_session
+    ):
         meal_id = self._add_meal(client, auth_headers, seed_food, db_session)
         body = self._meal_body(seed_food)
         body["meal_type"] = "snack"
@@ -426,7 +506,12 @@ class TestGetMealsByDate:
         client.put(
             "/api/v1/meal",
             headers=auth_headers,
-            json={"food_id": food_code, "mida_id": mida_id, "amount": 1.0, "meal_type": "breakfast"},
+            json={
+                "food_id": food_code,
+                "mida_id": mida_id,
+                "amount": 1.0,
+                "meal_type": "breakfast",
+            },
         )
 
     def test_get_meals_single_date_returns_200(self, client, auth_headers, seed_food):
@@ -437,7 +522,9 @@ class TestGetMealsByDate:
         )
         assert response.status_code == 200
 
-    def test_get_meals_date_range_returns_meals_in_range(self, client, auth_headers, seed_food):
+    def test_get_meals_date_range_returns_meals_in_range(
+        self, client, auth_headers, seed_food
+    ):
         self._add_meal(client, auth_headers, seed_food)
         today = datetime.now(timezone.utc)
         start = (today - timedelta(days=1)).strftime("%Y-%m-%dT00:00:00")
@@ -450,7 +537,9 @@ class TestGetMealsByDate:
         assert response.status_code == 200
         assert isinstance(response.json(), list)
 
-    def test_get_meals_response_contains_expected_fields(self, client, auth_headers, seed_food):
+    def test_get_meals_response_contains_expected_fields(
+        self, client, auth_headers, seed_food
+    ):
         self._add_meal(client, auth_headers, seed_food)
         today = datetime.now(timezone.utc).strftime("%Y-%m-%dT00:00:00")
         response = client.get(
@@ -459,7 +548,18 @@ class TestGetMealsByDate:
         data = response.json()
         if len(data) > 0:
             item = data[0]
-            for field in ("food_name", "date", "protein", "total_fat", "food_energy", "meal_id", "amount", "mida", "mishkal", "meal_type"):
+            for field in (
+                "food_name",
+                "date",
+                "protein",
+                "total_fat",
+                "food_energy",
+                "meal_id",
+                "amount",
+                "mida",
+                "mishkal",
+                "meal_type",
+            ):
                 assert field in item
 
     def test_get_meals_no_meals_on_date_returns_empty_list(self, client, auth_headers):
@@ -470,7 +570,9 @@ class TestGetMealsByDate:
         assert response.status_code == 200
         assert response.json() == []
 
-    def test_get_meals_single_day_includes_full_day(self, client, auth_headers, seed_food):
+    def test_get_meals_single_day_includes_full_day(
+        self, client, auth_headers, seed_food
+    ):
         self._add_meal(client, auth_headers, seed_food)
         today = datetime.now(timezone.utc).strftime("%Y-%m-%dT00:00:00")
         response = client.get(
@@ -493,7 +595,9 @@ class TestGetMealsByDate:
         assert response.status_code == 200
         assert response.json() == []
 
-    def test_get_meals_end_date_before_start_date_returns_400(self, client, auth_headers):
+    def test_get_meals_end_date_before_start_date_returns_400(
+        self, client, auth_headers
+    ):
         response = client.get(
             "/api/v1/meals",
             params={"date": "2025-12-31T00:00:00", "end_date": "2025-01-01T00:00:00"},
@@ -527,7 +631,12 @@ class TestExportMealsCSV:
         client.put(
             "/api/v1/meal",
             headers=auth_headers,
-            json={"food_id": food_code, "mida_id": mida_id, "amount": 1.0, "meal_type": "breakfast"},
+            json={
+                "food_id": food_code,
+                "mida_id": mida_id,
+                "amount": 1.0,
+                "meal_type": "breakfast",
+            },
         )
 
     def test_export_csv_returns_200_with_csv_content_type(self, client, auth_headers):
@@ -540,7 +649,17 @@ class TestExportMealsCSV:
         response = client.get("/api/v1/meals/export", headers=auth_headers)
         reader = csv.reader(io.StringIO(response.text))
         header = next(reader)
-        expected = ["date", "mealType", "foodName", "amount", "unit", "calories", "protein", "fat", "carbohydrates"]
+        expected = [
+            "date",
+            "mealType",
+            "foodName",
+            "amount",
+            "unit",
+            "calories",
+            "protein",
+            "fat",
+            "carbohydrates",
+        ]
         assert header == expected
 
     def test_export_csv_contains_meal_data(self, client, auth_headers, seed_food):
@@ -568,13 +687,20 @@ class TestExportMealsCSV:
         rows = list(reader)
         assert len(rows) == 1
 
-    def test_export_csv_calorie_calculation_is_correct(self, client, auth_headers, seed_food):
+    def test_export_csv_calorie_calculation_is_correct(
+        self, client, auth_headers, seed_food
+    ):
         food_code, mida_id, mishkal = seed_food
         amount = 2.0
         client.put(
             "/api/v1/meal",
             headers=auth_headers,
-            json={"food_id": food_code, "mida_id": mida_id, "amount": amount, "meal_type": "lunch"},
+            json={
+                "food_id": food_code,
+                "mida_id": mida_id,
+                "amount": amount,
+                "meal_type": "lunch",
+            },
         )
         response = client.get("/api/v1/meals/export", headers=auth_headers)
         reader = csv.reader(io.StringIO(response.text))

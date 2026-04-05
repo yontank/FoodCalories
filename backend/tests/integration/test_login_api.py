@@ -143,6 +143,8 @@ class TestRegistration:
         response = client.post("/api/v1/register", json={})
         assert response.status_code == 422
 
+    # TODO: add a test where both username and password are NULL. on /register endpoint.
+
 
 # ── Login (Token) ────────────────────────────────────────────────────────────
 
@@ -150,7 +152,9 @@ class TestRegistration:
 class TestLogin:
     """POST /api/v1/token"""
 
-    def test_login_valid_credentials_returns_200_with_access_token(self, client, registered_user):
+    def test_login_valid_credentials_returns_200_with_access_token(
+        self, client, registered_user
+    ):
         username, password = registered_user
         response = client.post(
             "/api/v1/token",
@@ -216,7 +220,9 @@ class TestCurrentUser:
         assert "sub" in data
         assert "role" in data
 
-    def test_current_user_role_is_user_for_regular_registration(self, client, auth_headers):
+    def test_current_user_role_is_user_for_regular_registration(
+        self, client, auth_headers
+    ):
         response = client.get("/api/v1/currentUser", headers=auth_headers)
         assert response.json()["role"] == "user"
 
@@ -231,8 +237,12 @@ class TestCurrentUser:
         )
         assert response.status_code == 401
 
-    def test_current_user_expired_token_returns_401(self, client, registered_user, db_session):
-        user = db_session.query(User).filter(User.username == registered_user[0]).first()
+    def test_current_user_expired_token_returns_401(
+        self, client, registered_user, db_session
+    ):
+        user = (
+            db_session.query(User).filter(User.username == registered_user[0]).first()
+        )
         token = make_expired_access_token(user.id)
         response = client.get(
             "/api/v1/currentUser",
@@ -240,8 +250,12 @@ class TestCurrentUser:
         )
         assert response.status_code == 401
 
-    def test_current_user_disabled_user_returns_401(self, client, auth_headers, db_session, registered_user):
-        user = db_session.query(User).filter(User.username == registered_user[0]).first()
+    def test_current_user_disabled_user_returns_401(
+        self, client, auth_headers, db_session, registered_user
+    ):
+        user = (
+            db_session.query(User).filter(User.username == registered_user[0]).first()
+        )
         user.disabled = True
         db_session.flush()
         response = client.get("/api/v1/currentUser", headers=auth_headers)
@@ -266,8 +280,12 @@ class TestLogout:
         response = client.post("/api/v1/logout", headers=auth_headers)
         assert response.status_code == 204
 
-    def test_logout_revokes_all_refresh_tokens(self, client, auth_headers, db_session, registered_user):
-        user = db_session.query(User).filter(User.username == registered_user[0]).first()
+    def test_logout_revokes_all_refresh_tokens(
+        self, client, auth_headers, db_session, registered_user
+    ):
+        user = (
+            db_session.query(User).filter(User.username == registered_user[0]).first()
+        )
         client.post("/api/v1/logout", headers=auth_headers)
         active = (
             db_session.query(RefreshTokens)
@@ -322,7 +340,9 @@ class TestRefreshToken:
         assert new_cookie is not None
         assert new_cookie != old_cookie
 
-    def test_refresh_old_token_is_revoked_after_rotation(self, client, registered_user, db_session):
+    def test_refresh_old_token_is_revoked_after_rotation(
+        self, client, registered_user, db_session
+    ):
         username, password = registered_user
         self._login_and_get_refresh_cookie(client, username, password)
         user = db_session.query(User).filter(User.username == username).first()
@@ -345,7 +365,9 @@ class TestRefreshToken:
         )
         assert response.status_code == 403
 
-    def test_refresh_revoked_token_returns_403(self, client, registered_user, db_session):
+    def test_refresh_revoked_token_returns_403(
+        self, client, registered_user, db_session
+    ):
         username, password = registered_user
         old_cookie = self._login_and_get_refresh_cookie(client, username, password)
         # Use the token once (rotates it, old becomes revoked)
@@ -354,8 +376,12 @@ class TestRefreshToken:
         response = client.post("/api/v1/refresh", cookies={"refresh_token": old_cookie})
         assert response.status_code == 403
 
-    def test_refresh_expired_token_returns_403(self, client, registered_user, db_session):
-        user = db_session.query(User).filter(User.username == registered_user[0]).first()
+    def test_refresh_expired_token_returns_403(
+        self, client, registered_user, db_session
+    ):
+        user = (
+            db_session.query(User).filter(User.username == registered_user[0]).first()
+        )
         expired_token = jwt.encode(
             {
                 "sub": str(user.id),
@@ -421,7 +447,9 @@ class TestChangePassword:
         )
         assert active == 0
 
-    def test_can_login_with_new_password_after_change(self, client, auth_headers, registered_user):
+    def test_can_login_with_new_password_after_change(
+        self, client, auth_headers, registered_user
+    ):
         username, old_password = registered_user
         new_password = "NewSecure1!"
         client.put(
@@ -436,7 +464,9 @@ class TestChangePassword:
         assert response.status_code == 200
         assert "access_token" in response.json()
 
-    def test_change_password_to_same_password(self, client, auth_headers, registered_user):
+    def test_change_password_to_same_password(
+        self, client, auth_headers, registered_user
+    ):
         _, password = registered_user
         response = client.put(
             "/api/v1/user/password",
@@ -446,7 +476,9 @@ class TestChangePassword:
         # Should succeed — no rule against reusing same password
         assert response.status_code == 204
 
-    def test_change_password_wrong_current_password_returns_400(self, client, auth_headers):
+    def test_change_password_wrong_current_password_returns_400(
+        self, client, auth_headers
+    ):
         response = client.put(
             "/api/v1/user/password",
             headers=auth_headers,
@@ -454,7 +486,9 @@ class TestChangePassword:
         )
         assert response.status_code == 400
 
-    def test_change_password_invalid_new_password_returns_422(self, client, auth_headers, registered_user):
+    def test_change_password_invalid_new_password_returns_422(
+        self, client, auth_headers, registered_user
+    ):
         _, old_password = registered_user
         response = client.put(
             "/api/v1/user/password",
@@ -489,18 +523,26 @@ class TestDeleteUser:
         response = client.delete("/api/v1/user", headers=auth_headers)
         assert response.status_code == 204
 
-    def test_delete_user_removes_user_from_db(self, client, auth_headers, db_session, registered_user):
+    def test_delete_user_removes_user_from_db(
+        self, client, auth_headers, db_session, registered_user
+    ):
         username, _ = registered_user
         client.delete("/api/v1/user", headers=auth_headers)
         user = db_session.query(User).filter(User.username == username).first()
         assert user is None
 
-    def test_delete_user_cascades_meals_and_tokens(self, client, auth_headers, db_session, registered_user):
+    def test_delete_user_cascades_meals_and_tokens(
+        self, client, auth_headers, db_session, registered_user
+    ):
         username, _ = registered_user
         user = db_session.query(User).filter(User.username == username).first()
         user_id = user.id
         client.delete("/api/v1/user", headers=auth_headers)
-        tokens = db_session.query(RefreshTokens).filter(RefreshTokens.user_id == user_id).count()
+        tokens = (
+            db_session.query(RefreshTokens)
+            .filter(RefreshTokens.user_id == user_id)
+            .count()
+        )
         assert tokens == 0
 
     def test_deleted_user_token_becomes_invalid(self, client, auth_headers):

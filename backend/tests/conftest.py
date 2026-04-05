@@ -1,6 +1,8 @@
 import pytest
 from datetime import datetime, timezone, timedelta
 
+from alembic.config import Config
+from alembic import command
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
@@ -15,7 +17,7 @@ from core.security import create_access_token, create_refresh_token, hash_passwo
 
 # Use a separate test database — appends "_test" to the DB name
 TEST_DATABASE_URL = str(settings.DATABASE_URL).replace(
-    settings.DATABASE_URL.path, settings.DATABASE_URL.path + "_test"
+    str(settings.DATABASE_URL.path), str(settings.DATABASE_URL.path) + "_test"
 )
 
 test_engine = create_engine(TEST_DATABASE_URL)
@@ -23,14 +25,31 @@ TestSession = sessionmaker(bind=test_engine)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_test_db():
-    """Create test database and tables at start, drop at end."""
+def setup_test_db(monkeypatch_session):
+    """Create test database via Alembic migrations at start, drop at end."""
     if not database_exists(test_engine.url):
         create_database(test_engine.url)
-    Base.metadata.create_all(bind=test_engine)
+
+    # Override so env.py's settings.DATABASE_URL points to the test DB
+    monkeypatch_session.setenv("DATABASE_URL", TEST_DATABASE_URL)
+
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")
+
     yield
-    Base.metadata.drop_all(bind=test_engine)
+
+    test_engine.dispose()
     drop_database(test_engine.url)
+
+
+@pytest.fixture(scope="session")
+def monkeypatch_session():
+    """Session-scoped monkeypatch."""
+    from _pytest.monkeypatch import MonkeyPatch
+
+    mp = MonkeyPatch()
+    yield mp
+    mp.undo()
 
 
 @pytest.fixture(autouse=True)
