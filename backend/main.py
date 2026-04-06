@@ -10,7 +10,11 @@ from core.scheduler import start_scheduler
 from core.rate_limit import limiter
 from api.v1 import router
 
-app = FastAPI(title="Israeli Food API")
+app = FastAPI(
+    title="Israeli Food API",
+    docs_url="/docs" if settings.DEBUG else None,
+    openapi_url="/openapi.json" if settings.DEBUG else None,
+)
 # Rate Limiter using slow api, see SlowAPI documentation.
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
