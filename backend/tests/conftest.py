@@ -62,6 +62,7 @@ def db_session():
     def override_get_db():
         try:
             yield session
+            session.flush()
         finally:
             pass  # don't close — we rollback below
 
