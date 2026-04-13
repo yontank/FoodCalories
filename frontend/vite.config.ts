@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 
 import path from "path";
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(() => {
   const backendUrl = process.env.BACKEND_URL ?? "http://127.0.0.1:8000";
 
   return {
