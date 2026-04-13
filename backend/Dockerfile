@@ -34,6 +34,7 @@ COPY db/ db/
 COPY models/ models/
 COPY services/ services/
 COPY migrations/ migrations/
+COPY scripts/ scripts/
 COPY alembic.ini .
 COPY docker/entrypoint.sh docker/entrypoint.sh
 RUN chmod +x docker/entrypoint.sh
