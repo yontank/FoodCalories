@@ -66,9 +66,10 @@ def query_food_by_id(
     request: Request,
     food_id: int,
     _: Annotated[JWTAccessBase, Depends(get_current_user)],
+    db: Session = Depends(get_db),
 ):
     """Returns the food item with the given ID."""
-    if (food := session.query(MohMitzrachim).get(food_id)):
+    if (food := db.query(MohMitzrachim).get(food_id)):
         return FoodDetail.model_validate(food, from_attributes=True)
     return None
 
