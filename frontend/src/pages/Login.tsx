@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Field, FieldGroup } from "@/components/ui/field";
+import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -70,8 +71,8 @@ function LoginForm() {
         </form>
         {errorMessage && <ErrorBox>{errorMessage}</ErrorBox>}
       </CardContent>
-      <CardFooter>
-        <Field orientation="horizontal" className="justify-between">
+      <CardFooter className="flex flex-col gap-4">
+        <Field orientation="horizontal" className="justify-between w-full">
           <Button type="submit" form="form-login" disabled={inProgress}>
             {t("key5", "כניסה")}
           </Button>
@@ -79,7 +80,11 @@ function LoginForm() {
             {t("key", "הרשמה")}
           </Button>
         </Field>
-        --- OR
+        <div className="flex items-center gap-3 w-full">
+          <Separator className="flex-1" />
+          <span className="text-sm text-muted-foreground">{t("or", "או")}</span>
+          <Separator className="flex-1" />
+        </div>
         <GoogleLogin
           onSuccess={(credentialResponse) => {
             if (credentialResponse.credential) {
@@ -92,8 +97,8 @@ function LoginForm() {
           onError={() => {
             setErrorMessage("Google login failed");
           }}
+          width={350}
         />
-        ;
       </CardFooter>
     </Card>
   );
