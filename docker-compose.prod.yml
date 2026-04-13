@@ -13,9 +13,9 @@ services:
       context: ./backend
       target: prod
     container_name: foodcalories_backend
-    restart: unless-stopped
     env_file:
-      - .env
+      - ./backend/.env
+    restart: unless-stopped
     environment:
       - DEBUG=false
     ports:
@@ -24,6 +24,8 @@ services:
       - db
 
   frontend:
+    env_file:
+      - ./frontend/.env
     build:
       context: ./frontend
       target: prod

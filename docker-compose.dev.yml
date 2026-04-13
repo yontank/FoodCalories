@@ -16,7 +16,7 @@ services:
     container_name: foodcalories_backend
     restart: no
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       - DEBUG=true
     ports:
@@ -27,6 +27,8 @@ services:
       - db
 
   frontend:
+    env_file:
+      - ./frontend/.env
     build:
       context: ./frontend
       target: dev

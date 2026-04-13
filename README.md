@@ -86,52 +86,42 @@ FoodCal/
 ## Getting Started
 
 ### Prerequisites
-- Python 3.8+ (for backend)
-- Node.js 16+ and npm (for frontend)
-- PostgreSQL database
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
 
-### Backend Setup
+### 1. Configure environment variables
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
+The project uses three `.env` files — one per service. Copy each example and fill in your values:
 
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+# Database (root)
+cp .env.example .env
 
-3. Configure your database connection in `db.py`
+# Backend
+cp backend/.env.example backend/.env
 
-4. Run the server:
-   ```bash
-   python main.py
-   ```
-   The API will be available at `http://localhost:8000`
+# Frontend
+cp frontend/.env.example frontend/.env
+```
 
-### Frontend Setup
+> **Important:** The `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in the root `.env` must match the credentials in `backend/.env` `DATABASE_URL`.
+>
+> The `GOOGLE_CLIENT_ID` in `backend/.env` and `VITE_GOOGLE_CLIENT_ID` in `frontend/.env` must use the same value.
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd Food-Calories
-   ```
+### 2. Run with Docker Compose
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+**Development** (hot reload for both frontend and backend):
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8000`
+- PostgreSQL: `localhost:5432`
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-   The application will be available at `http://localhost:5173`
-
-4. Build for production:
-   ```bash
-   npm run build
-   ```
+**Production:**
+```bash
+docker compose -f docker-compose.prod.yml up --build -d
+```
+- Application: `http://localhost` (port 80)
 
 ## API Endpoints
 
@@ -168,7 +158,15 @@ tsc -b
 
 ## Environment Variables
 
-Backend configuration can be set via environment variables or modified in `db.py` and `main.py`.
+Environment variables are split across three files:
+
+| File | Service | Variables |
+|------|---------|-----------|
+| `.env` | Database (PostgreSQL) | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` |
+| `backend/.env` | Backend (FastAPI) | `DATABASE_URL`, `SECRET_KEY`, `GOOGLE_CLIENT_ID` |
+| `frontend/.env` | Frontend (Vite) | `BACKEND_URL`, `VITE_GOOGLE_CLIENT_ID` |
+
+See each `.env.example` file for details and instructions.
 
 ## Project Status
 
