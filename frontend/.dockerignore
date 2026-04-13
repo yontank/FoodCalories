@@ -10,8 +10,6 @@ dist-ssr/
 .gitignore
 
 # Env files
-.env
-.env.*
 *.local
 
 # Logs
