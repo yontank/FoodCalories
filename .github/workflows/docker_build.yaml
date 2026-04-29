@@ -1,0 +1,23 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend prod image
+        run: docker build --target prod -t foodcalories-backend:ci ./backend
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build frontend up to build stage
+        run: docker build --target build -t foodcalories-frontend:ci ./frontend

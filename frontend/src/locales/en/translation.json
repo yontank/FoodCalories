@@ -148,5 +148,21 @@
   "edit": "Edit",
   "delete": "Delete",
   "update": "Update",
-  "deleteMeal": "Delete this meal?"
+  "deleteMeal": "Delete this meal?",
+  "appName": "Calorie Tracker",
+  "appTagline": "Track your nutrition, hit your goals.",
+  "loginTitle": "Welcome back",
+  "loginSubtitle": "Sign in to continue tracking your nutrition.",
+  "registerTitle": "Create your account",
+  "registerSubtitle": "Start tracking your nutrition in seconds.",
+  "noAccount": "Don't have an account?",
+  "haveAccount": "Already have an account?",
+  "or": "Or",
+  "registerError": "Couldn't create account. Try a different username.",
+  "loginError": "Login failed. Check your credentials and try again.",
+  "googleLoginFailed": "Google login failed.",
+  "todaysCalories": "Today's calories",
+  "caloriesProgress": "{{consumed}} / {{goal}} kcal",
+  "overeatingHint": "Above this line = over your daily target",
+  "macrosProgressLabel": "{{consumed}} / {{goal}} g"
 }

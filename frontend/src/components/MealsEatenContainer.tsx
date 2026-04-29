@@ -61,7 +61,9 @@ export function MealsEatenContainer({
     >
       <DropdownMenu dir={dir}>
         <DropdownMenuTrigger asChild>
-          <EllipsisVertical />
+          <Button variant="ghost" size="icon">
+            <EllipsisVertical />
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent data-lang="he">
           <DropdownMenuGroup>
@@ -76,7 +78,7 @@ export function MealsEatenContainer({
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <div className="flex flex-col w-1/3 max-w-3xl text-right">
+      <div className="flex flex-col w-1/3 max-w-3xl text-start">
         <b>{e.food_name}</b>
         <b>
           {e.amount} {e.mida.name}
@@ -108,7 +110,7 @@ export function MealsEatenContainer({
   ));
 
   return (
-    <div className="rounded-xl border-4 p-2 min-h-48">
+    <div className="border rounded-2xl bg-muted/30 p-2 min-h-48">
       <div className="flex items-center gap-3 mb-2">
         <Button
           className="rounded-full w-12 h-12"

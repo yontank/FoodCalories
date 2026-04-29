@@ -10,9 +10,6 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
-  			'theme-figma': '#FEFAE0',
-  			'primary-figma': '#FAEDCD',
-  			'secondary-figma': '#D4A373',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

@@ -7,8 +7,8 @@ type Props = {
 
 export function ErrorBox({ children }: Props) {
   return (
-    <div className="flex gap-2 rounded-lg mt-6 bg-red-400 border-red-800 border-2 p-4">
-      <CircleX className="text-red-900" /> {children}
+    <div className="flex gap-2 rounded-lg mt-6 border border-destructive/40 bg-destructive/10 text-destructive p-4">
+      <CircleX className="shrink-0" /> {children}
     </div>
   );
 }

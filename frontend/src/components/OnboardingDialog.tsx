@@ -375,7 +375,7 @@ export function OnboardingDialog({
                   <span className="font-semibold">{selectedCalories}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-blue-500">
+                  <span className="text-[hsl(var(--chart-1))]">
                     {t("key8", "Protein")}
                   </span>
                   <span>
@@ -385,7 +385,7 @@ export function OnboardingDialog({
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-yellow-500">
+                  <span className="text-[hsl(var(--chart-3))]">
                     {t("key7", "Carbohydrates")}
                   </span>
                   <span>
@@ -395,7 +395,7 @@ export function OnboardingDialog({
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-orange-500">
+                  <span className="text-[hsl(var(--chart-4))]">
                     {t("key9", "Fat")}
                   </span>
                   <span>

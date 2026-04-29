@@ -7,7 +7,8 @@ interface AdditionalProgressProps {
   indicatorClassName?: string;
   wrapperClassName?: string;
   barHeight?: string;
-  label: string;
+  label?: React.ReactNode;
+  sublabel?: React.ReactNode;
   goalAt?: number;
   goalLabel?: string;
   destructiveOnOverflow?: boolean; // default: false
@@ -24,6 +25,7 @@ const Progress = React.forwardRef<
   wrapperClassName,
   barHeight = "h-2",
   label,
+  sublabel,
   goalAt,
   goalLabel,
   destructiveOnOverflow = false,
@@ -35,7 +37,18 @@ const Progress = React.forwardRef<
 
   return (
     <div className={cn("flex flex-col items-center gap-2 w-1/4", wrapperClassName)}>
-      <h2>{label}</h2>
+      {(label !== undefined || sublabel !== undefined) && (
+        <div className="flex w-full items-baseline justify-between gap-2">
+          {label !== undefined && (
+            <span className="text-sm font-medium">{label}</span>
+          )}
+          {sublabel !== undefined && (
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {sublabel}
+            </span>
+          )}
+        </div>
+      )}
       <div className="relative w-full">
         <ProgressPrimitive.Root
           ref={ref}

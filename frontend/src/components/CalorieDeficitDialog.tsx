@@ -368,21 +368,21 @@ export function CalorieDeficitDialog() {
                     value: proteinPct,
                     set: setProteinPct,
                     grams: proteinGrams,
-                    color: "text-blue-500",
+                    color: "text-[hsl(var(--chart-1))]",
                   },
                   {
                     label: t("key7", "פחמימות"),
                     value: carbsPct,
                     set: setCarbsPct,
                     grams: carbsGrams,
-                    color: "text-yellow-500",
+                    color: "text-[hsl(var(--chart-3))]",
                   },
                   {
                     label: t("key9", "שומן"),
                     value: fatPct,
                     set: setFatPct,
                     grams: fatGrams,
-                    color: "text-orange-500",
+                    color: "text-[hsl(var(--chart-4))]",
                   },
                 ] as const
               ).map(({ label, value, set, grams, color }) => (
@@ -420,7 +420,7 @@ export function CalorieDeficitDialog() {
               className={cn(
                 "text-sm text-center py-1 rounded",
                 macroValid
-                  ? "text-green-600 bg-green-50"
+                  ? "text-[hsl(var(--chart-4))] bg-[hsl(var(--chart-4))]/15"
                   : "text-destructive bg-destructive/5",
               )}
             >
@@ -444,7 +444,7 @@ export function CalorieDeficitDialog() {
                   <span className="font-semibold">{selectedCalories}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-blue-500">{t("key8", "חלבון")}</span>
+                  <span className="text-[hsl(var(--chart-1))]">{t("key8", "חלבון")}</span>
                   <span>
                     {t("proteingrams", "{{proteinGrams}} גרם", {
                       proteinGrams,
@@ -452,7 +452,7 @@ export function CalorieDeficitDialog() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-yellow-500">
+                  <span className="text-[hsl(var(--chart-3))]">
                     {t("key7", "פחמימות")}
                   </span>
                   <span>
@@ -460,7 +460,7 @@ export function CalorieDeficitDialog() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-orange-500">{t("key9", "שומן")}</span>
+                  <span className="text-[hsl(var(--chart-4))]">{t("key9", "שומן")}</span>
                   <span>{t("fatgrams", "{{fatGrams}} גרם", { fatGrams })}</span>
                 </div>
               </div>

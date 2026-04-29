@@ -149,5 +149,21 @@
   "edit": "עריכה",
   "delete": "מחיקה",
   "update": "עדכון",
-  "deleteMeal": "למחוק את ארוחה זו?"
+  "deleteMeal": "למחוק את ארוחה זו?",
+  "appName": "מעקב קלוריות",
+  "appTagline": "עקוב אחר התזונה שלך, השג את היעדים.",
+  "loginTitle": "ברוך שובך",
+  "loginSubtitle": "התחבר כדי להמשיך לעקוב אחר התזונה שלך.",
+  "registerTitle": "צור חשבון",
+  "registerSubtitle": "התחל לעקוב אחר התזונה שלך תוך שניות.",
+  "noAccount": "אין לך חשבון?",
+  "haveAccount": "כבר יש לך חשבון?",
+  "or": "או",
+  "registerError": "לא ניתן ליצור חשבון. נסה שם משתמש אחר.",
+  "loginError": "ההתחברות נכשלה. בדוק את הפרטים ונסה שוב.",
+  "googleLoginFailed": "ההתחברות עם Google נכשלה.",
+  "todaysCalories": "קלוריות להיום",
+  "caloriesProgress": "{{consumed}} / {{goal}} קל׳",
+  "overeatingHint": "מעל הקו = חריגה מהיעד היומי",
+  "macrosProgressLabel": "{{consumed}} / {{goal}} גרם"
 }

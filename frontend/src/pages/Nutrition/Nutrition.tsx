@@ -259,15 +259,15 @@ export function Nutrition() {
   const macrosChartConfig = {
     protein: {
       label: t("protein", "Protein"),
-      color: "hsl(217 91% 60%)",
+      color: "hsl(var(--chart-1))",
     },
     carbs: {
       label: t("carbs", "Carbohydrates"),
-      color: "hsl(24 95% 53%)",
+      color: "hsl(var(--chart-3))",
     },
     fat: {
       label: t("fats", "Fats"),
-      color: "hsl(84 81% 44%)",
+      color: "hsl(var(--chart-4))",
     },
   } satisfies ChartConfig;
 
