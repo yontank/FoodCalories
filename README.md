@@ -139,10 +139,6 @@ See each `.env.example` file for details and instructions.
 
 This is an active development project. Check the repository for the latest updates and features.
 
-## License
-
-Not specified - See LICENSE file if present.
-
 ## Contributing
 
 Contributions are welcome. Please ensure code follows the existing project structure and conventions.
