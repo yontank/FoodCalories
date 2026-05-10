@@ -6,53 +6,21 @@ A full-stack web application for tracking daily food intake and calorie consumpt
 
 ```
 FoodCal/
-├── backend/                 # FastAPI backend server
+├── backend/                # FastAPI backend server
 │   ├── api/                # API routes and endpoints
-│   │   ├── __init__.py
-│   │   └── api.py         # Food and meal endpoints
 │   ├── models/             # SQLAlchemy ORM models
-│   │   ├── based.py
-│   │   ├── meals_eaten.py
-│   │   ├── moh_mitzrachim.py
-│   │   ├── moh_yehidot_mida.py
-│   │   └── moh_yehidot_mida_lemitzrachim.py
-│   ├── schemas/            # Pydantic schemas for validation
-│   │   └── food.py
-│   ├── db.py              # Database configuration
-│   ├── main.py            # Entry point (Uvicorn server)
-│   └── requirements.txt    # Python dependencies
+│   └── schemas/            # Pydantic schemas for validation
 │
 ├── Food-Calories/          # React + TypeScript frontend
-│   ├── src/
-│   │   ├── components/    # Reusable UI components
-│   │   │   ├── CalorieInformation.tsx
-│   │   │   ├── MealsEatenContainer.tsx
-│   │   │   ├── NavBar.tsx
-│   │   │   ├── SearchBar.tsx
-│   │   │   ├── SearchItems.tsx
-│   │   │   ├── SideBar.tsx
-│   │   │   ├── TotalCalorieProgress.tsx
-│   │   │   └── ui/         # Shadcn UI components
-│   │   ├── pages/         # Page components
-│   │   │   ├── Dashboard/  # Main dashboard view
-│   │   │   ├── Calculator/ # Calorie calculator
-│   │   │   ├── Settings/   # User settings
-│   │   │   └── Layout.tsx  # Root layout
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── lib/           # Utility functions
-│   │   ├── data/          # Static configuration
-│   │   ├── assets/        # Images and media
-│   │   └── main.tsx       # React entry point
-│   ├── vite.config.ts     # Vite bundler config
-│   ├── tailwind.config.js # Tailwind CSS config
-│   ├── package.json       # Node dependencies
-│   └── tsconfig.json      # TypeScript config
+│   └── src/
+│       ├── components/    # Reusable UI components
+│       ├── pages/         # Page components
+│       ├── hooks/         # Custom React hooks
+│       ├── lib/           # Utility functions
+│       ├── data/          # Static configuration
+│       └── assets/        # Images and media
 │
 └── CSV/                    # Food database CSV files
-    ├── moh_matkonim_11.7.2022.csv
-    ├── moh_mitzrachim.csv
-    ├── moh_yehidot_mida_lemitzrachim.csv
-    └── moh_yehidot_mida.csv
 ```
 
 ## Features
@@ -61,8 +29,8 @@ FoodCal/
 - **Meal Tracking**: Log meals eaten throughout the day with portion sizes
 - **Calorie Monitoring**: Track daily calorie intake with visual progress indicators
 - **Dashboard**: View today's meals and total calorie consumption
-- **Settings**: Configure application preferences
 - **Calculator**: Quick calorie calculations for foods
+- **Settings**: Configure application preferences
 
 ## Technology Stack
 
@@ -126,7 +94,6 @@ docker compose -f docker-compose.prod.yml up --build -d
 ## API Endpoints
 
 ### Foods
-- `GET /foods` - List foods (limited to 20)
 - `GET /foods/{food_query}` - Search foods by name
 - `GET /foodInfo/{food_query}` - Get detailed food information by code
 
